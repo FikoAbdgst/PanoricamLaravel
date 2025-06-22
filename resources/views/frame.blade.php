@@ -50,21 +50,20 @@
         }
 
         .photo-slot {
-            width: 100%;
-            height: 100%;
-            background-color: #f0f0f0;
+            border: 2px dashed #d1d5db;
+            border-radius: 8px;
             display: flex;
-            justify-content: center;
             align-items: center;
+            justify-content: center;
+            background-color: #f3f4f6;
+            transition: all 0.3s ease;
             overflow: hidden;
         }
 
         .photo-slot img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: none;
+            border-radius: 6px;
         }
+
 
         .photo-slot img[src]:not([src=""]) {
             display: block;
@@ -202,8 +201,14 @@
         }
 
         .mobile-modal-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
             transform: translateY(100%);
             transition: transform 0.3s ease-out;
+            height: 95vh;
+            max-height: 95vh;
         }
 
         .mobile-modal-container.show {
@@ -1007,7 +1012,7 @@
                     </button>
                 </div>
 
-                <div class="w-[190px] h-[450px] relative">
+                <div class=" relative" style="width: 172px; height: 450px;">
                     <div id="previewFrameContainer"
                         class="w-full h-full relative bg-transparent shadow-md overflow-hidden">
                         <div id="previewFrameImage" class="absolute inset-0 flex items-center justify-center bg-gray-100">
@@ -1030,9 +1035,21 @@
 
             <div class="p-4 flex flex-col gap-6">
                 <div class="w-full">
+                    <!-- Tambahkan button toggle camera di dalam mobile modal, setelah video element -->
                     <div class="relative bg-white rounded-lg overflow-hidden" style="aspect-ratio: 4/3;">
                         <video id="mobilePreviewVideo" autoplay muted
                             class="w-full h-full object-cover scale-x-[-1]"></video>
+
+                        <!-- Toggle Camera Button - Khusus Mobile -->
+                        <button id="toggleCameraButton"
+                            class="absolute top-4 right-4 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all duration-300 backdrop-blur-sm">
+                            <svg id="cameraIcon" class="w-6 h-6" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            </svg>
+                        </button>
+
                         <div id="mobilePreviewWatermark" class="hidden">
                             <div class="watermark-content">
                                 <img src="{{ asset('logo.png') }}" alt="Logo" class="h-10">
@@ -1050,7 +1067,7 @@
                 </div>
 
                 <div class="w-full flex justify-center items-center pb-4">
-                    <div class="w-[190px] h-[450px] relative">
+                    <div class=" relative" style="width: 172px; height: 450px;">
                         <div id="mobilePreviewFrameContainer"
                             class="w-full h-full relative bg-transparent shadow-md overflow-hidden">
                             <div id="mobilePreviewFrameImage"
@@ -1160,6 +1177,8 @@
         let currentFrameId = null;
         let currentFramePrice = null;
         let isFilterOpen = false;
+        let currentFacingMode = 'user'; // 'user' untuk front camera, 'environment' untuk back camera
+        let isTogglingCamera = false;
 
         function showPremiumModal(frameId, price) {
             currentFrameId = frameId;
@@ -1320,18 +1339,19 @@
             const watermark = document.getElementById('previewWatermark');
             const mobileWatermark = document.getElementById('mobilePreviewWatermark');
 
+            // Perbaikan: Set modal display dan class dengan delay
             document.body.classList.add('modal-open');
             modal.style.display = 'flex';
-            modalBackdrop.classList.add('show');
+
+            // Delay untuk smooth animation
+            setTimeout(() => {
+                modalBackdrop.classList.add('show');
+                if (mobileModalContainer) {
+                    mobileModalContainer.classList.add('show');
+                }
+            }, 50);
 
             console.log('Modal display set to flex');
-
-            if (mobileModalContainer) {
-                setTimeout(() => {
-                    mobileModalContainer.classList.add('show');
-                    console.log('Mobile modal container shown');
-                }, 50);
-            }
 
             const frameCard = e.target.closest('.frame-card');
             let frameId = null;
@@ -1345,22 +1365,31 @@
                 modal.setAttribute('data-frame-id', frameId);
                 window.currentFrameId = frameId;
 
-                const loadingContent =
-                    '<div class="flex items-center justify-center w-full h-full"><div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-500"></div></div>';
+                const loadingContent = `
+            <div class="flex items-center justify-center w-full h-full">
+                <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-500"></div>
+            </div>
+        `;
                 previewFrameImage.innerHTML = loadingContent;
                 mobilePreviewFrameImage.innerHTML = loadingContent;
 
                 fetchFrameDetails(frameId);
 
-                // Fetch frame template
+                // Fetch frame template dengan error handling yang lebih baik
                 fetch(`/get-frame-template/${frameId}`)
                     .then(response => {
                         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                         return response.text();
                     })
                     .then(html => {
+                        // Perbaikan: Pastikan frame template ditampilkan dengan benar
                         previewFrameImage.innerHTML = html;
                         mobilePreviewFrameImage.innerHTML = html;
+
+                        // Perbaikan: Tambahkan class untuk styling yang tepat
+                        previewFrameContainer.className = 'frame-container-desktop';
+                        mobilePreviewFrameContainer.className = 'frame-container-mobile';
+
                         initializePhotoSlots(previewFrameImage);
                         initializePhotoSlots(mobilePreviewFrameImage, true);
                         console.log('Frame template loaded successfully');
@@ -1368,54 +1397,57 @@
                     .catch(error => {
                         console.error('Error loading frame template:', error);
                         const errorContent = `
-                        <div class="flex flex-col items-center justify-center w-full h-full text-red-500">
-                            <svg class="w-12 h-12 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-                            </svg>
-                            <p class="text-center">Failed to load frame template.</p>
-                        </div>
-                    `;
+                    <div class="flex flex-col items-center justify-center w-full h-full text-red-500 p-4">
+                        <svg class="w-12 h-12 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                        </svg>
+                        <p class="text-center text-sm">Failed to load frame template.</p>
+                    </div>
+                `;
                         previewFrameImage.innerHTML = errorContent;
                         mobilePreviewFrameImage.innerHTML = errorContent;
                         createDummySlots(previewFrameImage);
                         createDummySlots(mobilePreviewFrameImage, true);
                     });
-            } else {
-                console.error('No frame ID found');
-                const errorContent = `
-                <div class="flex flex-col items-center justify-center w-full h-full text-red-500">
-                    <svg class="w-12 h-12 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-                    </svg>
-                    <p class="text-center">Cannot preview frame: No frame ID found.</p>
-                    <p class="text-center text-sm mt-2">Please try again or select a different frame.</p>
-                </div>
-            `;
-                previewFrameImage.innerHTML = errorContent;
-                mobilePreviewFrameImage.innerHTML = errorContent;
             }
 
+            // Camera initialization
             if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                const isMobile = window.innerWidth <= 768;
+                const videoConstraints = {
+                    width: {
+                        ideal: 640
+                    },
+                    height: {
+                        ideal: 480
+                    },
+                    aspectRatio: 4 / 3
+                };
+
+                if (isMobile) {
+                    videoConstraints.facingMode = {
+                        ideal: currentFacingMode
+                    };
+                }
+
                 navigator.mediaDevices.getUserMedia({
-                        video: {
-                            width: {
-                                ideal: 640
-                            },
-                            height: {
-                                ideal: 480
-                            },
-                            aspectRatio: 4 / 3
-                        }
+                        video: videoConstraints
                     })
                     .then(stream => {
                         video.srcObject = stream;
                         mobileVideo.srcObject = stream;
                         window.stream = stream;
+
                         video.onloadedmetadata = function() {
                             video.play();
                         };
                         mobileVideo.onloadedmetadata = function() {
                             mobileVideo.play();
+                            if (currentFacingMode === 'user') {
+                                mobileVideo.classList.add('scale-x-[-1]');
+                            } else {
+                                mobileVideo.classList.remove('scale-x-[-1]');
+                            }
                         };
                         console.log('Webcam stream initialized');
                     })
@@ -1424,17 +1456,22 @@
                         handleCameraError(video, captureButton);
                         handleCameraError(mobileVideo, mobileCaptureButton);
                     });
-            } else {
-                console.error("getUserMedia not supported");
-                alert("Your browser doesn't support camera access. Please try a different browser.");
             }
 
+            // Event listeners dengan perbaikan
             const modalCloseButtons = modal.querySelectorAll('.modal-close');
             modalCloseButtons.forEach(btn => {
                 btn.removeEventListener('click', closePreviewCameraModal);
                 btn.addEventListener('click', closePreviewCameraModal);
             });
 
+            const toggleCameraButton = document.getElementById('toggleCameraButton');
+            if (toggleCameraButton) {
+                toggleCameraButton.removeEventListener('click', toggleCamera);
+                toggleCameraButton.addEventListener('click', toggleCamera);
+            }
+
+            // Perbaikan: Event listener untuk backdrop click yang lebih spesifik
             window.removeEventListener('click', handleModalBackdropClick);
             window.addEventListener('click', handleModalBackdropClick);
 
@@ -1446,35 +1483,90 @@
 
         function handleModalBackdropClick(e) {
             const modal = document.getElementById('previewCameraModal');
+            const mobileVideo = document.getElementById('mobilePreviewVideo');
+            const toggleCameraButton = document.getElementById('toggleCameraButton');
+            const captureButton = document.getElementById('mobilePreviewCaptureButton');
+
+            // Perbaikan: Cek apakah klik berada di area yang diizinkan
+            const isClickOnVideo = mobileVideo && mobileVideo.contains(e.target);
+            const isClickOnToggleButton = toggleCameraButton && toggleCameraButton.contains(e.target);
+            const isClickOnCaptureButton = captureButton && captureButton.contains(e.target);
+            const isClickOnFramePreview = e.target.closest('#mobilePreviewFrameContainer');
+            const isClickOnModalContent = e.target.closest('.mobile-modal-container > div:not(.modal-backdrop)');
+
+            // Hanya tutup modal jika klik pada backdrop, bukan pada elemen interaktif
             if (e.target === modal || e.target.classList.contains('modal-backdrop')) {
-                closePreviewCameraModal();
+                // Pastikan tidak ada elemen interaktif yang diklik
+                if (!isClickOnVideo && !isClickOnToggleButton && !isClickOnCaptureButton &&
+                    !isClickOnFramePreview && !isClickOnModalContent) {
+                    closePreviewCameraModal();
+                }
             }
         }
 
         function enableDragToClose(element) {
             if (!element) return;
+
             let startY = 0;
             let currentY = 0;
+            let isDragging = false;
+            let startTime = 0;
 
             element.addEventListener('touchstart', function(e) {
-                startY = e.touches[0].clientY;
+                // Perbaikan: Hanya izinkan drag dari area header modal
+                const target = e.target;
+                const isHeaderArea = target.closest('.sticky.top-0') || target.classList.contains('w-12');
+
+                if (isHeaderArea) {
+                    startY = e.touches[0].clientY;
+                    startTime = Date.now();
+                    isDragging = true;
+                }
+            }, {
+                passive: true
             });
 
             element.addEventListener('touchmove', function(e) {
+                if (!isDragging) return;
+
                 currentY = e.touches[0].clientY;
                 const dragDistance = currentY - startY;
+
+                // Hanya izinkan drag ke bawah
                 if (dragDistance > 0) {
                     element.style.transform = `translateY(${dragDistance}px)`;
+                    // Tambahkan opacity effect
+                    const opacity = Math.max(0.5, 1 - (dragDistance / 300));
+                    element.style.opacity = opacity;
                 }
+            }, {
+                passive: true
             });
 
             element.addEventListener('touchend', function() {
+                if (!isDragging) return;
+
                 const dragDistance = currentY - startY;
-                if (dragDistance > 100) {
+                const dragTime = Date.now() - startTime;
+                const dragVelocity = dragDistance / dragTime;
+
+                // Perbaikan: Logika penutupan yang lebih baik
+                if (dragDistance > 150 || (dragDistance > 50 && dragVelocity > 0.5)) {
                     closePreviewCameraModal();
                 } else {
+                    // Reset position dengan smooth animation
+                    element.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
                     element.style.transform = '';
+                    element.style.opacity = '';
+
+                    setTimeout(() => {
+                        element.style.transition = '';
+                    }, 300);
                 }
+
+                isDragging = false;
+            }, {
+                passive: true
             });
         }
 
@@ -1486,6 +1578,7 @@
             const mobileVideo = document.getElementById('mobilePreviewVideo');
             const desktopModal = modal.querySelector('.md\\:block');
 
+            // Perbaikan: Animasi penutupan yang lebih smooth
             if (mobileModalContainer) {
                 mobileModalContainer.classList.remove('show');
                 mobileModalContainer.classList.add('hide');
@@ -1499,6 +1592,7 @@
 
             modalBackdrop.classList.remove('show');
 
+            // Stop camera stream
             if (window.stream) {
                 const tracks = window.stream.getTracks();
                 tracks.forEach(track => track.stop());
@@ -1507,6 +1601,7 @@
                 window.stream = null;
             }
 
+            // Remove event listeners
             const captureButton = document.getElementById('previewCaptureButton');
             const mobileCaptureButton = document.getElementById('mobilePreviewCaptureButton');
             if (captureButton) captureButton.removeEventListener('click', startPhotoSession);
@@ -1514,9 +1609,9 @@
             window.removeEventListener('click', handleModalBackdropClick);
 
             resetModalState();
-
             document.body.classList.remove('modal-open');
 
+            // Perbaikan: Delay yang lebih tepat untuk penutupan modal
             setTimeout(() => {
                 modal.style.display = 'none';
                 if (mobileModalContainer) {
@@ -1525,6 +1620,7 @@
                 if (desktopModal) {
                     desktopModal.style.opacity = '';
                     desktopModal.style.transform = '';
+                    desktopModal.style.transition = '';
                 }
             }, 300);
 
@@ -1540,6 +1636,11 @@
             const mobileWatermark = document.getElementById('mobilePreviewWatermark');
             const previewFrameImage = document.getElementById('previewFrameImage');
             const mobilePreviewFrameImage = document.getElementById('mobilePreviewFrameImage');
+            const toggleButton = document.getElementById('toggleCameraButton');
+            const cameraIcon = document.getElementById('cameraIcon');
+
+            currentFacingMode = 'user';
+            isTogglingCamera = false;
 
             window.photoSlots = [];
             window.mobilePhotoSlots = [];
@@ -1567,6 +1668,17 @@
                     const slotWatermark = slot.querySelector('.slot-watermark');
                     if (slotWatermark) slotWatermark.remove();
                 });
+            }
+
+
+            // Reset toggle button
+
+            if (toggleButton) {
+                toggleButton.disabled = false;
+                toggleButton.removeEventListener('click', toggleCamera);
+            }
+            if (cameraIcon) {
+                cameraIcon.style.opacity = '1';
             }
 
             const resetElements = (countdown, capture, mark) => {
@@ -1626,45 +1738,66 @@
 
         function initializePhotoSlots(frameElement, isMobile = false) {
             console.log(`Initializing photo slots for ${isMobile ? 'mobile' : 'desktop'}`);
+
             if (isMobile) {
                 window.mobilePhotoSlots = [];
             } else {
                 window.photoSlots = [];
             }
 
+            // Remove existing slots
             const existingSlots = frameElement.querySelectorAll('.photo-slot');
             existingSlots.forEach(slot => slot.remove());
 
+            // Perbaikan: Posisi slot yang lebih presisi sesuai dengan frame template
             const slotPositions = [{
                     top: '16%',
-                    left: '50%'
+                    left: '50%',
+                    width: '150px',
+                    height: '110px'
                 },
                 {
-                    top: '42%',
-                    left: '50%'
+                    top: '43%',
+                    left: '50%',
+                    width: '150px',
+                    height: '110px'
                 },
                 {
-                    top: '68%',
-                    left: '50%'
+                    top: '69%',
+                    left: '50%',
+                    width: '150px',
+                    height: '110px'
                 },
             ];
 
             for (let i = 0; i < 3; i++) {
                 const photoSlot = document.createElement('div');
                 photoSlot.className = 'photo-slot';
-                photoSlot.style.width = '160px';
-                photoSlot.style.height = '110px';
-                photoSlot.style.position = 'absolute';
-                photoSlot.style.top = slotPositions[i].top;
-                photoSlot.style.left = slotPositions[i].left;
-                photoSlot.style.transform = 'translate(-50%, -50%)';
-                photoSlot.style.backgroundColor = '#e6e6e6';
+                photoSlot.style.cssText = `
+            width: ${slotPositions[i].width};
+            height: ${slotPositions[i].height};
+            position: absolute;
+            top: ${slotPositions[i].top};
+            left: ${slotPositions[i].left};
+            transform: translate(-50%, -50%);
+            background-color: #f3f4f6;
+            border: 2px dashed #d1d5db;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            z-index: 10;
+        `;
 
                 const img = document.createElement('img');
-                img.style.width = '100%';
-                img.style.height = '100%';
-                img.style.objectFit = 'cover';
-                img.style.display = 'none';
+                img.style.cssText = `
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+            border-radius: 6px;
+        `;
                 photoSlot.appendChild(img);
 
                 frameElement.appendChild(photoSlot);
@@ -1677,6 +1810,10 @@
                     window.photoSlots.push(img);
                 }
             }
+
+            console.log(
+                `Photo slots initialized: ${isMobile ? window.mobilePhotoSlots?.length : window.photoSlots?.length} slots`
+            );
         }
 
         function startPhotoSession(isMobile = false) {
@@ -1765,6 +1902,24 @@
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
             const ctx = canvas.getContext('2d');
+
+            // Update mirroring logic untuk mobile
+            if (isMobile && currentFacingMode === 'user') {
+                // Mirror untuk front camera
+                ctx.translate(canvas.width, 0);
+                ctx.scale(-1, 1);
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+            } else if (!isMobile) {
+                // Desktop selalu mirror
+                ctx.translate(canvas.width, 0);
+                ctx.scale(-1, 1);
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+            } else {
+                // Back camera mobile - tidak di-mirror
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            }
 
             ctx.translate(canvas.width, 0);
             ctx.scale(-1, 1);
@@ -2380,6 +2535,120 @@
             if (loadingOverlay) {
                 loadingOverlay.remove();
             }
+        }
+
+        function toggleCamera() {
+            if (isTogglingCamera) return; // Prevent multiple toggles
+
+            isTogglingCamera = true;
+            const toggleButton = document.getElementById('toggleCameraButton');
+            const cameraIcon = document.getElementById('cameraIcon');
+            const mobileVideo = document.getElementById('mobilePreviewVideo');
+
+            // Disable button dan ubah icon selama proses
+            toggleButton.disabled = true;
+            cameraIcon.style.opacity = '0.5';
+
+            // Hentikan stream yang sedang berjalan
+            if (window.stream) {
+                const tracks = window.stream.getTracks();
+                tracks.forEach(track => track.stop());
+            }
+
+            // Toggle facing mode
+            currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
+
+            // Request new camera stream
+            const constraints = {
+                video: {
+                    width: {
+                        ideal: 640
+                    },
+                    height: {
+                        ideal: 480
+                    },
+                    aspectRatio: 4 / 3,
+                    facingMode: {
+                        exact: currentFacingMode
+                    }
+                }
+            };
+
+            navigator.mediaDevices.getUserMedia(constraints)
+                .then(stream => {
+                    mobileVideo.srcObject = stream;
+                    window.stream = stream;
+
+                    mobileVideo.onloadedmetadata = function() {
+                        mobileVideo.play();
+
+                        // Update video mirroring based on camera
+                        if (currentFacingMode === 'user') {
+                            mobileVideo.classList.add('scale-x-[-1]'); // Mirror front camera
+                        } else {
+                            mobileVideo.classList.remove('scale-x-[-1]'); // Don't mirror back camera
+                        }
+
+                        // Re-enable button
+                        toggleButton.disabled = false;
+                        cameraIcon.style.opacity = '1';
+                        isTogglingCamera = false;
+
+                        console.log(`Camera switched to: ${currentFacingMode}`);
+                    };
+                })
+                .catch(err => {
+                    console.error("Error switching camera: ", err);
+
+                    // Fallback: try without exact constraint
+                    const fallbackConstraints = {
+                        video: {
+                            width: {
+                                ideal: 640
+                            },
+                            height: {
+                                ideal: 480
+                            },
+                            aspectRatio: 4 / 3,
+                            facingMode: currentFacingMode
+                        }
+                    };
+
+                    navigator.mediaDevices.getUserMedia(fallbackConstraints)
+                        .then(stream => {
+                            mobileVideo.srcObject = stream;
+                            window.stream = stream;
+
+                            mobileVideo.onloadedmetadata = function() {
+                                mobileVideo.play();
+
+                                if (currentFacingMode === 'user') {
+                                    mobileVideo.classList.add('scale-x-[-1]');
+                                } else {
+                                    mobileVideo.classList.remove('scale-x-[-1]');
+                                }
+
+                                toggleButton.disabled = false;
+                                cameraIcon.style.opacity = '1';
+                                isTogglingCamera = false;
+                            };
+                        })
+                        .catch(fallbackErr => {
+                            console.error("Fallback camera switch failed: ", fallbackErr);
+
+                            // Revert to previous camera mode
+                            currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
+
+                            // Show error message
+                            alert(
+                                'Tidak dapat mengganti kamera. Pastikan perangkat Anda memiliki kamera depan dan belakang.'
+                            );
+
+                            toggleButton.disabled = false;
+                            cameraIcon.style.opacity = '1';
+                            isTogglingCamera = false;
+                        });
+                });
         }
     </script>
 

@@ -38,6 +38,12 @@
                     <div id="countdown-overlay"
                         class="absolute top-0 left-0 w-full h-full flex justify-center items-center text-8xl font-bold text-white pointer-events-none"
                         style="text-shadow: 0 0 10px rgba(0, 0, 0, 0.7);"></div>
+                    <button id="floatingCameraToggle" class="floating-camera-toggle" title="Switch Camera">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="currentColor">
+                            <path
+                                d="M448 224c0 35.3-28.7 64-64 64s-64-28.7-64-64s28.7-64 64-64s64 28.7 64 64zM224 256c-35.3 0-64-28.7-64-64s28.7-64 64-64s64 28.7 64 64s-28.7 64-64 64zm-256 0c0-17.7 14.3-32 32-32s32 14.3 32 32s-14.3 32-32 32s-32-14.3-32-32zm256 192c-35.3 0-64-28.7-64-64s28.7-64 64-64s64 28.7 64 64s-28.7 64-64 64z" />
+                        </svg>
+                    </button>
                 </div>
                 <div class="flex justify-center items-center gap-4 mt-5 flex-wrap">
                     <select id="filterSelect"
@@ -52,11 +58,6 @@
                     <button id="mirrorToggle"
                         class="bg-[#BF3131] text-white border border-transparent py-2 px-3 sm:py-2.5 sm:px-4 text-sm sm:text-base font-semibold rounded-xl cursor-pointer transition-all duration-300 ease-in-out hover:bg-[#F16767] hover:scale-105 shadow-sm hover:shadow-lg w-auto">
                         Mirror: Off
-                    </button>
-
-                    <button id="cameraToggle"
-                        class="block md:hidden bg-[#BF3131] text-white border border-transparent py-2 px-3 sm:py-2.5 sm:px-4 text-sm sm:text-base font-semibold rounded-xl cursor-pointer transition-all duration-300 ease-in-out hover:bg-[#F16767] hover:scale-105 shadow-sm hover:shadow-lg w-auto">
-                        Switch to Rear
                     </button>
 
                     <select id="countdownSelect"
@@ -75,7 +76,6 @@
                             <path
                                 d="M149.1 64.8L138.7 96 64 96C28.7 96 0 124.7 0 160L0 416c0 35.3 28.7 64 64 64l384 0c35.3 0 64-28.7 64-64l0-256c0-35.3-28.7-64-64-64l-74.7 0L362.9 64.8C356.4 45.2 338.1 32 317.4 32L194.6 32c-20.7 0-39 13.2-45.5 32.8zM256 192a96 96 0 1 1 0 192 96 96 0 1 1 0-192z" />
                         </svg>
-                        Start Capture
                     </button>
 
                     <button id="uploadButton"
@@ -95,6 +95,17 @@
             <div class="w-[190px] h-[500px] relative frame-container">
                 <div id="frameTemplate" class="w-full h-full relative bg-white rounded-lg shadow-lg">
                     @include($templatePath, ['frame' => $frame])
+
+                    <!-- White overlay divs dengan class untuk kontrol visibility -->
+                    <div class="photo-overlay absolute top-[20px] left-[10px] w-[170px] h-[120px] bg-gray-100 z-10 rounded-sm border-2 border-dashed border-gray-300"
+                        data-slot="0">
+                    </div>
+                    <div class="photo-overlay absolute top-[150px] left-[10px] w-[170px] h-[120px] bg-gray-100 z-10 rounded-sm border-2 border-dashed border-gray-300"
+                        data-slot="1">
+                    </div>
+                    <div class="photo-overlay absolute top-[280px] left-[10px] w-[170px] h-[120px] bg-gray-100 z-10 rounded-sm border-2 border-dashed border-gray-300"
+                        data-slot="2">
+                    </div>
                 </div>
                 <p class="text-[10px] text-center font-bold mt-5">TEKAN FOTO UNTUK RETAKE FOTO</p>
                 <div class="flex flex-col justify-center items-center gap-4 mt-5">
@@ -384,20 +395,7 @@
             /* Crop dari tengah */
         }
 
-        .photo-slot-container[data-has-photo="true"]:hover .photo-slot::before {
-            content: "Click photo to retake";
-            position: absolute;
-            top: -30px;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 5px 10px;
-            border-radius: 5px;
-            font-size: 12px;
-            z-index: 20;
-            white-space: nowrap;
-        }
+
 
         .photo-slot-container:hover .retake-button {
             opacity: 1;
@@ -406,20 +404,47 @@
 
         .retake-button {
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) scale(0.8);
-            opacity: 0;
-            transition: all 0.3s ease;
-            background-color: rgba(191, 49, 49, 0.7);
+            top: 45px;
+            right: 70px;
+            background-color: transparent;
             color: white;
             border: none;
-            padding: 10px 12px;
+            padding: 8px;
             border-radius: 50%;
-            font-size: 20px;
-            z-index: 15;
+            font-size: 40px;
             cursor: pointer;
+            z-index: 30;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transform: scale(0.8);
+            transition: all 0.3s ease;
+            pointer-events: none;
         }
+
+        [data-has-photo="true"] .retake-button {
+            display: flex !important;
+            opacity: 1 !important;
+            pointer-events: auto !important;
+        }
+
+        [data-has-photo="true"]:hover .retake-button {
+            opacity: 1;
+            visibility: visible;
+            transform: scale(1);
+            pointer-events: auto;
+        }
+
+        [data-has-photo="false"] .retake-button {
+            display: none !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+
 
         .photo-slot img:not([src]),
         .photo-slot img[src=""],
@@ -427,20 +452,41 @@
             display: none;
         }
 
-        .photo-slot-container:hover .photo-slot::after {
+        [data-has-photo="true"]:hover .photo-slot::after {
             content: "";
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.4);
+            background: rgba(0, 0, 0, 0.1);
+            pointer-events: none;
+            z-index: 20;
+        }
+
+        [data-has-photo="true"]:hover .photo-slot::before {
+            content: "Click to retake photo";
+            position: absolute;
+            top: -35px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            z-index: 40;
+            white-space: nowrap;
             pointer-events: none;
         }
 
+        [data-has-photo="true"]:hover .retake-button {
+            z-index: 35;
+        }
+
         .retake-button:hover {
-            background-color: rgba(191, 49, 49, 0.9);
-            transform: translate(-50%, -50%) scale(1.1);
+            background-color: transparent;
+            transform: scale(1.1);
         }
 
         [data-photo-index]:hover img {
@@ -620,13 +666,71 @@
                 object-position: center;
             }
         }
+
+        .photo-overlay {
+            transition: opacity 0.3s ease;
+        }
+
+        .photo-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* Pastikan foto yang sudah loaded memiliki z-index tertinggi */
+        #photo1[data-loaded="true"],
+        #photo2[data-loaded="true"],
+        #photo3[data-loaded="true"] {
+            position: relative !important;
+            z-index: 25 !important;
+
+        }
+
+        .floating-camera-toggle {
+            position: absolute;
+            display: flex;
+            top: 15px;
+            right: 15px;
+            z-index: 30;
+            width: 48px;
+            height: 48px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+
+        .floating-camera-toggle svg {
+            width: 24px;
+            height: 24px;
+            color: white;
+            transition: transform 0.3s ease;
+        }
+
+
+        /* Sembunyikan tombol kamera toggle yang lama */
+        #cameraToggle {
+            display: none !important;
+        }
+
+
+
+        /* Hide floating camera toggle button on desktop (min-width: 769px) */
+        @media (min-width: 769px) {
+            .floating-camera-toggle {
+                display: none;
+            }
+        }
     </style>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script>
-        window.frameInfo = @json($frameInfo ?? []);
-        window.orderId = '{{ $orderId ?? '' }}';
-        let photoSlots = document.querySelectorAll('.photo-slot img');
+        let photoSlots = document.querySelectorAll('#photo1, #photo2, #photo3');
         let video = document.getElementById('video');
         let captureButton = document.getElementById('captureButton');
         let uploadButton = document.getElementById('uploadButton');
@@ -680,11 +784,10 @@
 
         let isMirrored = true;
         let selectedCountdown = 3;
+        let currentCaptureSlot = 0;
+        const totalSlots = 3;
         let currentFacingMode = 'user';
-        let videoStream = null;
-
-        let hasDownloaded = false;
-        const orderId = new URLSearchParams(window.location.search).get('order_id');
+        let currentStream = null;
 
         const originalCaptureButtonHTML = captureButton ? captureButton.innerHTML : '';
 
@@ -701,50 +804,40 @@
         });
 
         function initializeWebcam(facingMode = 'user') {
-            if (videoStream) {
-                videoStream.getTracks().forEach(track => track.stop());
-                videoStream = null;
+            // Stop existing stream if any
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
             }
 
-            navigator.mediaDevices.getUserMedia({
-                    video: {
-                        aspectRatio: 4 / 3,
-                        facingMode: facingMode
-                    }
-                })
+            const constraints = {
+                video: {
+                    aspectRatio: 4 / 3,
+                    facingMode: facingMode
+                }
+            };
+
+            navigator.mediaDevices.getUserMedia(constraints)
                 .then(stream => {
+                    currentStream = stream;
                     video.srcObject = stream;
-                    videoStream = stream;
                     currentFacingMode = facingMode;
-                    updateCameraToggleButton();
+
+                    // Update floating button instead of regular button
+                    updateFloatingCameraToggleButton();
                 })
                 .catch(err => {
                     console.error("Error accessing webcam: " + err);
-                    alert(
-                        "Failed to access the requested camera. Ensure your camera is connected and permissions are granted."
-                    );
+
+                    // Jika gagal dengan kamera yang diminta, coba dengan kamera lainnya
                     if (facingMode === 'environment') {
-                        alert("Rear camera unavailable. Switching to front camera.");
+                        console.log("Trying front camera as fallback...");
                         initializeWebcam('user');
+                    } else {
+                        alert(
+                            "Failed to access webcam. Please ensure your camera is connected and permissions are granted."
+                        );
                     }
                 });
-        }
-
-        function updateCameraToggleButton() {
-            const cameraToggle = document.getElementById('cameraToggle');
-            if (cameraToggle) {
-                cameraToggle.textContent = currentFacingMode === 'user' ? 'Switch to Rear' : 'Switch to Front';
-            }
-        }
-
-        function setupCameraToggle() {
-            const cameraToggle = document.getElementById('cameraToggle');
-            if (cameraToggle) {
-                cameraToggle.addEventListener('click', () => {
-                    const newFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
-                    initializeWebcam(newFacingMode);
-                });
-            }
         }
 
         function setupFilterChange() {
@@ -757,99 +850,187 @@
             }
         }
 
-        function capturePhoto() {
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            ctx.save();
+        function isPhotoSlotEmpty(slot) {
+            if (!slot || !slot.src) return true;
+            return (
+                slot.src === '' ||
+                slot.src === window.location.href ||
+                slot.src.includes('undefined') ||
+                slot.src.length < 20
+            );
+        }
 
+        function checkAllPhotosTaken() {
+            // Check if all photo slots are filled
+            const allFilled = Array.from(photoSlots).every(slot => !isPhotoSlotEmpty(slot));
+            if (finishButton) {
+                finishButton.disabled = !allFilled;
+                if (allFilled) {
+                    finishButton.classList.remove('opacity-50', 'cursor-not-allowed');
+                } else {
+                    finishButton.classList.add('opacity-50', 'cursor-not-allowed');
+                }
+            }
+            if (captureButton) {
+                captureButton.disabled = allFilled;
+                if (allFilled) {
+                    captureButton.classList.add('opacity-50', 'cursor-not-allowed');
+                } else {
+                    captureButton.classList.remove('opacity-50', 'cursor-not-allowed');
+                }
+            }
+            console.log('All photos taken:', allFilled);
+            return allFilled;
+        }
+
+        function capturePhoto() {
+            const photoSlot = photoSlots[currentPhotoIndex];
+            if (!photoSlot) {
+                console.error('Photo slot not found for index:', currentPhotoIndex);
+                resetCaptureState();
+                return;
+            }
+
+            const slotRect = photoSlot.getBoundingClientRect();
+            const targetAspectRatio = slotRect.width / slotRect.height;
+            const videoAspectRatio = video.videoWidth / video.videoHeight;
+
+            let sourceWidth = video.videoWidth;
+            let sourceHeight = video.videoHeight;
+            let sourceX = 0;
+            let sourceY = 0;
+
+            if (videoAspectRatio > targetAspectRatio) {
+                sourceWidth = video.videoHeight * targetAspectRatio;
+                sourceX = (video.videoWidth - sourceWidth) / 2;
+            } else {
+                sourceHeight = video.videoWidth / targetAspectRatio;
+                sourceY = (video.videoHeight - sourceHeight) / 2;
+            }
+
+            const outputWidth = 800;
+            const outputHeight = outputWidth / targetAspectRatio;
+
+            canvas.width = outputWidth;
+            canvas.height = outputHeight;
+
+            ctx.save();
             if (isMirrored) {
                 ctx.translate(canvas.width, 0);
                 ctx.scale(-1, 1);
             }
-
             ctx.filter = getComputedStyle(video).filter;
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            ctx.drawImage(
+                video,
+                sourceX, sourceY, sourceWidth, sourceHeight,
+                0, 0, canvas.width, canvas.height
+            );
             ctx.restore();
 
-            // Create cropped canvas
-            const croppedCanvas = document.createElement('canvas');
-            const croppedCtx = croppedCanvas.getContext('2d');
-            const targetSize = 150; // Match photo-slot-container size
-            croppedCanvas.width = targetSize;
-            croppedCanvas.height = targetSize;
+            const dataUrl = canvas.toDataURL('image/png', 0.9);
 
-            const tempImg = new Image();
-            tempImg.onload = function() {
-                cropPhotoToFit(croppedCanvas, croppedCtx, tempImg, targetSize, targetSize);
+            const success = setPhotoToSlot(dataUrl, currentPhotoIndex);
+            if (!success) {
+                console.error('Failed to set photo to slot', currentPhotoIndex);
+            }
 
-                const dataUrl = croppedCanvas.toDataURL('image/png', 1.0);
-
-                if (photoSlots[currentPhotoIndex]) {
-                    photoSlots[currentPhotoIndex].src = dataUrl;
-                    photoSlots[currentPhotoIndex].style.display = 'block';
-                    photoSlots[currentPhotoIndex].style.width = '100%';
-                    photoSlots[currentPhotoIndex].style.height = '100%';
-                    photoSlots[currentPhotoIndex].style.objectFit = 'cover';
-                    photoSlots[currentPhotoIndex].style.objectPosition = 'center';
-                    if (retakeButtons[currentPhotoIndex]) {
-                        retakeButtons[currentPhotoIndex].setAttribute('data-has-photo', 'true');
-                        retakeButtons[currentPhotoIndex].parentElement.setAttribute('data-has-photo', 'true');
-                    }
-                }
-
-                if (captureButton) {
-                    captureButton.innerHTML = originalCaptureButtonHTML;
-                }
-                capturing = false;
-                checkAllPhotosTaken();
-            };
-
-            tempImg.src = canvas.toDataURL('image/png', 1.0);
+            // Reset capture state
+            resetCaptureState();
         }
 
-        function checkAllPhotosTaken() {
-            let allTaken = true;
-            let photoCount = 0;
-            for (let i = 0; i < photoSlots.length; i++) {
-                if (!photoSlots[i].src || photoSlots[i].src === window.location.href || photoSlots[i].src.length < 10) {
-                    allTaken = false;
-                } else {
-                    photoCount++;
-                }
-            }
+        function resetCaptureState() {
+            capturing = false;
+            clearInterval(timer);
 
-            if (captureButton) {
-                captureButton.disabled = photoCount >= 3;
-                captureButton.classList.toggle('opacity-50', photoCount >= 3);
-                captureButton.classList.toggle('cursor-not-allowed', photoCount >= 3);
-            }
+            // Update capture button will be called by setPhotoToSlot
+            // This ensures the button shows the correct next slot
+            updateCaptureButton();
 
-            if (finishButton) {
-                finishButton.disabled = photoCount < 3;
-                finishButton.classList.toggle('opacity-50', photoCount < 3);
-                finishButton.classList.toggle('cursor-not-allowed', photoCount < 3);
+            if (countdownOverlay) countdownOverlay.textContent = "";
+        }
+
+        function updateCaptureButton() {
+            if (!captureButton) return;
+
+            // Hitung berapa foto yang sudah diambil
+            const takenPhotos = Array.from(photoSlots).filter(slot => !isPhotoSlotEmpty(slot)).length;
+
+            // Find next empty slot
+            const nextEmptySlot = findNextEmptySlot();
+
+            if (nextEmptySlot === null) {
+                // All slots filled
+                captureButton.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="w-5 h-5" fill="currentColor">
+                <path d="M149.1 64.8L138.7 96 64 96C28.7 96 0 124.7 0 160L0 416c0 35.3 28.7 64 64 64l384 0c35.3 0 64-28.7 64-64l0-256c0-35.3-28.7-64-64-64l-74.7 0L362.9 64.8C356.4 45.2 338.1 32 317.4 32L194.6 32c-20.7 0-39 13.2-45.5 32.8zM256 192a96 96 0 1 1 0 192 96 96 0 1 1 0-192z" />
+            </svg>
+            All Photos Taken
+        `;
+                captureButton.disabled = true;
+                captureButton.classList.add('opacity-50', 'cursor-not-allowed');
+            } else {
+                // Show current count and next slot to capture
+                captureButton.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="w-5 h-5" fill="currentColor">
+                <path d="M149.1 64.8L138.7 96 64 96C28.7 96 0 124.7 0 160L0 416c0 35.3 28.7 64 64 64l384 0c35.3 0 64-28.7 64-64l0-256c0-35.3-28.7-64-64-64l-74.7 0L362.9 64.8C356.4 45.2 338.1 32 317.4 32L194.6 32c-20.7 0-39 13.2-45.5 32.8zM256 192a96 96 0 1 1 0 192 96 96 0 1 1 0-192z" />
+            </svg>
+            Capture ${takenPhotos}/${totalSlots}
+        `;
+                captureButton.disabled = false;
+                captureButton.classList.remove('opacity-50', 'cursor-not-allowed');
+                currentCaptureSlot = nextEmptySlot;
             }
         }
 
         function findNextEmptySlot() {
             for (let i = 0; i < photoSlots.length; i++) {
-                if (!photoSlots[i].src || photoSlots[i].src === window.location.href || photoSlots[i].src.length < 10) {
+                if (isPhotoSlotEmpty(photoSlots[i])) {
                     return i;
                 }
             }
             return null;
         }
 
-        function startCountdown(photoIndex) {
+        function startCountdown(photoIndex = null) {
             if (capturing) return;
-            capturing = true;
-            currentPhotoIndex = photoIndex;
 
+            // Use provided photoIndex or current capture slot
+            const targetSlot = photoIndex !== null ? photoIndex : currentCaptureSlot;
+
+            // Validate slot
+            if (targetSlot === null || targetSlot < 0 || targetSlot >= photoSlots.length) {
+                console.error('Invalid slot for capture:', targetSlot);
+                return;
+            }
+
+            // Check if slot is already filled
+            if (!isPhotoSlotEmpty(photoSlots[targetSlot])) {
+                console.log('Slot already filled, finding next empty slot');
+                const nextEmpty = findNextEmptySlot();
+                if (nextEmpty === null) {
+                    console.log('All slots filled');
+                    return;
+                }
+                currentPhotoIndex = nextEmpty;
+            } else {
+                currentPhotoIndex = targetSlot;
+            }
+
+            capturing = true;
             countdown = selectedCountdown;
+
             if (countdownOverlay) countdownOverlay.textContent = countdown;
 
+            // Update button to show capturing state dengan current count
             if (captureButton) {
-                captureButton.innerHTML = 'Capturing...';
+                const takenPhotos = Array.from(photoSlots).filter(slot => !isPhotoSlotEmpty(slot)).length;
+                captureButton.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="w-5 h-5 animate-pulse" fill="currentColor">
+                <path d="M149.1 64.8L138.7 96 64 96C28.7 96 0 124.7 0 160L0 416c0 35.3 28.7 64 64 64l384 0c35.3 0 64-28.7 64-64l0-256c0-35.3-28.7-64-64-64l-74.7 0L362.9 64.8C356.4 45.2 338.1 32 317.4 32L194.6 32c-20.7 0-39 13.2-45.5 32.8zM256 192a96 96 0 1 1 0 192 96 96 0 1 1 0-192z" />
+            </svg>
+            Capturing ${takenPhotos}/${totalSlots}...
+        `;
+                captureButton.disabled = true;
             }
 
             if (selectedCountdown === 0) {
@@ -869,43 +1050,123 @@
             }
         }
 
+        function clearPhotoSlot(index) {
+            if (index < 0 || index >= photoSlots.length) return;
+
+            const slot = photoSlots[index];
+            if (slot) {
+                slot.src = '';
+                slot.removeAttribute('data-loaded');
+                slot.style.display = 'block';
+                slot.style.zIndex = '1';
+
+                // Tampilkan kembali overlay
+                const overlay = document.querySelector(`.photo-overlay[data-slot="${index}"]`);
+                if (overlay) {
+                    overlay.classList.remove('hidden');
+                }
+
+                // Update parent container
+                const container = slot.closest('[data-photo-index]');
+                if (container) {
+                    container.setAttribute('data-has-photo', 'false');
+                }
+
+                // Update retake button state
+                updateRetakeButtonsState();
+
+                // Update capture button after photo is cleared
+                updateCaptureButton();
+            }
+        }
+
+        function setPhotoToSlot(dataUrl, index) {
+            if (index < 0 || index >= photoSlots.length || !dataUrl) return false;
+
+            const slot = photoSlots[index];
+            if (!slot) return false;
+
+            slot.onload = function() {
+                console.log(`Photo successfully loaded in slot ${index}`);
+                slot.setAttribute('data-loaded', 'true');
+
+                // Set z-index tinggi untuk foto
+                slot.style.position = 'relative';
+                slot.style.zIndex = '25';
+
+                // Sembunyikan overlay yang sesuai
+                const overlay = document.querySelector(`.photo-overlay[data-slot="${index}"]`);
+                if (overlay) {
+                    overlay.classList.add('hidden');
+                }
+
+                // Update retake button state
+                updateRetakeButtonsState();
+            };
+
+            slot.onerror = function() {
+                console.error(`Failed to load photo in slot ${index}`);
+                clearPhotoSlot(index);
+            };
+
+            slot.src = dataUrl;
+            slot.style.display = 'block';
+            slot.style.width = '100%';
+            slot.style.height = '100%';
+            slot.style.objectFit = 'cover';
+            slot.style.objectPosition = 'center';
+            slot.style.position = 'relative';
+            slot.style.zIndex = '25';
+
+            return true;
+        }
+
+        function setupRetakeButtonListeners() {
+            retakeButtons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const index = parseInt(this.getAttribute('data-index'));
+                    const hasPhoto = this.getAttribute('data-has-photo') === 'true';
+
+                    if (hasPhoto && !capturing) {
+                        const confirmRetake = confirm("Do you want to retake this photo?");
+                        if (confirmRetake) {
+                            clearPhotoSlot(index);
+                        }
+                    }
+                });
+            });
+        }
+
         function resetPhotos() {
             clearInterval(timer);
             capturing = false;
             if (countdownOverlay) countdownOverlay.textContent = "";
 
-            photoSlots.forEach(photo => {
-                if (photo) {
-                    photo.src = "";
-                    photo.removeAttribute('style');
-                }
+            photoSlots.forEach((photo, index) => {
+                clearPhotoSlot(index);
             });
 
             if (timerDisplay) timerDisplay.textContent = "";
-            if (captureButton) {
-                captureButton.innerHTML = originalCaptureButtonHTML;
-                captureButton.disabled = false;
-                captureButton.classList.remove('opacity-50', 'cursor-not-allowed');
-            }
+
+            // Reset capture button
+            currentCaptureSlot = 0;
+            updateCaptureButton();
+
             if (finishButton) {
                 finishButton.disabled = true;
                 finishButton.classList.add('opacity-50', 'cursor-not-allowed');
             }
 
-            retakeButtons.forEach(button => {
-                if (button) {
-                    button.setAttribute('data-has-photo', 'false');
-                    bun.parentElement.setAttribute('data-has-photo', 'false');
-                }
-            });
-
             if (modal) modal.style.display = 'none';
+
+            console.log('All photos reset');
         }
 
         function getAllPhotoData() {
             const photos = [];
             photoSlots.forEach(slot => {
-                if (slot && slot.src && slot.src !== window.location.href && slot.src.length > 10) {
+                if (!isPhotoSlotEmpty(slot)) {
                     photos.push(slot.src);
                 }
             });
@@ -919,30 +1180,13 @@
                 return;
             }
 
-            const targetWidth = 1080; // HD resolution
-            const targetHeight = (frameContainer.offsetHeight / frameContainer.offsetWidth) * targetWidth;
+            const targetWidth = 1080;
             const scaleFactor = targetWidth / frameContainer.offsetWidth;
-
-            // Ensure photo slots use HD images
-            const photoSlots = frameContainer.querySelectorAll('.photo-slot img');
-            photoSlots.forEach(img => {
-                if (img.src && img.src.length > 10) {
-                    img.style.objectFit = 'cover';
-                    img.style.objectPosition = 'center';
-                    img.style.width = '100%';
-                    img.style.height = '100%';
-                }
-            });
 
             html2canvas(frameContainer, {
                 scale: scaleFactor,
-                width: frameContainer.offsetWidth,
-                height: frameContainer.offsetHeight,
                 useCORS: true,
-                logging: false,
-                allowTaint: true,
-                backgroundColor: '#FEF3E2',
-                imageTimeout: 0 // Prevent timeout issues with HD images
+                logging: false
             }).then(canvas => {
                 photoStripImage = canvas.toDataURL('image/png', 1.0);
                 const a = document.createElement('a');
@@ -956,7 +1200,7 @@
                     }, 1000);
                 }
             }).catch(error => {
-                console.error('Error generating HD photo strip:', error);
+                console.error('Error generating photo strip:', error);
                 alert('Failed to generate HD photo strip. Try again.');
             });
         }
@@ -1020,29 +1264,12 @@
             }
 
             const targetWidth = 1080;
-            const targetHeight = (frameContainer.offsetHeight / frameContainer.offsetWidth) *
-                targetWidth; // Maintain frame aspect ratio
             const scaleFactor = targetWidth / frameContainer.offsetWidth;
-
-            // Ensure photo slots use correct object-fit
-            const photoSlots = frameContainer.querySelectorAll('.photo-slot img');
-            photoSlots.forEach(img => {
-                if (img.src && img.src.length > 10) {
-                    img.style.objectFit = 'cover';
-                    img.style.objectPosition = 'center';
-                    img.style.width = '100%';
-                    img.style.height = '100%';
-                }
-            });
 
             html2canvas(frameContainer, {
                 scale: scaleFactor,
-                width: frameContainer.offsetWidth,
-                height: frameContainer.offsetHeight,
                 useCORS: true,
-                logging: false,
-                allowTaint: true,
-                backgroundColor: '#FEF3E2'
+                logging: false
             }).then(canvas => {
                 const imageData = canvas.toDataURL('image/png', 1.0);
                 savePhotos(imageData);
@@ -1052,8 +1279,6 @@
                     const img = document.createElement('img');
                     img.src = imageData;
                     img.style.width = '100%';
-                    img.style.height = '100%';
-                    img.style.objectFit = 'cover';
                     modalPhotostrip.appendChild(img);
                     photoStripImage = imageData;
 
@@ -1067,45 +1292,48 @@
                 }
             }).catch(error => {
                 console.error('Error generating preview:', error);
-                alert('Failed to generate preview. Try again.');
+                alert('Failed to generate preview');
             });
         }
 
-        async function savePhotos() {
-            const finalImageData = canvas.toDataURL('image/png');
+        function savePhotos(finalImage) {
+            const tokenElement = document.querySelector('meta[name="csrf-token"]');
+            if (!tokenElement) {
+                console.error('CSRF token not found');
+                return;
+            }
 
-            const urlParams = new URLSearchParams(window.location.search);
-            const orderId = urlParams.get('order_id');
+            const token = tokenElement.getAttribute('content');
 
-            const data = {
-                photos: getAllPhotoData(),
-                frame_id: frameId,
-                final_image: finalImageData,
-                order_id: orderId
-            };
-
-            try {
-                const response = await fetch('/save-photo', {
+            fetch('/savePhoto', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
-                            'content')
+                        'X-CSRF-TOKEN': token
                     },
-                    body: JSON.stringify(data)
+                    body: JSON.stringify({
+                        photos: getAllPhotoData(),
+                        frame_id: frameId,
+                        final_image: finalImage
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        console.log('Photo saved successfully');
+                        if (data.download_url) {
+                            photoStripImage = data.download_url;
+                        }
+                        console.log('Frame used count:', data.frame_info.used);
+                    } else {
+                        console.error('Error saving photos:', data.message);
+                        alert('Failed to save photos');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Failed to save photos');
                 });
-
-                const result = await response.json();
-
-                if (result.success) {
-                    console.log('Photo saved successfully');
-                    window.finalImage = finalImageData;
-                } else {
-                    console.error('Failed to save photo');
-                }
-            } catch (error) {
-                console.error('Error saving photo:', error);
-            }
         }
 
         function processUploadedPhoto(file, slotIndex) {
@@ -1117,56 +1345,70 @@
             }
             if (slotIndex === null || slotIndex < 0 || slotIndex >= photoSlots.length) {
                 console.error('Invalid slot index:', slotIndex);
-                return false;
+                return;
             }
 
             const reader = new FileReader();
             reader.onload = function(e) {
                 const img = new Image();
                 img.onload = function() {
+                    const photoSlot = photoSlots[slotIndex];
+                    if (!photoSlot) {
+                        console.error('Photo slot not found');
+                        return;
+                    }
+
+                    const slotRect = photoSlot.getBoundingClientRect();
+                    const targetAspectRatio = slotRect.width / slotRect.height;
+                    const imageAspectRatio = img.width / img.height;
+
+                    let sourceWidth = img.width;
+                    let sourceHeight = img.height;
+                    let sourceX = 0;
+                    let sourceY = 0;
+
+                    if (imageAspectRatio > targetAspectRatio) {
+                        sourceWidth = img.height * targetAspectRatio;
+                        sourceX = (img.width - sourceWidth) / 2;
+                    } else {
+                        sourceHeight = img.width / targetAspectRatio;
+                        sourceY = (img.height - sourceHeight) / 2;
+                    }
+
+                    const outputWidth = 800;
+                    const outputHeight = outputWidth / targetAspectRatio;
+
                     const uploadCanvas = document.createElement('canvas');
                     const uploadCtx = uploadCanvas.getContext('2d');
-                    const targetSize = 1080; // HD resolution (adjust as needed)
+                    uploadCanvas.width = outputWidth;
+                    uploadCanvas.height = outputHeight;
 
-                    uploadCanvas.width = targetSize;
-                    uploadCanvas.height = targetSize;
-
-                    // Apply filter if selected
                     uploadCtx.filter = filterSelect ? filterSelect.value : 'none';
+                    uploadCtx.drawImage(
+                        img,
+                        sourceX, sourceY, sourceWidth, sourceHeight,
+                        0, 0, uploadCanvas.width, uploadCanvas.height
+                    );
 
-                    // Crop or scale to fit while preserving aspect ratio
-                    cropPhotoToFit(uploadCanvas, uploadCtx, img, targetSize, targetSize);
+                    const dataUrl = uploadCanvas.toDataURL('image/png', 0.9);
 
-                    // Generate HD image with high quality
-                    const dataUrl = uploadCanvas.toDataURL('image/png', 1.0);
-
-                    const targetSlot = photoSlots[slotIndex];
-                    if (targetSlot) {
-                        targetSlot.src = dataUrl;
-                        targetSlot.style.display = 'block';
-                        targetSlot.style.width = '100%';
-                        targetSlot.style.height = '100%';
-                        targetSlot.style.objectFit = 'cover';
-                        targetSlot.style.objectPosition = 'center';
-                        console.log('HD photo set to slot', slotIndex);
-
-                        if (retakeButtons[slotIndex]) {
-                            retakeButtons[slotIndex].setAttribute('data-has-photo', 'true');
-                            retakeButtons[slotIndex].parentElement.setAttribute('data-has-photo', 'true');
-                        }
-                        checkAllPhotosTaken();
+                    // Use setPhotoToSlot which will automatically update capture button
+                    const success = setPhotoToSlot(dataUrl, slotIndex);
+                    if (success) {
+                        console.log('Uploaded photo successfully set to slot', slotIndex);
+                        // setPhotoToSlot already calls updateCaptureButton via its onload handler
                     } else {
-                        console.error('Target slot not found for index:', slotIndex);
+                        console.error('Failed to set uploaded photo to slot', slotIndex);
                     }
                 };
                 img.onerror = function() {
-                    console.error('Failed to load image');
-                    alert('Failed to load the uploaded image. Please try another image.');
+                    console.error('Failed to load uploaded image');
+                    alert('Failed to load the uploaded image. Please try again.');
                 };
                 img.src = e.target.result;
             };
             reader.onerror = function() {
-                console.error('Failed to read file');
+                console.error('Failed to read uploaded file');
                 alert('Failed to read the uploaded file. Please try again.');
             };
             reader.readAsDataURL(file);
@@ -1174,43 +1416,38 @@
 
         function updateRetakeButtonsState() {
             retakeButtons = document.querySelectorAll('.retake-button');
-            photoSlots = document.querySelectorAll('.photo-slot img');
+            photoSlots = document.querySelectorAll('#photo1, #photo2, #photo3');
 
             retakeButtons.forEach((button, index) => {
                 if (index >= photoSlots.length) return;
-                const hasPhoto = photoSlots[index] && photoSlots[index].src &&
-                    photoSlots[index].src !== window.location.href &&
-                    !photoSlots[index].src.endsWith('undefined') &&
-                    photoSlots[index].src.length > 10;
-                button.setAttribute('data-has-photo', hasPhoto ? 'true' : 'false');
-                button.parentElement.setAttribute('data-has-photo', hasPhoto ? 'true' : 'false');
-            });
-            checkAllPhotosTaken();
-        }
 
-        function closeModal() {
-            const isPaidFrame = orderId && orderId.trim() !== '';
-            if (isPaidFrame) {
-                const userConfirmed = confirm(
-                    "Percobaan anda sudah habis. Apakah Anda ingin meninggalkan halaman ini dan kembali ke halaman awal?"
-                );
-                if (userConfirmed) {
-                    window.location.href = "{{ route('frametemp') }}";
+                const slot = photoSlots[index];
+                const hasPhoto = !isPhotoSlotEmpty(slot);
+
+                // Update data attributes
+                button.setAttribute('data-has-photo', hasPhoto ? 'true' : 'false');
+
+                // Update parent container
+                const container = slot.closest('[data-photo-index]');
+                if (container) {
+                    container.setAttribute('data-has-photo', hasPhoto ? 'true' : 'false');
                 }
-            } else {
-                if (modal) {
-                    modalContent.classList.add('modal-closing');
-                    setTimeout(() => {
-                        modal.style.display = 'none';
-                        modalContent.classList.remove('modal-closing');
-                        modalContent.style.transform = 'translateY(0)';
-                    }, 300);
-                }
-            }
+                // Button akan hidden/shown via CSS hover, tidak perlu JavaScript
+                button.style.display = 'flex';
+            });
+
+            // Update capture button and check if all photos taken
+            updateCaptureButton();
+            checkAllPhotosTaken();
         }
 
         function setupEventListeners() {
             console.log('Setting up event listeners...');
+
+            // Tambahkan setup camera toggle
+            setupCameraToggle();
+            setupFloatingCameraToggle();
+
             if (captureButton) {
                 captureButton.addEventListener('click', () => {
                     if (capturing || captureButton.disabled) return;
@@ -1219,10 +1456,6 @@
                         startCountdown(nextEmptySlot);
                     }
                 });
-            }
-
-            if (modalClose) {
-                modalClose.addEventListener('click', closeModal);
             }
 
             if (uploadButton && fileInput) {
@@ -1243,8 +1476,6 @@
                         if (uploadModal) {
                             uploadModal.style.display = 'flex';
                         }
-                    } else {
-                        console.log('No file selected');
                     }
                 });
             }
@@ -1262,6 +1493,7 @@
                 });
             });
 
+            // Continue with other event listeners...
             if (uploadModalClose) {
                 uploadModalClose.addEventListener('click', () => {
                     if (uploadModal) uploadModal.style.display = 'none';
@@ -1277,16 +1509,7 @@
                     if (hasPhoto && !capturing) {
                         const confirmRetake = confirm("Do you want to retake this photo?");
                         if (confirmRetake) {
-                            if (photoSlots[index]) {
-                                photoSlots[index].src = "";
-                                photoSlots[index].removeAttribute('style');
-                                if (retakeButtons[index]) {
-                                    retakeButtons[index].setAttribute('data-has-photo', 'false');
-                                    retakeButtons[index].parentElement.setAttribute('data-has-photo',
-                                        'false');
-                                }
-                                checkAllPhotosTaken();
-                            }
+                            clearPhotoSlot(index);
                         }
                     }
                 });
@@ -1300,13 +1523,7 @@
                     if (hasPhoto && !capturing) {
                         const confirmRetake = confirm("Do you want to retake this photo?");
                         if (confirmRetake) {
-                            if (photoSlots[index]) {
-                                photoSlots[index].src = "";
-                                photoSlots[index].removeAttribute('style');
-                                this.setAttribute('data-has-photo', 'false');
-                                this.parentElement.setAttribute('data-has-photo', 'false');
-                                checkAllPhotosTaken();
-                            }
+                            clearPhotoSlot(index);
                         }
                     }
                 });
@@ -1316,80 +1533,22 @@
                 finishButton.addEventListener('click', openPreviewModal);
             }
 
+            if (modalClose) {
+                modalClose.addEventListener('click', () => {
+                    if (modal) modal.style.display = 'none';
+                });
+            }
+
             if (resetButton) resetButton.addEventListener('click', resetPhotos);
             if (modalDownloadButton) modalDownloadButton.addEventListener('click', downloadPhotoStrip);
             if (modalShareButton) modalShareButton.addEventListener('click', sharePhotoStrip);
             if (modalGifButton) modalGifButton.addEventListener('click', createGifFromPhotos);
 
-            document.getElementById('modalDownloadButton').addEventListener('click', function() {
-                if (window.finalImage) {
-                    const link = document.createElement('a');
-                    link.download = 'photobooth-image.png';
-                    link.href = window.finalImage;
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-
-                    hasDownloaded = true;
-                }
-            });
-
-            async function resetUsedStatus() {
-                if (!orderId || hasDownloaded) return;
-
-                try {
-                    await fetch('/booth/reset-used', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
-                                'content')
-                        },
-                        body: JSON.stringify({
-                            order_id: orderId
-                        })
-                    });
-                } catch (error) {
-                    console.error('Reset failed:', error);
-                }
-            }
-
-            window.addEventListener('beforeunload', resetUsedStatus);
-            window.addEventListener('pagehide', resetUsedStatus);
-
-            let inactivityTimer;
-
-            function resetInactivityTimer() {
-                clearTimeout(inactivityTimer);
-                inactivityTimer = setTimeout(() => {
-                    if (!hasDownloaded) resetUsedStatus();
-                }, 30000);
-            }
-
-            document.addEventListener('mousemove', resetInactivityTimer);
-            document.addEventListener('keypress', resetInactivityTimer);
-            resetInactivityTimer();
+            setupRetakeButtonListeners();
 
             window.addEventListener('click', (e) => {
                 if (modal && e.target === modal) {
-                    const isPaidFrame = orderId && orderId.trim() !== '';
-                    if (isPaidFrame) {
-                        const userConfirmed = confirm(
-                            "Percobaan anda sudah habis. Apakah Anda ingin meninggalkan halaman ini dan kembali ke halaman awal?"
-                        );
-                        if (userConfirmed) {
-                            window.location.href = "{{ route('frametemp') }}";
-                        }
-                    } else {
-                        if (modal) {
-                            modalContent.classList.add('modal-closing');
-                            setTimeout(() => {
-                                modal.style.display = 'none';
-                                modalContent.classList.remove('modal-closing');
-                                modalContent.style.transform = 'translateY(0)';
-                            }, 300);
-                        }
-                    }
+                    modal.style.display = 'none';
                 }
                 if (uploadModal && e.target === uploadModal) {
                     uploadModal.style.display = 'none';
@@ -1397,14 +1556,12 @@
                     selectedFile = null;
                     selectedSlotIndex = null;
                 }
-                if (gifLoadingModal && e.target === gifLoadingModal) {
-                    // Prevent closing while processing
-                }
             });
         }
 
+
         function debugPhotoSlots() {
-            photoSlots = document.querySelectorAll('.photo-slot img');
+            photoSlots = document.querySelectorAll('#photo1, #photo2, #photo3');
             console.log(`Debugging ${photoSlots.length} photo slots`);
             photoSlots.forEach((slot, index) => {
                 console.log(`Slot ${index}:`, {
@@ -1417,8 +1574,8 @@
                         height: getComputedStyle(slot).height
                     },
                     parentClasses: slot.parentElement ? slot.parentElement.className : 'no parent',
-                    hasPhoto: retakeButtons[index] ? retakeButtons[index].getAttribute(
-                        'data-has-photo') : 'no button'
+                    hasPhoto: retakeButtons[index] ? retakeButtons[index].getAttribute('data-has-photo') :
+                        'no button'
                 });
             });
         }
@@ -1431,24 +1588,52 @@
             isInitialized = true;
 
             console.log('Initializing photo booth...');
-            photoSlots = document.querySelectorAll('.photo-slot img');
-            retakeButtons = document.querySelectorAll('.retake-button');
-            slotSelectButtons = document.querySelectorAll('.slot-select-button');
 
-            modalGifButton = document.getElementById('modalGifButton');
-            gifLoadingModal = document.getElementById('gifLoadingModal');
-            gifProgressBar = document.getElementById('gifProgressBar');
-            gifProgressText = document.getElementById('gifProgressText');
+            setTimeout(() => {
+                photoSlots = document.querySelectorAll('#photo1, #photo2, #photo3');
+                retakeButtons = document.querySelectorAll('.retake-button');
+                slotSelectButtons = document.querySelectorAll('.slot-select-button');
 
-            initializeWebcam();
-            setupFilterChange();
-            setupMirrorToggle();
-            setupCameraToggle();
-            setupCountdownSelect();
-            setupEventListeners();
-            setupTestimoniEventListeners();
-            updateRetakeButtonsState();
-            debugPhotoSlots();
+                console.log('Found photo slots:', photoSlots.length);
+
+                photoSlots.forEach((slot, index) => {
+                    if (slot) {
+                        slot.style.display = 'block';
+                        slot.style.width = '100%';
+                        slot.style.height = '100%';
+                        slot.style.objectFit = 'cover';
+                        slot.style.objectPosition = 'center';
+                        slot.src = '';
+                        slot.alt = '';
+                        slot.style.position = 'relative';
+                        slot.style.zIndex = '1';
+                        console.log(`Photo slot ${index} initialized`);
+                    }
+                });
+
+                // Initialize webcam dengan kamera depan sebagai default
+                initializeWebcam('user');
+                setupFilterChange();
+                setupMirrorToggle();
+                setupCountdownSelect();
+                setupEventListeners();
+                setupTestimoniEventListeners();
+
+                // Initialize capture button dengan text 0/3
+                if (captureButton) {
+                    captureButton.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="w-5 h-5" fill="currentColor">
+                    <path d="M149.1 64.8L138.7 96 64 96C28.7 96 0 124.7 0 160L0 416c0 35.3 28.7 64 64 64l384 0c35.3 0 64-28.7 64-64l0-256c0-35.3-28.7-64-64-64l-74.7 0L362.9 64.8C356.4 45.2 338.1 32 317.4 32L194.6 32c-20.7 0-39 13.2-45.5 32.8zM256 192a96 96 0 1 1 0 192 96 96 0 1 1 0-192z" />
+                </svg>
+                Capture 0/3
+            `;
+                }
+
+                updateCaptureButton();
+                updateRetakeButtonsState();
+
+                debugPhotoSlots();
+            }, 100);
         }
 
         function setupMirrorToggle() {
@@ -1463,6 +1648,40 @@
             }
         }
 
+        function toggleCamera() {
+            const newFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
+            console.log(`Switching from ${currentFacingMode} to ${newFacingMode}`);
+            initializeWebcam(newFacingMode);
+        }
+
+        function updateCameraToggleButton() {
+            const cameraToggleButton = document.getElementById('cameraToggle');
+            if (cameraToggleButton) {
+                const isRearCamera = currentFacingMode === 'environment';
+                cameraToggleButton.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 mr-2">
+                <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
+                <circle cx="12" cy="13" r="3"/>
+                <path d="M21 15h.01M7 13h.01"/>
+            </svg>
+            ${isRearCamera ? 'Kamera Depan' : 'Kamera Belakang'}
+        `;
+            }
+        }
+
+        function setupCameraToggle() {
+            const cameraToggleButton = document.getElementById('cameraToggle');
+            if (cameraToggleButton) {
+                cameraToggleButton.addEventListener('click', toggleCamera);
+                console.log('Camera toggle button event listener added');
+
+                // Set initial button text
+                updateCameraToggleButton();
+            } else {
+                console.log('Camera toggle button not found');
+            }
+        }
+
         function setupCountdownSelect() {
             const countdownSelect = document.getElementById('countdownSelect');
             if (countdownSelect) {
@@ -1471,75 +1690,6 @@
                 });
             }
         }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            const modal = document.getElementById('previewModal');
-            const modalContent = document.getElementById('modalContent');
-            const dragHandle = document.getElementById('dragHandle');
-
-            if (!modal || !modalContent || !dragHandle) return;
-
-            let isDragging = false;
-            let startY = 0;
-            let startTranslateY = 0;
-
-            dragHandle.addEventListener('touchstart', startDrag, {
-                passive: true
-            });
-            document.addEventListener('touchmove', drag, {
-                passive: false
-            });
-            document.addEventListener('touchend', endDrag);
-
-            dragHandle.addEventListener('mousedown', startDrag);
-            document.addEventListener('mousemove', drag);
-            document.addEventListener('mouseup', endDrag);
-
-            function startDrag(e) {
-                if (!modal.classList.contains('flex')) return;
-                isDragging = true;
-
-                startY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
-
-                const style = window.getComputedStyle(modalContent);
-                const matrix = new DOMMatrix(style.transform);
-                startTranslateY = matrix.m42;
-
-                modalContent.classList.add('modal-dragging');
-            }
-
-            function drag(e) {
-                if (!isDragging) return;
-
-                if (e.type.includes('touch')) {
-                    e.preventDefault();
-                }
-
-                const currentY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
-                const deltaY = currentY - startY;
-
-                if (deltaY < 0) return;
-
-                modalContent.style.transform = `translateY(${deltaY}px)`;
-            }
-
-            function endDrag(e) {
-                if (!isDragging) return;
-                isDragging = false;
-
-                const style = window.getComputedStyle(modalContent);
-                const matrix = new DOMMatrix(style.transform);
-                const translateY = matrix.m42;
-
-                modalContent.classList.remove('modal-dragging');
-
-                if (translateY > 100) {
-                    closeModal();
-                } else {
-                    modalContent.style.transform = 'translateY(0)';
-                }
-            }
-        });
 
         function setupStarRating() {
             const starRatingContainer = document.getElementById('starRating');
@@ -1582,6 +1732,7 @@
                     label.innerHTML = 'Pilih Emoji <span style="color: #ef4444;">*</span>';
                     emojiSelectorContainer.parentNode.insertBefore(label, emojiSelectorContainer);
                 }
+
                 const emojis = emojiSelectorContainer.querySelectorAll('.emoji-option');
                 emojis.forEach(emoji => {
                     emoji.addEventListener('click', () => {
@@ -1618,11 +1769,6 @@
             const name = testimoniName ? testimoniName.value.trim() : '';
             if (!name || name.length < 2) {
                 alert('Mohon masukkan nama Anda (minimal 2 karakter)! 👤');
-                testimoniName.focus();
-                return;
-            }
-            if (name.length > 10) {
-                alert('Nama terlalu panjang (maksimal 10 karakter)! ✂️');
                 testimoniName.focus();
                 return;
             }
@@ -1695,7 +1841,6 @@
                         submitButton.classList.remove('opacity-50');
                     }
                 });
-
         }
 
         function resetTestimoniForm() {
@@ -1770,30 +1915,25 @@
                 gifLoadingModal.style.display = 'flex';
             }
 
-            updateGitProgress(0, 'Initializing GIF creation...');
-
-            const frameContainer = document.querySelector('.frame-container');
-            const targetWidth = 1080;
-            const targetHeight = (frameContainer.offsetHeight / frameContainer.offsetWidth) *
-                targetWidth; // Match frame aspect ratio
+            updateGifProgress(0, 'Initializing GIF creation...');
 
             const gif = new GIF({
                 workers: 2,
                 quality: 5,
-                width: targetWidth,
-                height: targetHeight,
+                width: 1080,
+                height: 810,
                 workerScript: '/js/gif.worker.js'
             });
 
             gif.on('progress', function(p) {
                 const percentage = Math.round(p * 100);
-                updateGitProgress(percentage,
+                updateGifProgress(percentage,
                     `Processing frame ${Math.ceil(p * photos.length)} of ${photos.length}...`);
             });
 
             gif.on('finished', function(blob) {
-                generatedGitBlob = blob;
-                hideGitLoading();
+                generatedGifBlob = blob;
+                hideGifLoading();
 
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
@@ -1818,24 +1958,26 @@
                 img.onload = function() {
                     const canvas = document.createElement('canvas');
                     const ctx = canvas.getContext('2d');
-                    canvas.width = targetWidth;
-                    canvas.height = targetHeight;
+                    canvas.width = 1080;
+                    canvas.height = 810;
+                    const scale = Math.min(canvas.width / img.width, canvas.height / img.height);
+                    const x = (canvas.width - img.width * scale) / 2;
+                    const y = (canvas.height - img.height * scale) / 2;
 
                     ctx.fillStyle = '#FEF3E2';
                     ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-                    cropPhotoToFit(canvas, ctx, img, targetWidth, targetHeight);
+                    ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
 
                     gif.addFrame(canvas, {
                         delay: 1000
                     });
 
                     processedCount++;
-                    updateGitProgress((processedCount / photos.length) * 50,
+                    updateGifProgress((processedCount / photos.length) * 50,
                         `Loading photo ${processedCount} of ${photos.length}...`);
 
                     if (processedCount === photos.length) {
-                        updateGitProgress(50, 'Starting GIF compilation...');
+                        updateGifProgress(50, 'Starting GIF compilation...');
                         gif.render();
                     }
                 };
@@ -1866,7 +2008,7 @@
             if (nameInput) {
                 nameInput.addEventListener('input', function() {
                     const value = this.value.trim();
-                    if (value.length < 2 || value.length > 10) {
+                    if (value.length < 2) {
                         this.classList.add('error-input');
                         this.classList.remove('valid-input');
                     } else {
@@ -1916,42 +2058,132 @@
             }
         }
 
-        function showValidationError(element, message) {
-            if (element) {
-                element.classList.add('error-input');
-                element.classList.remove('valid-input');
+        document.addEventListener('DOMContentLoaded', () => {
+            initialize();
+            const modal = document.getElementById('previewModal');
+            const modalContent = document.getElementById('modalContent');
+            const dragHandle = document.getElementById('dragHandle');
 
-                element.style.animation = 'none';
-                element.offsetHeight;
-                element.style.animation = 'shake 0.5s ease-in-out';
+            if (!modal || !modalContent || !dragHandle) return;
 
-                element.focus();
+            let isDragging = false;
+            let startY = 0;
+            let startTranslateY = 0;
+
+            dragHandle.addEventListener('touchstart', startDrag, {
+                passive: true
+            });
+            document.addEventListener('touchmove', drag, {
+                passive: false
+            });
+            document.addEventListener('touchend', endDrag);
+
+            dragHandle.addEventListener('mousedown', startDrag);
+            document.addEventListener('mousemove', drag);
+            document.addEventListener('mouseup', endDrag);
+
+            function startDrag(e) {
+                if (!modal.classList.contains('flex')) return;
+                isDragging = true;
+
+                startY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+
+                const style = window.getComputedStyle(modalContent);
+                const matrix = new DOMMatrix(style.transform);
+                startTranslateY = matrix.m42;
+
+                modalContent.classList.add('modal-dragging');
             }
-        }
 
-        function cropPhotoToFit(canvas, ctx, img, targetWidth, targetHeight) {
-            const targetAspect = targetWidth / targetHeight;
-            const imgAspect = img.width / img.height;
+            function drag(e) {
+                if (!isDragging) return;
 
-            let sourceX = 0,
-                sourceY = 0,
-                sourceWidth = img.width,
-                sourceHeight = img.height;
+                if (e.type.includes('touch')) {
+                    e.preventDefault();
+                }
 
-            if (imgAspect > targetAspect) {
-                // Image is wider than target, crop left and right
-                sourceWidth = img.height * targetAspect;
-                sourceX = (img.width - sourceWidth) / 2;
+                const currentY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+                const deltaY = currentY - startY;
+
+                if (deltaY < 0) return;
+
+                modalContent.style.transform = `translateY(${deltaY}px)`;
+            }
+
+            function endDrag(e) {
+                if (!isDragging) return;
+                isDragging = false;
+
+                const style = window.getComputedStyle(modalContent);
+                const matrix = new DOMMatrix(style.transform);
+                const translateY = matrix.m42;
+
+                modalContent.classList.remove('modal-dragging');
+
+                if (translateY > 100) {
+                    closeModal();
+                } else {
+                    modalContent.style.transform = 'translateY(0)';
+                }
+            }
+
+            function closeModal() {
+                modalContent.classList.add('modal-closing');
+                setTimeout(() => {
+                    modal.style.display = 'none';
+                    modalContent.classList.remove('modal-closing');
+                    modalContent.style.transform = 'translateY(0)';
+                }, 300);
+            }
+
+            const closeButton = modal.querySelector('.modal-close');
+            if (closeButton) {
+                closeButton.addEventListener('click', closeModal);
+            }
+
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    closeModal();
+                }
+            });
+        });
+
+        function setupFloatingCameraToggle() {
+            const floatingToggle = document.getElementById('floatingCameraToggle');
+            if (floatingToggle) {
+                floatingToggle.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    toggleCamera();
+                });
+                console.log('Floating camera toggle event listener added');
             } else {
-                // Image is taller than target, crop top and bottom
-                sourceHeight = img.width / targetAspect;
-                sourceY = (img.height - sourceHeight) / 2;
+                console.log('Floating camera toggle button not found');
             }
-
-            ctx.drawImage(img, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, targetWidth, targetHeight);
         }
 
-        document.addEventListener('DOMContentLoaded', initialize);
+        function updateFloatingCameraToggleButton() {
+            const floatingToggle = document.getElementById('floatingCameraToggle');
+            if (floatingToggle) {
+                const isRearCamera = currentFacingMode === 'environment';
+                floatingToggle.title = isRearCamera ? 'Switch to Front Camera' : 'Switch to Rear Camera';
+
+                // Update icon berdasarkan kamera aktif
+                const icon = ` <svg id="cameraIcon" class="w-6 h-6" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            </svg>`;
+
+                floatingToggle.innerHTML = icon;
+            }
+        }
+
+        window.addEventListener('beforeunload', () => {
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+            }
+        });
     </script>
 </body>
 
