@@ -293,15 +293,17 @@
                 </p>
                 <div class="flex justify-center space-x-4">
                     <button
-                        class="bg-[#BF3131] hover:bg-[#A02828] text-white font-bold py-4 px-8 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg">
-                        <i class="fas fa-camera mr-2"></i>
-                        Coba Sekarang
+                    class="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-xl text-white bg-[#BF3131] hover:bg-[#F16767] transition duration-300 shadow-sm hover:shadow-lg cursor-pointer hover:scale-105">
+                    <i class="fas fa-camera mr-2"></i>
+                    Coba Sekarang
                     </button>
+
                     <button
-                        class="bg-white hover:bg-gray-50 border-2 border-[#BF3131] text-[#BF3131] font-bold py-4 px-8 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg">
-                        <i class="fas fa-phone mr-2"></i>
-                        Hubungi Kami
+                    class="inline-flex items-center justify-center px-5 py-3 border border-[#BF3131] text-[#BF3131] bg-white hover:bg-gray-50 text-base font-medium rounded-xl transition duration-300 shadow-sm hover:shadow-lg cursor-pointer hover:scale-105">
+                    <i class="fas fa-phone mr-2"></i>
+                    Hubungi Kami
                     </button>
+
                 </div>
             </div>
         </div>

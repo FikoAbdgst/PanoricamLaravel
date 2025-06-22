@@ -13,14 +13,14 @@
 
 <body class="m-0 font-['Poppins'] bg-[#FEF3E2] flex flex-col items-center relative min-h-screen">
     <a href="{{ route('frametemp') }}"
-        class="absolute top-14 left-14 z-50 text-2xl font-bold text-[#BF3131] bg-transparent border-none cursor-pointer hover:text-[#F16767]">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="w-8 h-8" fill="currentColor">
-            <path
-                d="M9.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.2 288 416 288c17.7 0 32-14.3 32-32s-14.3-32-32-32l-306.7 0L214.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z" />
-        </svg>
+    class="hidden sm:block absolute top-14 left-14 z-50 text-2xl font-bold text-[#BF3131] bg-transparent border-none cursor-pointer hover:text-[#F16767]">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="w-8 h-8" fill="currentColor">
+        <path
+            d="M9.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.2 288 416 288c17.7 0 32-14.3 32-32s-14.3-32-32-32l-306.7 0L214.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z" />
+    </svg>
     </a>
-    <div class="w-full max-w-7xl py-10 px-4 sm:px-6 lg:px-8 flex flex-col items-center relative z-20">
-        <h1 class="mb-5 font-semibold text-gray-800 text-5xl bg-transparent rounded-lg">
+    <div class="w-full max-w-7xl py-12 px-4 sm:px-6 lg:px-8 flex flex-col items-center relative z-20">
+        <h1 class="mb-5 font-semibold text-gray-800 text-5xl bg-transparent rounded-lg text-center">
             <span class="text-red-600">C</span><span class="text-pink-300">A</span><span
                 class="text-green-400">P</span><span class="text-yellow-300">T</span><span
                 class="text-blue-300">U</span><span class="text-purple-400">R</span><span
@@ -186,8 +186,8 @@
     </div>
     <div id="testimoniModal"
         class="fixed z-50 left-0 top-0 w-full h-full bg-black bg-opacity-70 overflow-auto justify-center items-center hidden testimoni-modal">
-        <div
-            class="bg-[#FEF3E2] mx-auto w-4/5 max-w-[500px] rounded-3xl shadow-lg p-8 relative flex flex-col items-center animate-[modalFadeIn_0.4s]">
+            <div
+            class="bg-[#FEF3E2] mx-auto w-[90%] sm:w-4/5 max-w-[500px] rounded-3xl shadow-lg p-6 sm:p-8 relative flex flex-col items-center animate-[modalFadeIn_0.4s] max-h-[90vh] overflow-y-auto">
             <button
                 class="testimoni-modal-close absolute top-4 right-4 text-3xl font-bold text-gray-400 bg-transparent border-none cursor-pointer hover:text-black">×</button>
 
@@ -1234,7 +1234,7 @@
                             });
                             navigator.share({
                                     title: 'My Photo Strip',
-                                    text: 'Check out my photo strip!',
+                                    text: 'Yuk, intip hasil foto dari PanoriCam! Follow @panoricam buat update seru lainnya!',
                                     files: [file]
                                 })
                                 .then(() => {
