@@ -56,9 +56,6 @@
                                 Status
                             </th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Used/Download
-                            </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Bukti Bayar
                             </th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -116,18 +113,6 @@
                                         @endif
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        <div class="flex flex-col space-y-1">
-                                            <span
-                                                class="px-2 py-1 text-xs {{ $transaction->is_used ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }} rounded">
-                                                {{ $transaction->is_used ? 'Used' : 'Not Used' }}
-                                            </span>
-                                            <span
-                                                class="px-2 py-1 text-xs {{ $transaction->is_download ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }} rounded">
-                                                {{ $transaction->is_download ? 'Downloaded' : 'Not Downloaded' }}
-                                            </span>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                         @if ($transaction->payment_proof)
                                             <button onclick="viewPaymentProof('{{ $transaction->payment_proof }}')"
                                                 class="text-blue-600 hover:text-blue-900">
@@ -157,7 +142,7 @@
                             @endforeach
                         @else
                             <tr>
-                                <td colspan="8" class="px-6 py-4 text-center text-gray-500">
+                                <td colspan="7" class="px-6 py-4 text-center text-gray-500">
                                     Belum ada transaksi
                                 </td>
                             </tr>

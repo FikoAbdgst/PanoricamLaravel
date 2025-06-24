@@ -87,6 +87,8 @@ Route::post('/submitTestimoni', [PhotoBoothController::class, 'submitTestimoni']
 Route::get('/api/testimonis', [HomeController::class, 'getTestimonis']);
 Route::get('/api/testimoni-stats', [HomeController::class, 'getTestimoniStats']);
 
+Route::get('/check-payment-status/{orderId}', [AdminController::class, 'checkPaymentStatus'])->name('payment.status');
+
 Route::fallback(function () {
     return "halaman tidak ada";
 });

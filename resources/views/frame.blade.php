@@ -1173,11 +1173,10 @@
             "hideMethod": "fadeOut"
         };
 
-
         let currentFrameId = null;
         let currentFramePrice = null;
         let isFilterOpen = false;
-        let currentFacingMode = 'user'; // 'user' untuk front camera, 'environment' untuk back camera
+        let currentFacingMode = 'user';
         let isTogglingCamera = false;
 
         function showPremiumModal(frameId, price) {
@@ -1196,13 +1195,36 @@
             document.getElementById('paymentForm').reset();
         }
 
+        function showPleaseWaitModal(orderId) {
+            const modal = document.createElement('div');
+            modal.id = 'pleaseWaitModal';
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+            modal.innerHTML = `
+                    <div class="bg-white rounded-2xl p-6 w-full max-w-md mx-4">
+                        <div class="text-center">
+                            <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-500 mx-auto mb-4"></div>
+                            <h3 class="text-xl font-bold text-gray-800 mb-2">Menunggu Konfirmasi</h3>
+                            <p class="text-gray-600">Pembayaran Anda (Order ID: ${orderId}) sedang diproses. Silakan tunggu konfirmasi dari admin.</p>
+                        </div>
+                    </div>
+                `;
+            document.body.appendChild(modal);
+        }
+
+        function closePleaseWaitModal() {
+            const modal = document.getElementById('pleaseWaitModal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+
         document.getElementById('paymentForm').addEventListener('submit', async function(e) {
             e.preventDefault();
 
             const formData = new FormData(this);
             const submitButton = this.querySelector('button[type="submit"]');
+            const frameId = formData.get('frame_id');
 
-            // Disable submit button
             submitButton.disabled = true;
             submitButton.textContent = 'Memproses...';
 
@@ -1219,50 +1241,208 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    alert('Pembayaran berhasil disubmit! Menunggu konfirmasi admin. Order ID: ' + result
-                        .order_id);
+                    const pendingPayment = {
+                        order_id: result.order_id,
+                        frame_id: frameId,
+                        timestamp: Date.now(),
+                        status: 'pending'
+                    };
+
+                    localStorage.setItem('pendingPayment', JSON.stringify(pendingPayment));
+                    sessionStorage.setItem('pendingPayment', JSON.stringify(pendingPayment));
+
                     closePaymentModal();
+                    showPleaseWaitModal(result.order_id);
+                    startPaymentStatusCheck(result.order_id, frameId);
                 } else {
-                    alert('Error: ' + result.message);
+                    toastr.error('Error: ' + result.message);
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Submit Pembayaran';
                 }
             } catch (error) {
-                alert('Terjadi kesalahan: ' + error.message);
-            } finally {
-                // Re-enable submit button
+                toastr.error('Terjadi kesalahan: ' + error.message);
                 submitButton.disabled = false;
                 submitButton.textContent = 'Submit Pembayaran';
             }
         });
 
-        // Close modal when clicking outside
         document.getElementById('paymentModal').addEventListener('click', function(e) {
             if (e.target === this) {
                 closePaymentModal();
             }
         });
 
+        function startPaymentStatusCheck(orderId, frameId) {
+            const interval = setInterval(async () => {
+                try {
+                    const response = await fetch(`/check-payment-status/${orderId}`, {
+                        method: 'GET',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
+                                .getAttribute('content'),
+                            'Accept': 'application/json'
+                        }
+                    });
+                    const result = await response.json();
+
+                    if (result.status === 'approved') {
+                        clearInterval(interval);
+                        closePleaseWaitModal();
+
+                        const pendingPayment = JSON.parse(localStorage.getItem('pendingPayment') || '{}');
+                        pendingPayment.status = 'approved';
+                        localStorage.setItem('pendingPayment', JSON.stringify(pendingPayment));
+                        sessionStorage.setItem('pendingPayment', JSON.stringify(pendingPayment));
+
+                        // Construct the booth URL dynamically
+                        const boothUrl =
+                            `/booth?frame_id=${encodeURIComponent(frameId)}&order_id=${encodeURIComponent(orderId)}`;
+
+                        toastr.success('Pembayaran telah disetujui! Anda akan diarahkan ke booth.',
+                            'Berhasil', {
+                                onHidden: () => {
+                                    window.location.href = boothUrl;
+                                }
+                            });
+                    } else if (result.status === 'rejected') {
+                        clearInterval(interval);
+                        closePleaseWaitModal();
+                        localStorage.removeItem('pendingPayment');
+                        sessionStorage.removeItem('pendingPayment');
+                        toastr.error('Pembayaran ditolak oleh admin. Silakan coba lagi.', 'Gagal');
+                    }
+                } catch (error) {
+                    console.error('Error checking payment status:', error);
+                }
+            }, 5000);
+        }
+
+        // Fungsi untuk validasi dan redirect berdasarkan localStorage/sessionStorage
+        function validateAndRedirectIfApproved() {
+            try {
+                // Cek localStorage terlebih dahulu, kemudian sessionStorage sebagai fallback
+                const pendingPaymentLS = localStorage.getItem('pendingPayment');
+                const pendingPaymentSS = sessionStorage.getItem('pendingPayment');
+
+                const pendingPayment = JSON.parse(pendingPaymentLS || pendingPaymentSS || '{}');
+
+                // Validasi apakah data lengkap dan status approved
+                if (pendingPayment &&
+                    pendingPayment.status === 'approved' &&
+                    pendingPayment.frame_id &&
+                    pendingPayment.order_id) {
+
+                    console.log('Found approved payment, redirecting to booth...', pendingPayment);
+
+                    // Konstruksi URL booth
+                    const boothUrl =
+                        `/booth?frame_id=${encodeURIComponent(pendingPayment.frame_id)}&order_id=${encodeURIComponent(pendingPayment.order_id)}`;
+
+                    // Redirect ke booth
+                    window.location.href = boothUrl;
+                    return true; // Menandakan bahwa redirect dilakukan
+                }
+
+                return false; // Tidak ada redirect
+
+            } catch (error) {
+                console.error('Error validating payment data:', error);
+                // Jika ada error parsing JSON, bersihkan storage yang rusak
+                localStorage.removeItem('pendingPayment');
+                sessionStorage.removeItem('pendingPayment');
+                return false;
+            }
+        }
+
+
+
+
+        // Fungsi untuk cek status pembayaran secara manual
+        async function checkCurrentPaymentStatus() {
+            try {
+                const pendingPaymentLS = localStorage.getItem('pendingPayment');
+                const pendingPaymentSS = sessionStorage.getItem('pendingPayment');
+
+                const pendingPayment = JSON.parse(pendingPaymentLS || pendingPaymentSS || '{}');
+
+                if (pendingPayment && pendingPayment.order_id && pendingPayment.status === 'pending') {
+                    const response = await fetch(`/check-payment-status/${pendingPayment.order_id}`, {
+                        method: 'GET',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
+                                'content'),
+                            'Accept': 'application/json'
+                        }
+                    });
+
+                    const result = await response.json();
+
+                    if (result.status === 'approved') {
+                        // Update status di storage
+                        pendingPayment.status = 'approved';
+                        localStorage.setItem('pendingPayment', JSON.stringify(pendingPayment));
+                        sessionStorage.setItem('pendingPayment', JSON.stringify(pendingPayment));
+
+                        // Redirect ke booth
+                        const boothUrl =
+                            `/booth?frame_id=${encodeURIComponent(pendingPayment.frame_id)}&order_id=${encodeURIComponent(pendingPayment.order_id)}`;
+                        window.location.href = boothUrl;
+
+                    } else if (result.status === 'rejected') {
+                        // Hapus data jika ditolak
+                        localStorage.removeItem('pendingPayment');
+                        sessionStorage.removeItem('pendingPayment');
+                        toastr.error('Pembayaran ditolak oleh admin.', 'Gagal');
+                    }
+                }
+            } catch (error) {
+                console.error('Error checking payment status:', error);
+            }
+        }
+
+        // Update fungsi DOMContentLoaded yang sudah ada
         document.addEventListener('DOMContentLoaded', function() {
-            // Initialize toggle filter functionality
-            initializeToggleFilter();
+            clearDownloadedData();
 
-            // Initialize all functionality
-            setupFrameCards();
-            attachAllListeners();
+            // Validasi dan redirect jika ada pembayaran yang sudah disetujui
+            const redirected = validateAndRedirectIfApproved();
 
-            // Browser back/forward navigation
-            window.addEventListener('popstate', function() {
-                location.reload();
-            });
+            // Jika tidak ada redirect, lanjutkan inisialisasi normal
+            if (!redirected) {
+                initializeToggleFilter();
+                setupFrameCards();
+                attachAllListeners();
 
-            // Load html2canvas if not already present
-            if (!window.html2canvas) {
-                const script = document.createElement('script');
-                script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
-                script.async = true;
-                document.head.appendChild(script);
-                console.log('Loading html2canvas script...');
+                // Cek pembayaran pending yang masih aktif
+                const pendingPayment = JSON.parse(localStorage.getItem('pendingPayment') || sessionStorage.getItem(
+                    'pendingPayment') || '{}');
+
+                if (pendingPayment.status === 'pending' && pendingPayment.order_id && pendingPayment.frame_id) {
+                    showPleaseWaitModal(pendingPayment.order_id);
+                    startPaymentStatusCheck(pendingPayment.order_id, pendingPayment.frame_id);
+                }
+
+                window.addEventListener('popstate', function() {
+                    location.reload();
+                });
+
+                if (!window.html2canvas) {
+                    const script = document.createElement('script');
+                    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+                    script.async = true;
+                    document.head.appendChild(script);
+                    console.log('Loading html2canvas script...');
+                }
             }
         });
+
+        // Fungsi untuk dipanggil secara manual jika diperlukan
+        function forceCheckAndRedirect() {
+            const redirected = validateAndRedirectIfApproved();
+            if (!redirected) {
+                checkCurrentPaymentStatus();
+            }
+        }
 
         function setupFrameCards() {
             const frameCards = document.querySelectorAll('.frame-card');
@@ -2649,6 +2829,32 @@
                             isTogglingCamera = false;
                         });
                 });
+        }
+        // Fungsi untuk memeriksa dan menghapus data jika status downloaded
+        function clearDownloadedData() {
+            try {
+                const downloadedStatusLS = localStorage.getItem('pendingPayment');
+                const downloadedStatusSS = sessionStorage.getItem('pendingPayment');
+
+                if (downloadedStatusLS || downloadedStatusSS) {
+                    const status = JSON.parse(downloadedStatusLS || downloadedStatusSS || '{}');
+                    if (status.status === 'downloaded') {
+                        console.log('Found downloaded status, clearing data...');
+                        localStorage.removeItem('downloadStatus');
+                        sessionStorage.removeItem('downloadStatus');
+                        localStorage.removeItem('pendingPayment');
+                        sessionStorage.removeItem('pendingPayment');
+                        console.log('Downloaded data cleared successfully');
+                    }
+                }
+            } catch (error) {
+                console.error('Error clearing downloaded data:', error);
+                // Bersihkan storage jika ada error parsing
+                localStorage.removeItem('downloadStatus');
+                sessionStorage.removeItem('downloadStatus');
+                localStorage.removeItem('pendingPayment');
+                sessionStorage.removeItem('pendingPayment');
+            }
         }
     </script>
 

@@ -177,59 +177,59 @@ class AdminController extends Controller
         }
     }
 
-public function rejectTransaction($id)
-{
-    try {
-        $transaction = Transaction::findOrFail($id);
+    public function rejectTransaction($id)
+    {
+        try {
+            $transaction = Transaction::findOrFail($id);
 
-        if ($transaction->status !== 'pending') {
+            if ($transaction->status !== 'pending') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Transaksi ini sudah diproses sebelumnya.'
+                ], 400);
+            }
+
+            $transaction->update(['status' => 'rejected']);
+
+            // Kirim email notifikasi jika ada email
+            $emailSent = false;
+            if ($transaction->email) {
+                $emailSent = $this->sendRejectionEmail($transaction);
+            }
+
+            $message = 'Transaksi berhasil ditolak.';
+            if ($transaction->email) {
+                $message .= $emailSent ? ' Email pemberitahuan telah dikirim.' : ' Namun gagal mengirim email pemberitahuan.';
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => $message,
+                'email_sent' => $emailSent
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error rejecting transaction: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Transaksi ini sudah diproses sebelumnya.'
-            ], 400);
+                'message' => 'Terjadi kesalahan saat memproses transaksi.'
+            ], 500);
         }
-
-        $transaction->update(['status' => 'rejected']);
-
-        // Kirim email notifikasi jika ada email
-        $emailSent = false;
-        if ($transaction->email) {
-            $emailSent = $this->sendRejectionEmail($transaction);
-        }
-
-        $message = 'Transaksi berhasil ditolak.';
-        if ($transaction->email) {
-            $message .= $emailSent ? ' Email pemberitahuan telah dikirim.' : ' Namun gagal mengirim email pemberitahuan.';
-        }
-
-        return response()->json([
-            'success' => true,
-            'message' => $message,
-            'email_sent' => $emailSent
-        ]);
-    } catch (\Exception $e) {
-        Log::error('Error rejecting transaction: ' . $e->getMessage());
-        return response()->json([
-            'success' => false,
-            'message' => 'Terjadi kesalahan saat memproses transaksi.'
-        ], 500);
     }
-}
 
-private function sendRejectionEmail($transaction)
-{
-    try {
-        // Generate booth link (meskipun transaksi ditolak, link bisa tetap disertakan untuk referensi)
-        $boothLink = route('booth', [
-            'frame_id' => $transaction->frame_id,
-            'order_id' => $transaction->order_id
-        ]);
+    private function sendRejectionEmail($transaction)
+    {
+        try {
+            // Generate booth link (meskipun transaksi ditolak, link bisa tetap disertakan untuk referensi)
+            $boothLink = route('booth', [
+                'frame_id' => $transaction->frame_id,
+                'order_id' => $transaction->order_id
+            ]);
 
-        $frameName = $transaction->frame ? $transaction->frame->name : 'Frame tidak tersedia';
-        $amount = $transaction->formatted_amount ?? 'Rp ' . number_format($transaction->amount, 0, ',', '.');
+            $frameName = $transaction->frame ? $transaction->frame->name : 'Frame tidak tersedia';
+            $amount = $transaction->formatted_amount ?? 'Rp ' . number_format($transaction->amount, 0, ',', '.');
 
-        // HTML email content untuk transaksi ditolak
-        $htmlContent = "
+            // HTML email content untuk transaksi ditolak
+            $htmlContent = "
         <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>
             <div style='background: #f44336; color: white; padding: 20px; text-align: center;'>
                 <h1>Transaksi Ditolak</h1>
@@ -259,17 +259,33 @@ private function sendRejectionEmail($transaction)
             </div>
         </div>";
 
-        // Send email using Mail::html
-        Mail::html($htmlContent, function ($message) use ($transaction) {
-            $message->to($transaction->email)
-                ->subject('Transaksi Ditolak - Order #' . $transaction->order_id);
-        });
+            // Send email using Mail::html
+            Mail::html($htmlContent, function ($message) use ($transaction) {
+                $message->to($transaction->email)
+                    ->subject('Transaksi Ditolak - Order #' . $transaction->order_id);
+            });
 
-        Log::info('Email rejection sent successfully to: ' . $transaction->email);
-        return true;
-    } catch (\Exception $e) {
-        Log::error('Failed to send rejection email: ' . $e->getMessage());
-        return false;
+            Log::info('Email rejection sent successfully to: ' . $transaction->email);
+            return true;
+        } catch (\Exception $e) {
+            Log::error('Failed to send rejection email: ' . $e->getMessage());
+            return false;
+        }
     }
-}
+    public function checkPaymentStatus($orderId)
+    {
+        try {
+            $transaction = Transaction::where('order_id', $orderId)->firstOrFail();
+            return response()->json([
+                'success' => true,
+                'status' => $transaction->status
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error checking payment status: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Transaksi tidak ditemukan.'
+            ], 404);
+        }
+    }
 }

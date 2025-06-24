@@ -16,14 +16,10 @@ class Transaction extends Model
         'amount',
         'payment_proof',
         'status',
-        'is_used',
-        'is_download',
-        'approved_at' // Tambahkan ini
+        'approved_at'
     ];
 
     protected $casts = [
-        'is_used' => 'boolean',
-        'is_download' => 'boolean',
         'approved_at' => 'datetime'
     ];
 

@@ -13,11 +13,11 @@
 
 <body class="m-0 font-['Poppins'] bg-[#FEF3E2] flex flex-col items-center relative min-h-screen">
     <a href="{{ route('frametemp') }}"
-    class="hidden sm:block absolute top-14 left-14 z-50 text-2xl font-bold text-[#BF3131] bg-transparent border-none cursor-pointer hover:text-[#F16767]">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="w-8 h-8" fill="currentColor">
-        <path
-            d="M9.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.2 288 416 288c17.7 0 32-14.3 32-32s-14.3-32-32-32l-306.7 0L214.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z" />
-    </svg>
+        class="hidden sm:block absolute top-14 left-14 z-50 text-2xl font-bold text-[#BF3131] bg-transparent border-none cursor-pointer hover:text-[#F16767]">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="w-8 h-8" fill="currentColor">
+            <path
+                d="M9.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.2 288 416 288c17.7 0 32-14.3 32-32s-14.3-32-32-32l-306.7 0L214.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z" />
+        </svg>
     </a>
     <div class="w-full max-w-7xl py-12 px-4 sm:px-6 lg:px-8 flex flex-col items-center relative z-20">
         <h1 class="mb-5 font-semibold text-gray-800 text-5xl bg-transparent rounded-lg text-center">
@@ -186,7 +186,7 @@
     </div>
     <div id="testimoniModal"
         class="fixed z-50 left-0 top-0 w-full h-full bg-black bg-opacity-70 overflow-auto justify-center items-center hidden testimoni-modal">
-            <div
+        <div
             class="bg-[#FEF3E2] mx-auto w-[90%] sm:w-4/5 max-w-[500px] rounded-3xl shadow-lg p-6 sm:p-8 relative flex flex-col items-center animate-[modalFadeIn_0.4s] max-h-[90vh] overflow-y-auto">
             <button
                 class="testimoni-modal-close absolute top-4 right-4 text-3xl font-bold text-gray-400 bg-transparent border-none cursor-pointer hover:text-black">×</button>
@@ -238,6 +238,7 @@
     </div>
 
     <input type="hidden" id="frameId" value="{{ $frame->id }}">
+    <input type="hidden" id="frameIsPaid" value="{{ $frame->isFree() ? 'false' : 'true' }}">
 
     <style>
         @keyframes modalFadeIn {
@@ -789,7 +790,386 @@
         let currentFacingMode = 'user';
         let currentStream = null;
 
+        // Konfigurasi untuk single session
+        const SINGLE_SESSION_CONFIG = {
+            storageKey: 'activeBoothSession',
+            heartbeatInterval: 2000, // 2 detik
+            sessionTimeout: 10000, // 10 detik timeout
+            maxRetries: 3
+        };
+
+        let heartbeatInterval = null;
+        let isActiveSession = false;
+        let sessionId = null;
+
+        // Fungsi untuk generate unique session ID
+        function generateSessionId() {
+            return Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        }
+
+        // Fungsi untuk mendapatkan data pembayaran
+        function getPaymentData() {
+            try {
+                const pendingPaymentLS = localStorage.getItem('pendingPayment');
+                const pendingPaymentSS = sessionStorage.getItem('pendingPayment');
+                return JSON.parse(pendingPaymentLS || pendingPaymentSS || '{}');
+            } catch (error) {
+                return {};
+            }
+        }
+
+        // Fungsi untuk membuat unique key berdasarkan payment data
+        function createSessionKey(paymentData) {
+            if (!paymentData.order_id || !paymentData.frame_id) {
+                return null;
+            }
+            return `${SINGLE_SESSION_CONFIG.storageKey}_${paymentData.order_id}_${paymentData.frame_id}`;
+        }
+
+        // Fungsi untuk cek apakah sudah ada session aktif
+        function checkActiveSession() {
+            const paymentData = getPaymentData();
+            const sessionKey = createSessionKey(paymentData);
+
+            if (!sessionKey) {
+                console.warn('Cannot create session key - invalid payment data');
+                return false;
+            }
+
+            try {
+                const activeSession = localStorage.getItem(sessionKey);
+
+                if (!activeSession) {
+                    return false; // Tidak ada session aktif
+                }
+
+                const sessionData = JSON.parse(activeSession);
+                const currentTime = Date.now();
+
+                // Cek apakah session masih valid (tidak timeout)
+                if (currentTime - sessionData.lastHeartbeat > SINGLE_SESSION_CONFIG.sessionTimeout) {
+                    console.log('Previous session expired, cleaning up');
+                    localStorage.removeItem(sessionKey);
+                    return false;
+                }
+
+                // Cek apakah ini session yang sama (tab yang sama)
+                if (sessionData.sessionId === sessionId) {
+                    return false; // Ini adalah session kita sendiri
+                }
+
+                console.warn('Another active session found:', sessionData);
+                return true; // Ada session lain yang aktif
+
+            } catch (error) {
+                console.error('Error checking active session:', error);
+                return false;
+            }
+        }
+
+        // Fungsi untuk membuat session baru
+        function createNewSession() {
+            const paymentData = getPaymentData();
+            const sessionKey = createSessionKey(paymentData);
+
+            if (!sessionKey) {
+                return false;
+            }
+
+            sessionId = generateSessionId();
+
+            const sessionData = {
+                sessionId: sessionId,
+                orderId: paymentData.order_id,
+                frameId: paymentData.frame_id,
+                startTime: Date.now(),
+                lastHeartbeat: Date.now(),
+                userAgent: navigator.userAgent.substring(0, 100) // Potong untuk menghemat space
+            };
+
+            try {
+                localStorage.setItem(sessionKey, JSON.stringify(sessionData));
+                isActiveSession = true;
+                console.log('New session created:', sessionId);
+                return true;
+            } catch (error) {
+                console.error('Error creating session:', error);
+                return false;
+            }
+        }
+
+        // Fungsi untuk update heartbeat session
+        function updateSessionHeartbeat() {
+            if (!isActiveSession || !sessionId) {
+                return;
+            }
+
+            const paymentData = getPaymentData();
+            const sessionKey = createSessionKey(paymentData);
+
+            if (!sessionKey) {
+                return;
+            }
+
+            try {
+                const activeSession = localStorage.getItem(sessionKey);
+                if (activeSession) {
+                    const sessionData = JSON.parse(activeSession);
+
+                    // Pastikan ini adalah session kita
+                    if (sessionData.sessionId === sessionId) {
+                        sessionData.lastHeartbeat = Date.now();
+                        localStorage.setItem(sessionKey, JSON.stringify(sessionData));
+                    } else {
+                        // Session kita sudah digantikan oleh session lain
+                        console.warn('Our session has been replaced');
+                        handleSessionTakeover();
+                    }
+                }
+            } catch (error) {
+                console.error('Error updating heartbeat:', error);
+            }
+        }
+
+        // Fungsi untuk menangani ketika session diambil alih
+        function handleSessionTakeover() {
+            stopHeartbeat();
+            isActiveSession = false;
+
+            showSessionTakeoverAlert();
+        }
+
+        // Fungsi untuk menampilkan alert session takeover
+        function showSessionTakeoverAlert() {
+            const alertHtml = `
+        <div id="sessionTakeoverAlert" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+            <div class="bg-white rounded-2xl p-6 w-full max-w-md mx-4 text-center">
+                <div class="mb-4">
+                    <svg class="w-16 h-16 mx-auto text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Session Diambil Alih</h3>
+                <p class="text-gray-600 mb-4">Halaman ini sudah dibuka di tab/browser lain. Hanya satu session yang diizinkan.</p>
+                <button onclick="redirectToMainMenu()" class="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors">
+                    Kembali ke Menu Utama
+                </button>
+            </div>
+        </div>
+    `;
+
+            document.body.insertAdjacentHTML('beforeend', alertHtml);
+        }
+
+        // Fungsi untuk memulai heartbeat
+        function startHeartbeat() {
+            if (heartbeatInterval) {
+                clearInterval(heartbeatInterval);
+            }
+
+            heartbeatInterval = setInterval(() => {
+                updateSessionHeartbeat();
+
+                // Cek apakah ada session lain yang mengambil alih
+                if (checkActiveSession()) {
+                    handleSessionTakeover();
+                }
+            }, SINGLE_SESSION_CONFIG.heartbeatInterval);
+
+            console.log('Heartbeat started');
+        }
+
+        // Fungsi untuk menghentikan heartbeat
+        function stopHeartbeat() {
+            if (heartbeatInterval) {
+                clearInterval(heartbeatInterval);
+                heartbeatInterval = null;
+                console.log('Heartbeat stopped');
+            }
+        }
+
+        // Fungsi untuk cleanup session saat halaman ditutup
+        function cleanupSession() {
+            if (!isActiveSession || !sessionId) {
+                return;
+            }
+
+            const paymentData = getPaymentData();
+            const sessionKey = createSessionKey(paymentData);
+
+            if (sessionKey) {
+                try {
+                    const activeSession = localStorage.getItem(sessionKey);
+                    if (activeSession) {
+                        const sessionData = JSON.parse(activeSession);
+
+                        // Hanya hapus jika ini adalah session kita
+                        if (sessionData.sessionId === sessionId) {
+                            localStorage.removeItem(sessionKey);
+                            console.log('Session cleaned up');
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error cleaning up session:', error);
+                }
+            }
+
+            stopHeartbeat();
+            isActiveSession = false;
+        }
+
+        // Fungsi utama untuk validasi single session
+        function validateSingleSession() {
+            console.log('Validating single session access...');
+
+            // Cek apakah frame berbayar
+            const frameIsPaid = document.getElementById('frameIsPaid').value === 'true';
+
+            // Jika frame gratis, skip validasi session
+            if (!frameIsPaid) {
+                console.log('Frame is free - skipping single session validation');
+                return true;
+            }
+
+            // Cek apakah sudah ada session aktif (hanya untuk frame berbayar)
+            if (checkActiveSession()) {
+                console.warn('Another session is already active');
+                showActiveSessionAlert();
+                return false;
+            }
+
+            // Buat session baru (hanya untuk frame berbayar)
+            if (!createNewSession()) {
+                console.error('Failed to create new session');
+                return false;
+            }
+
+            // Mulai heartbeat (hanya untuk frame berbayar)
+            startHeartbeat();
+
+            console.log('Single session validation passed');
+            return true;
+        }
+        // Fungsi untuk menampilkan alert session sudah aktif
+        function showActiveSessionAlert() {
+            const alertHtml = `
+        <div id="activeSessionAlert" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+            <div class="bg-white rounded-2xl p-6 w-full max-w-md mx-4 text-center">
+                <div class="mb-4">
+                    <svg class="w-16 h-16 mx-auto text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Session Sudah Aktif</h3>
+                <p class="text-gray-600 mb-4">Halaman ini sudah dibuka di tab/browser lain. Tutup tab lain terlebih dahulu atau tunggu beberapa saat.</p>
+                <div class="flex gap-3 justify-center">
+                    <button onclick="redirectToMainMenu()" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors">
+                        Kembali ke Menu
+                    </button>
+                    <button onclick="forceNewSession()" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors">
+                        Paksa Buka
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+
+            document.body.insertAdjacentHTML('beforeend', alertHtml);
+        }
+
+        // Fungsi untuk memaksa membuat session baru
+        function forceNewSession() {
+            const paymentData = getPaymentData();
+            const sessionKey = createSessionKey(paymentData);
+
+            if (sessionKey) {
+                // Hapus session yang ada
+                localStorage.removeItem(sessionKey);
+            }
+
+            // Hapus alert
+            const alert = document.getElementById('activeSessionAlert');
+            if (alert) {
+                alert.remove();
+            }
+
+            // Buat session baru
+            if (createNewSession()) {
+                startHeartbeat();
+                location.reload(); // Reload halaman untuk melanjutkan
+            }
+        }
+
+        // Fungsi untuk redirect ke menu utama
+        function redirectToMainMenu() {
+            cleanupSession();
+            window.location.href = '/';
+        }
+
+        // Event listeners untuk cleanup session
+        window.addEventListener('beforeunload', cleanupSession);
+        window.addEventListener('unload', cleanupSession);
+
+        // Event listener untuk visibility change (tab switch)
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) {
+                // Tab tersembunyi, kurangi frekuensi heartbeat
+                if (heartbeatInterval) {
+                    clearInterval(heartbeatInterval);
+                    heartbeatInterval = setInterval(updateSessionHeartbeat, SINGLE_SESSION_CONFIG
+                        .heartbeatInterval * 2);
+                }
+            } else {
+                // Tab aktif kembali, kembalikan frekuensi normal
+                if (isActiveSession) {
+                    startHeartbeat();
+                }
+            }
+        });
+
+        // Modifikasi fungsi initializeBoothPage yang sudah ada
+        function initializeBoothPageWithSingleSession() {
+            // Validasi akses booth dulu
+            if (!validateBoothAccess()) {
+                return;
+            }
+
+            // Validasi single session
+            if (!validateSingleSession()) {
+                return;
+            }
+
+            // Lanjutkan inisialisasi booth normal
+            console.log('Booth initialized with single session protection');
+
+            // Inisialisasi komponen booth lainnya
+            initializeCamera();
+            setupFrameDisplay();
+            attachBoothEventListeners();
+        }
+
+        // Update DOMContentLoaded listener
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeBoothPageWithSingleSession();
+            const frameIsPaidElement = document.getElementById('frameIsPaid');
+
+            if (!frameIsPaidElement) {
+                console.error('frameIsPaid element not found');
+                return;
+            }
+
+            // Jalankan inisialisasi validasi
+            if (!initializeFrameValidation()) {
+                console.log('Frame validation failed');
+                return;
+            }
+
+            console.log('Frame validation completed successfully');
+        });
+
         const originalCaptureButtonHTML = captureButton ? captureButton.innerHTML : '';
+
+
 
         console.log('Initial elements:', {
             photoSlots: photoSlots.length,
@@ -1194,6 +1574,9 @@
                 a.download = 'photo-strip-hd.png';
                 a.click();
 
+                // Update status di localStorage dan sessionStorage menjadi "downloaded"
+                updatePaymentStatusToDownloaded();
+
                 if (!hasShownTestimoniModal) {
                     setTimeout(() => {
                         showTestimoniModal();
@@ -1203,6 +1586,37 @@
                 console.error('Error generating photo strip:', error);
                 alert('Failed to generate HD photo strip. Try again.');
             });
+        }
+
+        // Fungsi untuk mengupdate status pembayaran menjadi "downloaded"
+        function updatePaymentStatusToDownloaded() {
+            try {
+                // Cek dan update localStorage
+                const pendingPaymentLS = localStorage.getItem('pendingPayment');
+                if (pendingPaymentLS) {
+                    const paymentDataLS = JSON.parse(pendingPaymentLS);
+                    paymentDataLS.status = 'downloaded';
+                    paymentDataLS.downloadedAt = Date.now(); // Tambahkan timestamp download
+                    localStorage.setItem('pendingPayment', JSON.stringify(paymentDataLS));
+                    console.log('LocalStorage status updated to downloaded:', paymentDataLS);
+                }
+
+                // Cek dan update sessionStorage
+                const pendingPaymentSS = sessionStorage.getItem('pendingPayment');
+                if (pendingPaymentSS) {
+                    const paymentDataSS = JSON.parse(pendingPaymentSS);
+                    paymentDataSS.status = 'downloaded';
+                    paymentDataSS.downloadedAt = Date.now(); // Tambahkan timestamp download
+                    sessionStorage.setItem('pendingPayment', JSON.stringify(paymentDataSS));
+                    console.log('SessionStorage status updated to downloaded:', paymentDataSS);
+                }
+
+                // Opsional: Kirim notifikasi ke server bahwa foto telah didownload
+                notifyServerPhotoDownloaded();
+
+            } catch (error) {
+                console.error('Error updating payment status to downloaded:', error);
+            }
         }
 
         function sharePhotoStrip() {
@@ -1531,12 +1945,6 @@
 
             if (finishButton) {
                 finishButton.addEventListener('click', openPreviewModal);
-            }
-
-            if (modalClose) {
-                modalClose.addEventListener('click', () => {
-                    if (modal) modal.style.display = 'none';
-                });
             }
 
             if (resetButton) resetButton.addEventListener('click', resetPhotos);
@@ -2127,7 +2535,72 @@
                 }
             }
 
+            // Fungsi untuk mendapatkan status pembayaran saat ini
+            function getCurrentPaymentStatus() {
+                try {
+                    const pendingPaymentLS = localStorage.getItem('pendingPayment');
+                    const pendingPaymentSS = sessionStorage.getItem('pendingPayment');
+                    const paymentData = JSON.parse(pendingPaymentLS || pendingPaymentSS || '{}');
+
+                    return paymentData.status || null;
+                } catch (error) {
+                    console.error('Error getting payment status:', error);
+                    return null;
+                }
+            }
+
+            // Fungsi untuk kembali ke menu utama
+            function redirectToMainMenu() {
+                // Bersihkan storage setelah konfirmasi kembali ke menu utama
+                localStorage.removeItem('pendingPayment');
+                sessionStorage.removeItem('pendingPayment');
+
+                // Redirect ke halaman utama (sesuaikan dengan route aplikasi Anda)
+                window.location.href = '/'; // atau route menu utama Anda
+            }
+
             function closeModal() {
+                const frameIsPaid = document.getElementById('frameIsPaid').value === 'true';
+
+                // Jika frame gratis, langsung tutup modal tanpa validasi
+                if (!frameIsPaid) {
+                    executeCloseModal();
+                    return;
+                }
+
+                // Validasi untuk frame berbayar
+                const currentStatus = getCurrentPaymentStatus();
+
+                // Jika status adalah 'approved', langsung tutup modal tanpa alert
+                if (currentStatus === 'approved') {
+                    executeCloseModal();
+                    return;
+                }
+
+                // Jika status adalah 'downloaded', tampilkan alert konfirmasi
+                if (currentStatus === 'downloaded') {
+                    showExitConfirmation();
+                    return;
+                }
+
+                // Untuk status lainnya (pending, null, dll), langsung tutup modal
+                executeCloseModal();
+            }
+
+
+            // Fungsi untuk menghapus modal konfirmasi
+            function removeConfirmModal(confirmModal) {
+                confirmModal.querySelector('div > div').style.transform = 'scale(0.9)';
+                confirmModal.style.opacity = '0';
+                setTimeout(() => {
+                    if (confirmModal.parentNode) {
+                        confirmModal.parentNode.removeChild(confirmModal);
+                    }
+                }, 300);
+            }
+
+            // Fungsi untuk eksekusi close modal (animasi tutup)
+            function executeCloseModal() {
                 modalContent.classList.add('modal-closing');
                 setTimeout(() => {
                     modal.style.display = 'none';
@@ -2136,6 +2609,7 @@
                 }, 300);
             }
 
+            // Update event listeners
             const closeButton = modal.querySelector('.modal-close');
             if (closeButton) {
                 closeButton.addEventListener('click', closeModal);
@@ -2146,6 +2620,29 @@
                     closeModal();
                 }
             });
+
+            // Fungsi untuk handle tombol ESC
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && modal.style.display !== 'none') {
+                    closeModal();
+                }
+            });
+
+            function showExitConfirmation() {
+                // Menggunakan confirm browser native
+                const userConfirmed = confirm(
+                    "Anda telah mendownload foto. Apakah Anda yakin ingin kembali ke menu utama?"
+                );
+
+                if (userConfirmed) {
+                    // User memilih 'Yes/OK' - kembali ke menu utama
+                    executeCloseModal();
+                    setTimeout(() => {
+                        redirectToMainMenu();
+                    }, 400); // Delay sedikit untuk animasi close
+                }
+                // Jika user memilih 'No/Cancel', tidak melakukan apa-apa (tetap di halaman)
+            }
         });
 
         function setupFloatingCameraToggle() {
@@ -2178,6 +2675,346 @@
                 floatingToggle.innerHTML = icon;
             }
         }
+        // Fungsi utama untuk validasi akses booth
+        function validateBoothAccess() {
+            try {
+                // Cek apakah frame berbayar
+                const frameIsPaid = document.getElementById('frameIsPaid').value === 'true';
+
+                // Jika frame gratis, skip validasi akses
+                if (!frameIsPaid) {
+                    console.log('Frame is free - skipping booth access validation');
+                    return true;
+                }
+
+                // Validasi untuk frame berbayar
+                console.log('Frame is paid - validating booth access...');
+
+                // Cek localStorage dan sessionStorage
+                const pendingPaymentLS = localStorage.getItem('pendingPayment');
+                const pendingPaymentSS = sessionStorage.getItem('pendingPayment');
+
+                // Jika tidak ada data sama sekali
+                if (!pendingPaymentLS && !pendingPaymentSS) {
+                    console.warn('No payment data found in storage');
+                    redirectToMainMenuWithMessage('Akses tidak valid. Silakan lakukan pembayaran terlebih dahulu.');
+                    return false;
+                }
+
+                // Parse data yang ada
+                const paymentData = JSON.parse(pendingPaymentLS || pendingPaymentSS || '{}');
+
+                // Validasi struktur data dan field yang diperlukan
+                if (!isValidPaymentData(paymentData)) {
+                    console.warn('Invalid payment data structure:', paymentData);
+                    cleanupInvalidStorage();
+                    redirectToMainMenuWithMessage('Data pembayaran tidak valid. Silakan ulangi proses pembayaran.');
+                    return false;
+                }
+
+                // Validasi status pembayaran
+                if (!isValidPaymentStatus(paymentData.status)) {
+                    console.warn('Invalid payment status:', paymentData.status);
+                    redirectToMainMenuWithMessage(
+                        'Status pembayaran tidak valid. Silakan lakukan pembayaran terlebih dahulu.');
+                    return false;
+                }
+
+                // Tambahkan validasi untuk status "downloaded"
+                if (paymentData && paymentData.status === 'downloaded') {
+                    console.log('Maaf, Anda sudah tidak memiliki akses, redirecting to home page...', paymentData);
+                    redirectToMainMenuWithMessage('Sesi Anda telah selesai karena foto sudah didownload.');
+                    return false;
+                }
+
+                // Validasi parameter URL dengan data storage
+                if (!validateUrlParameters(paymentData)) {
+                    console.warn('URL parameters do not match storage data');
+                    redirectToMainMenuWithMessage('Parameter akses tidak sesuai. Silakan akses melalui proses yang benar.');
+                    return false;
+                }
+
+                // Validasi waktu akses (opsional - jika ingin membatasi waktu akses)
+                if (!isAccessTimeValid(paymentData)) {
+                    console.warn('Access time expired');
+                    cleanupExpiredStorage();
+                    redirectToMainMenuWithMessage('Waktu akses telah berakhir. Silakan lakukan pembayaran ulang.');
+                    return false;
+                }
+
+                console.log('Booth access validation passed');
+                return true;
+
+            } catch (error) {
+                console.error('Error validating booth access:', error);
+
+                // Cek lagi apakah frame berbayar sebelum cleanup
+                const frameIsPaid = document.getElementById('frameIsPaid').value === 'true';
+                if (frameIsPaid) {
+                    cleanupInvalidStorage();
+                    redirectToMainMenuWithMessage('Terjadi kesalahan validasi. Silakan coba lagi.');
+                    return false;
+                } else {
+                    // Jika frame gratis dan ada error, tetap izinkan akses
+                    console.log('Frame is free - allowing access despite validation error');
+                    return true;
+                }
+            }
+        }
+        // Fungsi untuk validasi struktur data pembayaran
+        function isValidPaymentData(paymentData) {
+            if (!paymentData || typeof paymentData !== 'object') {
+                return false;
+            }
+
+            // Field yang harus ada
+            const requiredFields = ['order_id', 'frame_id', 'status'];
+
+            for (const field of requiredFields) {
+                if (!paymentData[field]) {
+                    console.warn(`Missing required field: ${field}`);
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        // Fungsi untuk validasi status pembayaran
+        function isValidPaymentStatus(status) {
+            const validStatuses = ['approved', 'downloaded'];
+            return validStatuses.includes(status);
+        }
+
+        // Fungsi untuk validasi parameter URL dengan data storage
+        function validateUrlParameters(paymentData) {
+            try {
+                // Ambil parameter dari URL
+                const urlParams = new URLSearchParams(window.location.search);
+                const urlFrameId = urlParams.get('frame_id');
+                const urlOrderId = urlParams.get('order_id');
+
+                // Jika tidak ada parameter URL, masih valid jika data storage lengkap
+                if (!urlFrameId && !urlOrderId) {
+                    return true;
+                }
+
+                // Jika ada parameter URL, harus sesuai dengan data storage
+                if (urlFrameId && urlFrameId !== paymentData.frame_id) {
+                    console.warn('Frame ID mismatch:', urlFrameId, 'vs', paymentData.frame_id);
+                    return false;
+                }
+
+                if (urlOrderId && urlOrderId !== paymentData.order_id) {
+                    console.warn('Order ID mismatch:', urlOrderId, 'vs', paymentData.order_id);
+                    return false;
+                }
+
+                return true;
+
+            } catch (error) {
+                console.error('Error validating URL parameters:', error);
+                return true; // Jika error parsing URL, tetap izinkan akses
+            }
+        }
+
+        // Fungsi untuk validasi waktu akses (opsional)
+        function isAccessTimeValid(paymentData) {
+            // Jika tidak ada timestamp, anggap valid
+            if (!paymentData.timestamp) {
+                return true;
+            }
+
+            const currentTime = Date.now();
+            const paymentTime = paymentData.timestamp;
+            const timeDifference = currentTime - paymentTime;
+
+            // Batasi akses maksimal 24 jam (86400000 ms)
+            const maxAccessTime = 24 * 60 * 60 * 1000; // 24 jam
+
+            return timeDifference <= maxAccessTime;
+        }
+
+        // Fungsi untuk membersihkan storage yang tidak valid
+        function cleanupInvalidStorage() {
+            localStorage.removeItem('pendingPayment');
+            sessionStorage.removeItem('pendingPayment');
+            console.log('Invalid storage data cleaned up');
+        }
+
+        // Fungsi untuk membersihkan storage yang expired
+        function cleanupExpiredStorage() {
+            localStorage.removeItem('pendingPayment');
+            sessionStorage.removeItem('pendingPayment');
+            console.log('Expired storage data cleaned up');
+        }
+
+        // Fungsi untuk redirect ke halaman utama dengan pesan
+        function redirectToMainMenuWithMessage(message) {
+            // Tampilkan pesan error sebelum redirect
+            if (typeof toastr !== 'undefined') {
+                toastr.error(message, 'Akses Ditolak');
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 2000);
+            } else if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Akses Ditolak',
+                    text: message,
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    window.location.href = '/';
+                });
+            } else {
+                alert(message);
+                window.location.href = '/';
+            }
+        }
+
+        // Fungsi untuk validasi lanjutan berdasarkan IP atau device (opsional)
+        function validateDeviceAccess(paymentData) {
+            // Simpan device fingerprint saat pembayaran
+            // Validasi device yang sama saat akses booth
+
+            const currentFingerprint = generateDeviceFingerprint();
+
+            if (paymentData.deviceFingerprint && paymentData.deviceFingerprint !== currentFingerprint) {
+                console.warn('Device fingerprint mismatch');
+                return false;
+            }
+
+            return true;
+        }
+
+        // Fungsi untuk generate device fingerprint sederhana
+        function generateDeviceFingerprint() {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            ctx.textBaseline = 'top';
+            ctx.font = '14px Arial';
+            ctx.fillText('Device fingerprint test', 2, 2);
+
+            return btoa(
+                navigator.userAgent +
+                navigator.language +
+                screen.width + 'x' + screen.height +
+                new Date().getTimezoneOffset() +
+                canvas.toDataURL()
+            ).substring(0, 32);
+        }
+
+        // Fungsi untuk dijalankan saat halaman booth dimuat
+        function initializeBoothPage() {
+            // Validasi akses sebelum inisialisasi apapun
+            if (!validateBoothAccess()) {
+                return; // Stop execution jika validasi gagal
+            }
+
+            // Lanjutkan inisialisasi halaman booth jika validasi berhasil
+            console.log('Booth access validated successfully');
+
+            // Inisialisasi komponen booth lainnya di sini
+            initializeCamera();
+            setupFrameDisplay();
+            attachBoothEventListeners();
+
+            // Update URL jika diperlukan
+            updateUrlFromStorage();
+        }
+
+        // Fungsi untuk update URL berdasarkan data storage
+        function updateUrlFromStorage() {
+            try {
+                const pendingPaymentLS = localStorage.getItem('pendingPayment');
+                const pendingPaymentSS = sessionStorage.getItem('pendingPayment');
+                const paymentData = JSON.parse(pendingPaymentLS || pendingPaymentSS || '{}');
+
+                if (paymentData.frame_id && paymentData.order_id) {
+                    const newUrl =
+                        `/booth?frame_id=${encodeURIComponent(paymentData.frame_id)}&order_id=${encodeURIComponent(paymentData.order_id)}`;
+
+                    // Update URL tanpa reload halaman
+                    if (window.location.pathname + window.location.search !== newUrl) {
+                        window.history.replaceState({}, '', newUrl);
+                    }
+                }
+            } catch (error) {
+                console.error('Error updating URL from storage:', error);
+            }
+        }
+
+        // Event listener untuk DOMContentLoaded
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeBoothPage();
+            const frameIsPaidElement = document.getElementById('frameIsPaid');
+
+            if (!frameIsPaidElement) {
+                console.error('frameIsPaid element not found');
+                return;
+            }
+
+            // Jalankan inisialisasi validasi
+            if (!initializeFrameValidation()) {
+                console.log('Frame validation failed');
+                return;
+            }
+
+            console.log('Frame validation completed successfully');
+        });
+
+        // Event listener untuk deteksi jika user mencoba akses langsung
+        window.addEventListener('pageshow', function(event) {
+            // Validasi ulang saat halaman ditampilkan (termasuk dari cache)
+            if (!validateBoothAccess()) {
+                return;
+            }
+        });
+
+        function initializeFrameValidation() {
+            const frameIsPaid = document.getElementById('frameIsPaid').value === 'true';
+
+            if (frameIsPaid) {
+                console.log('Initializing validation for paid frame');
+
+                // Jalankan validasi untuk frame berbayar
+                if (!validateBoothAccess()) {
+                    return false;
+                }
+
+                if (!validateSingleSession()) {
+                    return false;
+                }
+            } else {
+                console.log('Initializing free frame - no validation required');
+            }
+
+            return true;
+        }
+
+        function conditionalCleanupStorage() {
+            const frameIsPaid = document.getElementById('frameIsPaid').value === 'true';
+
+            if (frameIsPaid) {
+                // Bersihkan storage hanya untuk frame berbayar
+                localStorage.removeItem('pendingPayment');
+                sessionStorage.removeItem('pendingPayment');
+                console.log('Storage cleaned for paid frame');
+            } else {
+                console.log('Storage cleanup skipped for free frame');
+            }
+        }
+
+        // Event listener untuk mencegah akses melalui back button tanpa data valid
+        window.addEventListener('popstate', function(event) {
+            // Validasi ulang saat user menggunakan back/forward button
+            setTimeout(() => {
+                if (!validateBoothAccess()) {
+                    return;
+                }
+            }, 100);
+        });
+
 
         window.addEventListener('beforeunload', () => {
             if (currentStream) {
