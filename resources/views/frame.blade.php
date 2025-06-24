@@ -1249,7 +1249,6 @@
                     };
 
                     localStorage.setItem('pendingPayment', JSON.stringify(pendingPayment));
-                    sessionStorage.setItem('pendingPayment', JSON.stringify(pendingPayment));
 
                     closePaymentModal();
                     showPleaseWaitModal(result.order_id);
@@ -1292,7 +1291,6 @@
                         const pendingPayment = JSON.parse(localStorage.getItem('pendingPayment') || '{}');
                         pendingPayment.status = 'approved';
                         localStorage.setItem('pendingPayment', JSON.stringify(pendingPayment));
-                        sessionStorage.setItem('pendingPayment', JSON.stringify(pendingPayment));
 
                         // Construct the booth URL dynamically
                         const boothUrl =
@@ -1308,7 +1306,6 @@
                         clearInterval(interval);
                         closePleaseWaitModal();
                         localStorage.removeItem('pendingPayment');
-                        sessionStorage.removeItem('pendingPayment');
                         toastr.error('Pembayaran ditolak oleh admin. Silakan coba lagi.', 'Gagal');
                     }
                 } catch (error) {
@@ -1317,14 +1314,12 @@
             }, 5000);
         }
 
-        // Fungsi untuk validasi dan redirect berdasarkan localStorage/sessionStorage
+        // Fungsi untuk validasi dan redirect berdasarkan localStorage
         function validateAndRedirectIfApproved() {
             try {
-                // Cek localStorage terlebih dahulu, kemudian sessionStorage sebagai fallback
                 const pendingPaymentLS = localStorage.getItem('pendingPayment');
-                const pendingPaymentSS = sessionStorage.getItem('pendingPayment');
 
-                const pendingPayment = JSON.parse(pendingPaymentLS || pendingPaymentSS || '{}');
+                const pendingPayment = JSON.parse(pendingPaymentLS || '{}');
 
                 // Validasi apakah data lengkap dan status approved
                 if (pendingPayment &&
@@ -1349,7 +1344,6 @@
                 console.error('Error validating payment data:', error);
                 // Jika ada error parsing JSON, bersihkan storage yang rusak
                 localStorage.removeItem('pendingPayment');
-                sessionStorage.removeItem('pendingPayment');
                 return false;
             }
         }
@@ -1361,9 +1355,8 @@
         async function checkCurrentPaymentStatus() {
             try {
                 const pendingPaymentLS = localStorage.getItem('pendingPayment');
-                const pendingPaymentSS = sessionStorage.getItem('pendingPayment');
 
-                const pendingPayment = JSON.parse(pendingPaymentLS || pendingPaymentSS || '{}');
+                const pendingPayment = JSON.parse(pendingPaymentLS || '{}');
 
                 if (pendingPayment && pendingPayment.order_id && pendingPayment.status === 'pending') {
                     const response = await fetch(`/check-payment-status/${pendingPayment.order_id}`, {
@@ -1381,7 +1374,6 @@
                         // Update status di storage
                         pendingPayment.status = 'approved';
                         localStorage.setItem('pendingPayment', JSON.stringify(pendingPayment));
-                        sessionStorage.setItem('pendingPayment', JSON.stringify(pendingPayment));
 
                         // Redirect ke booth
                         const boothUrl =
@@ -1391,7 +1383,6 @@
                     } else if (result.status === 'rejected') {
                         // Hapus data jika ditolak
                         localStorage.removeItem('pendingPayment');
-                        sessionStorage.removeItem('pendingPayment');
                         toastr.error('Pembayaran ditolak oleh admin.', 'Gagal');
                     }
                 }
@@ -1414,8 +1405,7 @@
                 attachAllListeners();
 
                 // Cek pembayaran pending yang masih aktif
-                const pendingPayment = JSON.parse(localStorage.getItem('pendingPayment') || sessionStorage.getItem(
-                    'pendingPayment') || '{}');
+                const pendingPayment = JSON.parse(localStorage.getItem('pendingPayment') || '{}');
 
                 if (pendingPayment.status === 'pending' && pendingPayment.order_id && pendingPayment.frame_id) {
                     showPleaseWaitModal(pendingPayment.order_id);
@@ -2834,16 +2824,13 @@
         function clearDownloadedData() {
             try {
                 const downloadedStatusLS = localStorage.getItem('pendingPayment');
-                const downloadedStatusSS = sessionStorage.getItem('pendingPayment');
 
                 if (downloadedStatusLS || downloadedStatusSS) {
-                    const status = JSON.parse(downloadedStatusLS || downloadedStatusSS || '{}');
+                    const status = JSON.parse(downloadedStatusLS || '{}');
                     if (status.status === 'downloaded') {
                         console.log('Found downloaded status, clearing data...');
                         localStorage.removeItem('downloadStatus');
-                        sessionStorage.removeItem('downloadStatus');
                         localStorage.removeItem('pendingPayment');
-                        sessionStorage.removeItem('pendingPayment');
                         console.log('Downloaded data cleared successfully');
                     }
                 }
@@ -2851,9 +2838,7 @@
                 console.error('Error clearing downloaded data:', error);
                 // Bersihkan storage jika ada error parsing
                 localStorage.removeItem('downloadStatus');
-                sessionStorage.removeItem('downloadStatus');
                 localStorage.removeItem('pendingPayment');
-                sessionStorage.removeItem('pendingPayment');
             }
         }
     </script>

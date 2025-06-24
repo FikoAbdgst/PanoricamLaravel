@@ -811,8 +811,7 @@
         function getPaymentData() {
             try {
                 const pendingPaymentLS = localStorage.getItem('pendingPayment');
-                const pendingPaymentSS = sessionStorage.getItem('pendingPayment');
-                return JSON.parse(pendingPaymentLS || pendingPaymentSS || '{}');
+                return JSON.parse(pendingPaymentLS || '{}');
             } catch (error) {
                 return {};
             }
@@ -1574,7 +1573,6 @@
                 a.download = 'photo-strip-hd.png';
                 a.click();
 
-                // Update status di localStorage dan sessionStorage menjadi "downloaded"
                 updatePaymentStatusToDownloaded();
 
                 if (!hasShownTestimoniModal) {
@@ -1601,15 +1599,6 @@
                     console.log('LocalStorage status updated to downloaded:', paymentDataLS);
                 }
 
-                // Cek dan update sessionStorage
-                const pendingPaymentSS = sessionStorage.getItem('pendingPayment');
-                if (pendingPaymentSS) {
-                    const paymentDataSS = JSON.parse(pendingPaymentSS);
-                    paymentDataSS.status = 'downloaded';
-                    paymentDataSS.downloadedAt = Date.now(); // Tambahkan timestamp download
-                    sessionStorage.setItem('pendingPayment', JSON.stringify(paymentDataSS));
-                    console.log('SessionStorage status updated to downloaded:', paymentDataSS);
-                }
 
                 // Opsional: Kirim notifikasi ke server bahwa foto telah didownload
                 notifyServerPhotoDownloaded();
@@ -2539,8 +2528,7 @@
             function getCurrentPaymentStatus() {
                 try {
                     const pendingPaymentLS = localStorage.getItem('pendingPayment');
-                    const pendingPaymentSS = sessionStorage.getItem('pendingPayment');
-                    const paymentData = JSON.parse(pendingPaymentLS || pendingPaymentSS || '{}');
+                    const paymentData = JSON.parse(pendingPaymentLS || '{}');
 
                     return paymentData.status || null;
                 } catch (error) {
@@ -2553,7 +2541,6 @@
             function redirectToMainMenu() {
                 // Bersihkan storage setelah konfirmasi kembali ke menu utama
                 localStorage.removeItem('pendingPayment');
-                sessionStorage.removeItem('pendingPayment');
 
                 // Redirect ke halaman utama (sesuaikan dengan route aplikasi Anda)
                 window.location.href = '/'; // atau route menu utama Anda
@@ -2690,12 +2677,10 @@
                 // Validasi untuk frame berbayar
                 console.log('Frame is paid - validating booth access...');
 
-                // Cek localStorage dan sessionStorage
                 const pendingPaymentLS = localStorage.getItem('pendingPayment');
-                const pendingPaymentSS = sessionStorage.getItem('pendingPayment');
 
                 // Jika tidak ada data sama sekali
-                if (!pendingPaymentLS && !pendingPaymentSS) {
+                if (!pendingPaymentLS) {
                     console.warn('No payment data found in storage');
                     redirectToMainMenuWithMessage('Akses tidak valid. Silakan lakukan pembayaran terlebih dahulu.');
                     return false;
@@ -2838,14 +2823,12 @@
         // Fungsi untuk membersihkan storage yang tidak valid
         function cleanupInvalidStorage() {
             localStorage.removeItem('pendingPayment');
-            sessionStorage.removeItem('pendingPayment');
             console.log('Invalid storage data cleaned up');
         }
 
         // Fungsi untuk membersihkan storage yang expired
         function cleanupExpiredStorage() {
             localStorage.removeItem('pendingPayment');
-            sessionStorage.removeItem('pendingPayment');
             console.log('Expired storage data cleaned up');
         }
 
@@ -2927,8 +2910,7 @@
         function updateUrlFromStorage() {
             try {
                 const pendingPaymentLS = localStorage.getItem('pendingPayment');
-                const pendingPaymentSS = sessionStorage.getItem('pendingPayment');
-                const paymentData = JSON.parse(pendingPaymentLS || pendingPaymentSS || '{}');
+                const paymentData = JSON.parse(pendingPaymentLS || '{}');
 
                 if (paymentData.frame_id && paymentData.order_id) {
                     const newUrl =
@@ -2998,7 +2980,6 @@
             if (frameIsPaid) {
                 // Bersihkan storage hanya untuk frame berbayar
                 localStorage.removeItem('pendingPayment');
-                sessionStorage.removeItem('pendingPayment');
                 console.log('Storage cleaned for paid frame');
             } else {
                 console.log('Storage cleanup skipped for free frame');
