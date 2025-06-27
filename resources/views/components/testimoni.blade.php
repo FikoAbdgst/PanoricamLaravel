@@ -1,4 +1,5 @@
 <html>
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -21,7 +22,8 @@
             border: 3px solid #BF3131;
             position: relative;
             overflow: hidden;
-            white-space: normal; /* Allow text wrapping inside cards */
+            white-space: normal;
+            /* Allow text wrapping inside cards */
             display: flex;
             flex-direction: column;
         }
@@ -76,7 +78,7 @@
             white-space: nowrap;
             position: relative;
             padding: 3rem 0;
-            background: linear-gradient(45deg, #FEF3E2 0%, #fff 50%, #FEF3E2 100%);
+            background: #FEF3E2;
         }
 
         .marquee-content {
@@ -178,10 +180,14 @@
             line-height: 1.7;
             color: #4a5568;
             position: relative;
-            word-wrap: break-word; /* Allow long words to break */
-            overflow-wrap: break-word; /* Ensure text wraps properly */
-            white-space: normal; /* Override parent's nowrap */
-            hyphens: auto; /* Add hyphenation for better text flow */
+            word-wrap: break-word;
+            /* Allow long words to break */
+            overflow-wrap: break-word;
+            /* Ensure text wraps properly */
+            white-space: normal;
+            /* Override parent's nowrap */
+            hyphens: auto;
+            /* Add hyphenation for better text flow */
         }
 
         .frame-info-badge {
@@ -240,108 +246,125 @@
         }
     </style>
 </head>
+
 <body>
-<div class="hero-bg min-h-screen">
+    <div class="hero-bg min-h-screen">
 
-    <!-- Header -->
-    <div class="text-center header-section bg-[#FEF3E2] py-20 relative">
-        <div class="floating-elements">
-            <i class="floating-star fas fa-star" style="top: 20%; left: 10%; animation-delay: 0s;"></i>
-            <i class="floating-star fas fa-heart" style="top: 30%; right: 15%; animation-delay: 2s;"></i>
-            <i class="floating-star fas fa-camera" style="bottom: 40%; left: 20%; animation-delay: 4s;"></i>
-            <i class="floating-star fas fa-smile" style="top: 60%; right: 20%; animation-delay: 6s;"></i>
-        </div>
-
-        <h1 class="text-6xl font-extrabold text-gray-900 mb-8 tracking-tight">
-            Apa Kata Mereka?
-        </h1>
-        <p class="text-gray-600 text-xl max-w-4xl mx-auto px-6 leading-relaxed">
-            Kepuasan kamu adalah tujuan utama kami. Lihat cerita seru dari pengguna yang sudah mencoba PhotoBooth ini
-            dan punya pengalaman seru yang nggak terlupakan!
-        </p>
-        <div class="mt-8">
-            <div
-                class="inline-flex items-center space-x-2 bg-white rounded-full px-6 py-3 shadow-lg border-2 border-[#BF3131]">
-                <i class="fas fa-users text-[#BF3131]"></i>
-                <span class="font-semibold text-gray-700">1000+ Pelanggan Puas</span>
-                <i class="fas fa-heart text-red-500"></i>
+        <!-- Header -->
+        <div class="text-center header-section bg-[#FEF3E2] py-20 relative">
+            <div class="floating-elements">
+                <i class="floating-star fas fa-star" style="top: 20%; left: 10%; animation-delay: 0s;"></i>
+                <i class="floating-star fas fa-heart" style="top: 30%; right: 15%; animation-delay: 2s;"></i>
+                <i class="floating-star fas fa-camera" style="bottom: 40%; left: 20%; animation-delay: 4s;"></i>
+                <i class="floating-star fas fa-smile" style="top: 60%; right: 20%; animation-delay: 6s;"></i>
             </div>
-        </div>
-    </div>
 
-    <!-- Testimoni Marquee -->
-    <div class="marquee-container relative bg-[#FEF3E2]">
-        <div id="marqueeContent" class="marquee-content">
-            <!-- Loading state -->
-            <div class="flex justify-center items-center w-full">
-                <div class="loading-spinner"></div>
-                <p class="ml-4 text-[#BF3131] font-semibold">Memuat testimoni...</p>
-            </div>
-        </div>
-    </div>
-
-    <div class="text-center py-16 relative bg-[#FEF3E2] z-10">
-
-        <div class="text-center footer-section py-20 relative">
-            <div class="max-w-4xl mx-auto px-6">
-                <h2 class="text-4xl font-bold text-gray-900 mb-6">
-                    Siap Merasakan Pengalaman Serupa?
-                </h2>
-                <p class="text-gray-600 text-xl mb-10 leading-relaxed">
-                    Bergabunglah dengan ribuan pelanggan yang telah merasakan keajaiban photobooth kami.
-                    Ciptakan momen berharga yang tak terlupakan!
-                </p>
-                <div class="flex justify-center space-x-4">
-                    <button
-                    class="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-xl text-white bg-[#BF3131] hover:bg-[#F16767] transition duration-300 shadow-sm hover:shadow-lg cursor-pointer hover:scale-105">
-                    <i class="fas fa-camera mr-2"></i>
-                    Coba Sekarang
-                    </button>
-
-                    <button
-                    class="inline-flex items-center justify-center px-5 py-3 border border-[#BF3131] text-[#BF3131] bg-white hover:bg-gray-50 text-base font-medium rounded-xl transition duration-300 shadow-sm hover:shadow-lg cursor-pointer hover:scale-105">
-                    <i class="fas fa-phone mr-2"></i>
-                    Hubungi Kami
-                    </button>
-
+            <h1 class="text-6xl font-extrabold text-gray-900 mb-8 tracking-tight">
+                Apa Kata Mereka?
+            </h1>
+            <p class="text-gray-600 text-xl max-w-4xl mx-auto px-6 leading-relaxed">
+                Kepuasan kamu adalah tujuan utama kami. Lihat cerita seru dari pengguna yang sudah mencoba PhotoBooth
+                ini
+                dan punya pengalaman seru yang nggak terlupakan!
+            </p>
+            <div class="mt-8">
+                <div
+                    class="inline-flex items-center space-x-2 bg-white rounded-full px-6 py-3 shadow-lg border-2 border-[#BF3131]">
+                    <i class="fas fa-users text-[#BF3131]"></i>
+                    <span class="font-semibold text-gray-700">1000+ Pelanggan Puas</span>
+                    <i class="fas fa-heart text-red-500"></i>
                 </div>
             </div>
         </div>
 
+        <!-- Testimoni Marquee -->
+        <div class="marquee-container relative bg-[#FEF3E2]">
+            <div id="marqueeContent" class="marquee-content">
+                <!-- Loading state -->
+                <div class="flex justify-center items-center w-full">
+                    <div class="loading-spinner"></div>
+                    <p class="ml-4 text-[#BF3131] font-semibold">Memuat testimoni...</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="relative bg-gradient-to-br bg-[#FEF3E2] overflow-hidden">
+            <!-- Background decorative elements -->
+            <div class="absolute inset-0 overflow-hidden">
+                <div
+                    class="absolute -top-24 -left-24 w-96 h-96 bg-gradient-to-br from-[#BF3131] to-[#F16767] rounded-full opacity-5 animate-pulse">
+                </div>
+                <div class="absolute -bottom-32 -right-32 w-80 h-80 bg-gradient-to-bl from-[#F16767] to-[#BF3131] rounded-full opacity-5 animate-pulse"
+                    style="animation-delay: 1s;"></div>
+                <div class="absolute top-1/2 left-1/4 w-4 h-4 bg-[#BF3131] rounded-full opacity-20 animate-bounce"
+                    style="animation-delay: 0.5s;"></div>
+                <div class="absolute top-1/3 right-1/3 w-3 h-3 bg-[#F16767] rounded-full opacity-20 animate-bounce"
+                    style="animation-delay: 1.5s;"></div>
+                <div class="absolute bottom-1/4 left-1/2 w-5 h-5 bg-[#BF3131] rounded-full opacity-20 animate-bounce"
+                    style="animation-delay: 2s;"></div>
+            </div>
+
+            <!-- Company Slogan Section -->
+            <div class="relative z-10 text-center py-16">
+                <div class="max-w-6xl mx-auto px-6">
+                    <!-- Main Slogan -->
+                    <div class="mb-16">
+                        <div class="inline-flex items-center justify-center mb-6">
+                            <div class="h-px bg-gradient-to-r from-transparent via-[#BF3131] to-transparent w-32"></div>
+                            <div class="mx-4 bg-white border-2 border-[#BF3131] rounded-full px-4 py-2">
+                                <i class="fas fa-camera text-[#BF3131] text-lg"></i>
+                            </div>
+                            <div class="h-px bg-gradient-to-l from-transparent via-[#BF3131] to-transparent w-32"></div>
+                        </div>
+
+
+
+                        <p class="text-2xl font-semibold text-gray-700 mb-2">
+                            "Setiap detik adalah kenangan, setiap foto adalah cerita"
+                        </p>
+                        <p class="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
+                            Photobooth terdepan yang menghadirkan teknologi canggih dengan sentuhan kreativitas untuk
+                            menciptakan momen tak terlupakan
+                        </p>
+                    </div>
+
+
+                </div>
+            </div>
+        </div>
     </div>
-</div>
-<script>
-    let allTestimonis = [];
+    <script>
+        let allTestimonis = [];
 
-    // Load initial data
-    document.addEventListener('DOMContentLoaded', function() {
-        loadTestimonis();
-    });
+        // Load initial data
+        document.addEventListener('DOMContentLoaded', function() {
+            loadTestimonis();
+        });
 
-    // Load testimonials
-    async function loadTestimonis() {
-        try {
-            const response = await fetch('/api/testimonis?per_page=50');
-            const result = await response.json();
+        // Load testimonials
+        async function loadTestimonis() {
+            try {
+                const response = await fetch('/api/testimonis?per_page=50');
+                const result = await response.json();
 
-            if (result.success && result.data.data) {
-                allTestimonis = result.data.data;
-                displayMarqueeTestimonis(allTestimonis);
-            } else {
+                if (result.success && result.data.data) {
+                    allTestimonis = result.data.data;
+                    displayMarqueeTestimonis(allTestimonis);
+                } else {
+                    loadMockData(); // Fallback to mock data
+                }
+            } catch (error) {
+                console.error('Error loading testimonis:', error);
                 loadMockData(); // Fallback to mock data
             }
-        } catch (error) {
-            console.error('Error loading testimonis:', error);
-            loadMockData(); // Fallback to mock data
         }
-    }
 
-    // Display testimonials in marquee
-    function displayMarqueeTestimonis(testimonis) {
-        const container = document.getElementById('marqueeContent');
+        // Display testimonials in marquee
+        function displayMarqueeTestimonis(testimonis) {
+            const container = document.getElementById('marqueeContent');
 
-        if (testimonis.length === 0) {
-            container.innerHTML = `
+            if (testimonis.length === 0) {
+                container.innerHTML = `
                     <div class="text-center py-12 w-full">
                         <div class="text-[#BF3131] mb-4">
                             <i class="fas fa-comments text-6xl opacity-50"></i>
@@ -349,27 +372,27 @@
                         <p class="text-gray-500 text-lg">Belum ada testimoni tersedia.</p>
                     </div>
                 `;
-            return;
+                return;
+            }
+
+            // Duplicate testimonials for seamless infinite loop
+            const duplicatedTestimonis = [...testimonis, ...testimonis];
+
+            container.innerHTML = duplicatedTestimonis.map(testimoni => createTestimoniCard(testimoni)).join('');
         }
 
-        // Duplicate testimonials for seamless infinite loop
-        const duplicatedTestimonis = [...testimonis, ...testimonis];
+        // Create testimonial card
+        function createTestimoniCard(testimoni) {
+            const date = new Date(testimoni.created_at).toLocaleDateString('id-ID', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
 
-        container.innerHTML = duplicatedTestimonis.map(testimoni => createTestimoniCard(testimoni)).join('');
-    }
+            const stars = generateStars(testimoni.rating);
+            const emoji = testimoni.emoji || getRandomEmoji(testimoni.rating);
 
-    // Create testimonial card
-    function createTestimoniCard(testimoni) {
-        const date = new Date(testimoni.created_at).toLocaleDateString('id-ID', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-        });
-
-        const stars = generateStars(testimoni.rating);
-        const emoji = testimoni.emoji || getRandomEmoji(testimoni.rating);
-
-        return `
+            return `
                 <div class="testimonial-card card-gradient rounded-2xl py-7 px-10 shadow-xl mx-3 relative">
                     <!-- Header -->
                     <div class="flex items-center justify-between mb-6">
@@ -408,55 +431,56 @@
                         
                         <!-- Frame info -->
                         ${testimoni.frame ? `
-                                        <a href="/booth?frame_id=${testimoni.frame.id}" class="frame-info-badge">
-                                            <div class="flex items-center justify-center space-x-2">
-                                                <i class="fas fa-image frame-icon text-[#BF3131] transition-colors duration-300"></i>
-                                                <span class="text-sm font-semibold frame-text text-gray-700 transition-colors duration-300">
-                                                    Frame: ${testimoni.frame.name}
-                                                </span>
-                                                <i class="fas fa-check-circle frame-check text-green-500 text-sm transition-colors duration-300"></i>
-                                            </div>
-                                        </a>
-                                    ` : ''}
+                                                                    <a href="/booth?frame_id=${testimoni.frame.id}" class="frame-info-badge">
+                                                                        <div class="flex items-center justify-center space-x-2">
+                                                                            <i class="fas fa-image frame-icon text-[#BF3131] transition-colors duration-300"></i>
+                                                                            <span class="text-sm font-semibold frame-text text-gray-700 transition-colors duration-300">
+                                                                                Frame: ${testimoni.frame.name}
+                                                                            </span>
+                                                                            <i class="fas fa-check-circle frame-check text-green-500 text-sm transition-colors duration-300"></i>
+                                                                        </div>
+                                                                    </a>
+                                                                ` : ''}
                     </div>
 
                 </div>
             `;
-    }
+        }
 
-    // Generate stars
-    function generateStars(rating) {
-        let stars = '';
-        for (let i = 1; i <= 5; i++) {
-            if (i <= rating) {
-                stars += '<i class="fas fa-star"></i>';
-            } else {
-                stars += '<i class="far fa-star text-gray-300"></i>';
+        // Generate stars
+        function generateStars(rating) {
+            let stars = '';
+            for (let i = 1; i <= 5; i++) {
+                if (i <= rating) {
+                    stars += '<i class="fas fa-star"></i>';
+                } else {
+                    stars += '<i class="far fa-star text-gray-300"></i>';
+                }
             }
+            return stars;
         }
-        return stars;
-    }
 
-    // Get random emoji based on rating
-    function getRandomEmoji(rating) {
-        const emojisByRating = {
-            5: ['😍', '🤩', '⭐', '🎉', '💖', '👏'],
-            4: ['😊', '👍', '😄', '🙂', '💙'],
-            3: ['😐', '👌', '🙂'],
-            2: ['😕', '👎'],
-            1: ['😞', '👎', '😔']
-        };
-        
-        const emojis = emojisByRating[rating] || emojisByRating[5];
-        return emojis[Math.floor(Math.random() * emojis.length)];
-    }
+        // Get random emoji based on rating
+        function getRandomEmoji(rating) {
+            const emojisByRating = {
+                5: ['😍', '🤩', '⭐', '🎉', '💖', '👏'],
+                4: ['😊', '👍', '😄', '🙂', '💙'],
+                3: ['😐', '👌', '🙂'],
+                2: ['😕', '👎'],
+                1: ['😞', '👎', '😔']
+            };
 
-    // Auto-load mock data for demo
-    setTimeout(() => {
-        if (allTestimonis.length === 0) {
-            loadMockData();
+            const emojis = emojisByRating[rating] || emojisByRating[5];
+            return emojis[Math.floor(Math.random() * emojis.length)];
         }
-    }, 2000);
-</script>
+
+        // Auto-load mock data for demo
+        setTimeout(() => {
+            if (allTestimonis.length === 0) {
+                loadMockData();
+            }
+        }, 2000);
+    </script>
 </body>
+
 </html>

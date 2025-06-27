@@ -9,6 +9,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+        integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 
 <body class="m-0 font-['Poppins'] bg-[#FEF3E2] flex flex-col items-center relative min-h-screen">
@@ -38,12 +41,35 @@
                     <div id="countdown-overlay"
                         class="absolute top-0 left-0 w-full h-full flex justify-center items-center text-8xl font-bold text-white pointer-events-none"
                         style="text-shadow: 0 0 10px rgba(0, 0, 0, 0.7);"></div>
-                    <button id="floatingCameraToggle" class="floating-camera-toggle" title="Switch Camera">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="currentColor">
-                            <path
-                                d="M448 224c0 35.3-28.7 64-64 64s-64-28.7-64-64s28.7-64 64-64s64 28.7 64 64zM224 256c-35.3 0-64-28.7-64-64s28.7-64 64-64s64 28.7 64 64s-28.7 64-64 64zm-256 0c0-17.7 14.3-32 32-32s32 14.3 32 32s-14.3 32-32 32s-32-14.3-32-32zm256 192c-35.3 0-64-28.7-64-64s28.7-64 64-64s64 28.7 64 64s-28.7 64-64 64z" />
-                        </svg>
+                    <div id="flash-overlay"></div>
+
+                    <!-- Floating Settings Button -->
+                    <button id="floatingSettingsToggle" class="floating-settings-toggle" title="Settings">
+                        <i class="fa-solid fa-gear text-white"></i>
                     </button>
+
+                    <!-- Floating Options (Hidden by default) -->
+                    <div id="floatingOptions" class="floating-options hidden">
+                        <button id="floatingCameraToggle" class="floating-option floating-camera-toggle"
+                            title="Switch Camera">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="currentColor">
+                                <path
+                                    d="M448 224c0 35.3-28.7 64-64 64s-64-28.7-64-64s28.7-64 64-64s64 28.7 64 64zM224 256c-35.3 0-64-28.7-64-64s28.7-64 64-64s64 28.7 64 64s-28.7 64-64 64zm-256 0c0-17.7 14.3-32 32-32s32 14.3 32 32s-14.3 32-32 32s-32-14.3-32-32zm256 192c-35.3 0-64-28.7-64-64s28.7-64 64-64s64 28.7 64 64s-28.7 64-64 64z" />
+                            </svg>
+                        </button>
+                        <button id="floatingMirrorToggle" class="floating-option floating-mirror-toggle"
+                            title="Toggle Mirror: Off">
+                            <i class="fa-solid fa-clone text-white mt-2"></i>
+                        </button>
+                        <button id="floatingCountdownToggle" class="floating-option floating-countdown-toggle"
+                            title="Countdown: 3s">
+                            <span class="countdown-text">3s</span>
+                        </button>
+                        <button id="floatingFlashToggle" class="floating-option floating-flash-toggle"
+                            title="Flash: Off">
+                            <i class="fa-solid fa-bolt text-white mt-2"></i>
+                        </button>
+                    </div>
                 </div>
                 <div class="flex justify-center items-center gap-4 mt-5 flex-wrap">
                     <select id="filterSelect"
@@ -55,17 +81,7 @@
                         <option value="brightness(120%)">Bright</option>
                     </select>
 
-                    <button id="mirrorToggle"
-                        class="bg-[#BF3131] text-white border border-transparent py-2 px-3 sm:py-2.5 sm:px-4 text-sm sm:text-base font-semibold rounded-xl cursor-pointer transition-all duration-300 ease-in-out hover:bg-[#F16767] hover:scale-105 shadow-sm hover:shadow-lg w-auto">
-                        Mirror: Off
-                    </button>
 
-                    <select id="countdownSelect"
-                        class="py-2 px-3 sm:py-2.5 sm:px-4 rounded-xl bg-white text-sm sm:text-base font-medium cursor-pointer border-2 border-[#BF3131] transition-all duration-300 ease-in-out hover:bg-[#F16767] hover:text-white w-auto">
-                        <option value="3">3 Seconds</option>
-                        <option value="5">5 Seconds</option>
-                        <option value="0">No Countdown</option>
-                    </select>
                 </div>
 
                 <div class="w-full flex flex-wrap justify-center items-center gap-4 mt-5">
@@ -346,10 +362,7 @@
             }
         }
 
-        #mirrorToggle.active {
-            background-color: #F16767;
-            border-color: #BF3131;
-        }
+
 
         #countdownSelect {
             min-width: 120px;
@@ -502,6 +515,38 @@
                 height: 100%;
                 object-fit: cover;
             }
+        }
+
+        .floating-settings-toggle {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            z-index: 40;
+            width: 48px;
+            height: 48px;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .floating-settings-toggle i {
+            font-size: 24px;
+            color: white;
+        }
+
+        .floating-settings-toggle:hover {
+            background: rgba(0, 0, 0, 0.8);
+            transform: scale(1.1);
+        }
+
+        .floating-settings-toggle.active {
+            background: rgba(191, 49, 49, 0.6);
         }
 
         .frame-container {
@@ -686,12 +731,64 @@
 
         }
 
-        .floating-camera-toggle {
+        /* Floating Settings Toggle */
+        .floating-settings-toggle {
             position: absolute;
-            display: flex;
             top: 15px;
             right: 15px;
-            z-index: 30;
+            z-index: 40;
+            width: 48px;
+            height: 48px;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .floating-settings-toggle i {
+            font-size: 24px;
+            color: white;
+        }
+
+        .floating-settings-toggle:hover {
+            background: rgba(0, 0, 0, 0.8);
+            transform: scale(1.1);
+        }
+
+        .floating-settings-toggle.active {
+            background: rgba(191, 49, 49, 0.6);
+        }
+
+        /* Floating Options Container */
+        .floating-options {
+            position: absolute;
+            top: 70px;
+            right: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .floating-options.hidden {
+            opacity: 0;
+            transform: translateY(-10px);
+            pointer-events: none;
+        }
+
+        .floating-options:not(.hidden) {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        /* General Floating Option Styles */
+        .floating-option {
             width: 48px;
             height: 48px;
             background: rgba(0, 0, 0, 0.4);
@@ -705,27 +802,54 @@
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         }
 
-
-        .floating-camera-toggle svg {
+        .floating-option svg,
+        .floating-option i {
             width: 24px;
             height: 24px;
             color: white;
-            transition: transform 0.3s ease;
         }
 
-
-        /* Sembunyikan tombol kamera toggle yang lama */
-        #cameraToggle {
-            display: none !important;
+        .floating-option:hover {
+            background: rgba(0, 0, 0, 0.6);
+            transform: scale(1.1);
         }
 
+        .floating-option.active {
+            background: rgba(191, 49, 49, 0.6);
+        }
 
+        /* Specific Floating Option Styles */
+        .floating-camera-toggle {
+            display: flex;
+        }
 
-        /* Hide floating camera toggle button on desktop (min-width: 769px) */
         @media (min-width: 769px) {
             .floating-camera-toggle {
                 display: none;
             }
+        }
+
+        .floating-countdown-toggle .countdown-text {
+            font-size: 14px;
+            font-weight: bold;
+            color: white;
+        }
+
+        /* Flash Overlay */
+        #flash-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 1s ease;
+        }
+
+        #flash-overlay.active {
+            opacity: 1;
         }
     </style>
 
@@ -769,7 +893,11 @@
         let gifLoadingModal = document.getElementById('gifLoadingModal');
         let gifProgressBar = document.getElementById('gifProgressBar');
         let gifProgressText = document.getElementById('gifProgressText');
+        const flashOverlay = document.getElementById('flash-overlay');
         let generatedGifBlob = null;
+        let isFlashEnabled = false;
+        // Tambahkan variabel untuk melacak status tombol setting
+        let isSettingsOpen = false;
 
         let hasShownTestimoniModal = false;
         let currentPhotoIndex = null;
@@ -785,10 +913,13 @@
 
         let isMirrored = true;
         let selectedCountdown = 3;
+        const countdownOptions = [3, 5, 0]; // Available countdown options
+        let currentCountdownIndex = 0; // Track current countdown option
         let currentCaptureSlot = 0;
         const totalSlots = 3;
         let currentFacingMode = 'user';
         let currentStream = null;
+
 
         // Konfigurasi untuk single session
         const SINGLE_SESSION_CONFIG = {
@@ -1186,11 +1317,22 @@
             // Stop existing stream if any
             if (currentStream) {
                 currentStream.getTracks().forEach(track => track.stop());
+                currentStream = null;
+                console.log('Existing stream stopped');
             }
 
+            // Set video constraints
             const constraints = {
                 video: {
-                    aspectRatio: 4 / 3,
+                    width: {
+                        ideal: 1280
+                    },
+                    height: {
+                        ideal: 720
+                    },
+                    aspectRatio: {
+                        ideal: 4 / 3
+                    },
                     facingMode: facingMode
                 }
             };
@@ -1200,20 +1342,61 @@
                     currentStream = stream;
                     video.srcObject = stream;
                     currentFacingMode = facingMode;
+                    console.log(`Webcam initialized with facingMode: ${facingMode}`);
 
-                    // Update floating button instead of regular button
+                    // Check flash support for rear camera
+                    const flashToggle = document.getElementById('floatingFlashToggle');
+                    if (facingMode === 'environment' && flashToggle) {
+                        const videoTrack = stream.getVideoTracks()[0];
+                        if (videoTrack && typeof videoTrack.getCapabilities === 'function') {
+                            try {
+                                const capabilities = videoTrack.getCapabilities();
+                                // Check if getCapabilities returns a Promise
+                                if (capabilities instanceof Promise) {
+                                    capabilities.then(caps => {
+                                        if (caps.torch) {
+                                            flashToggle.style.display = 'flex';
+                                            console.log('Native flash supported');
+                                        } else {
+                                            flashToggle.style.display = 'flex'; // Fallback to white overlay
+                                            console.log('Native flash not supported, using white overlay');
+                                        }
+                                    }).catch(err => {
+                                        console.error('Error checking flash capabilities:', err);
+                                        flashToggle.style.display = 'flex'; // Fallback to white overlay
+                                    });
+                                } else {
+                                    // Synchronous getCapabilities
+                                    if (capabilities.torch) {
+                                        flashToggle.style.display = 'flex';
+                                        console.log('Native flash supported (synchronous)');
+                                    } else {
+                                        flashToggle.style.display = 'flex'; // Fallback to white overlay
+                                        console.log('Native flash not supported, using white overlay (synchronous)');
+                                    }
+                                }
+                            } catch (err) {
+                                console.error('Error accessing getCapabilities:', err);
+                                flashToggle.style.display = 'flex'; // Fallback to white overlay
+                            }
+                        } else {
+                            console.log('getCapabilities not supported or no video track, using white overlay');
+                            flashToggle.style.display = 'flex'; // Fallback to white overlay
+                        }
+                    } else {
+                        updateFlashToggleVisibility();
+                    }
+
                     updateFloatingCameraToggleButton();
                 })
                 .catch(err => {
-                    console.error("Error accessing webcam: " + err);
-
-                    // Jika gagal dengan kamera yang diminta, coba dengan kamera lainnya
+                    console.error(`Error accessing webcam with facingMode ${facingMode}:`, err);
                     if (facingMode === 'environment') {
-                        console.log("Trying front camera as fallback...");
+                        console.log('Falling back to front camera...');
                         initializeWebcam('user');
                     } else {
                         alert(
-                            "Failed to access webcam. Please ensure your camera is connected and permissions are granted."
+                            'Failed to access webcam. Please ensure your camera is connected and permissions are granted.'
                         );
                     }
                 });
@@ -1270,7 +1453,45 @@
                 return;
             }
 
-            const slotRect = photoSlot.getBoundingClientRect();
+            // Detect if the device is mobile
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+            // Show flash effect if enabled
+            if (isFlashEnabled && flashOverlay) {
+                if (isMobile && currentFacingMode === 'environment') {
+                    // Attempt to use native hardware flash for mobile rear camera
+                    useNativeFlash()
+                        .then(() => {
+                            console.log('Native flash triggered');
+                            setTimeout(() => captureImage(), 100); // Small delay to ensure flash is off
+                        })
+                        .catch(err => {
+                            console.error('Failed to trigger native flash:', err);
+                            // Fallback to white overlay flash
+                            triggerWhiteOverlayFlash(() => captureImage()); // Pass captureImage as callback
+                        });
+                } else {
+                    // Use white overlay flash for desktop or front camera
+                    triggerWhiteOverlayFlash(() => captureImage()); // Pass captureImage as callback
+                }
+            } else {
+                // No flash, capture directly
+                captureImage();
+            }
+        }
+
+        // Modified triggerWhiteOverlayFlash to accept a callback
+        function triggerWhiteOverlayFlash(callback) {
+            flashOverlay.classList.add('active');
+            setTimeout(() => {
+                flashOverlay.classList.remove('active');
+                if (callback) callback(); // Execute callback after flash
+            }, 1000); // Flash duration: 1000ms (1 second)
+        }
+
+        // Helper function to capture the image
+        function captureImage() {
+            const slotRect = photoSlots[currentPhotoIndex].getBoundingClientRect();
             const targetAspectRatio = slotRect.width / slotRect.height;
             const videoAspectRatio = video.videoWidth / video.videoHeight;
 
@@ -1299,6 +1520,12 @@
                 ctx.scale(-1, 1);
             }
             ctx.filter = getComputedStyle(video).filter;
+
+            // Apply slight brightness increase if flash is enabled
+            if (isFlashEnabled) {
+                ctx.filter = `${ctx.filter} brightness(1.2)`;
+            }
+
             ctx.drawImage(
                 video,
                 sourceX, sourceY, sourceWidth, sourceHeight,
@@ -1311,10 +1538,59 @@
             const success = setPhotoToSlot(dataUrl, currentPhotoIndex);
             if (!success) {
                 console.error('Failed to set photo to slot', currentPhotoIndex);
+            } else {
+                console.log('Photo successfully captured and set to slot', currentPhotoIndex);
+                // Update retake button state
+                updateRetakeButtonsState();
+                // Check if all photos are taken
+                checkAllPhotosTaken();
             }
 
-            // Reset capture state
             resetCaptureState();
+        }
+
+        async function useNativeFlash() {
+            if (!currentStream || !isFlashEnabled) {
+                return Promise.reject('No stream or flash disabled');
+            }
+
+            const videoTrack = currentStream.getVideoTracks()[0];
+            if (!videoTrack) {
+                return Promise.reject('No video track available');
+            }
+
+            try {
+                const imageCapture = new ImageCapture(videoTrack);
+                const capabilities = await videoTrack.getCapabilities();
+
+                // Check if flash is supported
+                if (capabilities.torch) {
+                    // Enable torch (flash)
+                    await videoTrack.applyConstraints({
+                        advanced: [{
+                            torch: true
+                        }]
+                    });
+
+                    // Keep flash on briefly
+                    return new Promise((resolve) => {
+                        setTimeout(async () => {
+                            // Turn off flash after 1 second
+                            await videoTrack.applyConstraints({
+                                advanced: [{
+                                    torch: false
+                                }]
+                            });
+                            resolve();
+                        }, 1000);
+                    });
+                } else {
+                    return Promise.reject('Flash not supported on this device');
+                }
+            } catch (err) {
+                console.error('Error accessing native flash:', err);
+                return Promise.reject(err);
+            }
         }
 
         function resetCaptureState() {
@@ -1398,9 +1674,11 @@
             capturing = true;
             countdown = selectedCountdown;
 
-            if (countdownOverlay) countdownOverlay.textContent = countdown;
+            if (countdownOverlay) {
+                countdownOverlay.textContent = countdown > 0 ? countdown : '';
+            }
 
-            // Update button to show capturing state dengan current count
+            // Update capture button
             if (captureButton) {
                 const takenPhotos = Array.from(photoSlots).filter(slot => !isPhotoSlotEmpty(slot)).length;
                 captureButton.innerHTML = `
@@ -1413,7 +1691,6 @@
             }
 
             if (selectedCountdown === 0) {
-                if (countdownOverlay) countdownOverlay.textContent = "";
                 capturePhoto();
             } else {
                 timer = setInterval(() => {
@@ -1977,6 +2254,7 @@
             });
         }
 
+        // Update initialize function to include new toggle setup
         function initialize() {
             if (isInitialized) {
                 console.log('Already initialized, skipping...');
@@ -2008,15 +2286,15 @@
                     }
                 });
 
-                // Initialize webcam dengan kamera depan sebagai default
                 initializeWebcam('user');
                 setupFilterChange();
                 setupMirrorToggle();
-                setupCountdownSelect();
+                setupCountdownToggle();
+                setupFlashToggle();
+                setupSettingsToggle(); // Tambahkan setup tombol setting
                 setupEventListeners();
                 setupTestimoniEventListeners();
 
-                // Initialize capture button dengan text 0/3
                 if (captureButton) {
                     captureButton.innerHTML = `
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="w-5 h-5" fill="currentColor">
@@ -2033,13 +2311,31 @@
             }, 100);
         }
 
+        function setupSettingsToggle() {
+            const settingsToggle = document.getElementById('floatingSettingsToggle');
+            const floatingOptions = document.getElementById('floatingOptions');
+
+            if (settingsToggle && floatingOptions) {
+                settingsToggle.addEventListener('click', () => {
+                    isSettingsOpen = !isSettingsOpen;
+                    floatingOptions.classList.toggle('hidden', !isSettingsOpen);
+                    settingsToggle.classList.toggle('active', isSettingsOpen);
+                    settingsToggle.title = isSettingsOpen ? 'Close Settings' : 'Settings';
+                    console.log('Settings toggled:', isSettingsOpen);
+                });
+                console.log('Settings toggle event listener added');
+            } else {
+                console.error('Settings toggle or options container not found');
+            }
+        }
+
         function setupMirrorToggle() {
-            const mirrorToggle = document.getElementById('mirrorToggle');
+            const mirrorToggle = document.getElementById('floatingMirrorToggle');
             if (mirrorToggle) {
                 mirrorToggle.addEventListener('click', () => {
                     isMirrored = !isMirrored;
                     video.style.transform = isMirrored ? 'scaleX(-1)' : 'scaleX(1)';
-                    mirrorToggle.textContent = `Mirror: ${isMirrored ? 'On' : 'Off'}`;
+                    mirrorToggle.title = `Toggle Mirror: ${isMirrored ? 'On' : 'Off'}`;
                     mirrorToggle.classList.toggle('active', isMirrored);
                 });
             }
@@ -2079,12 +2375,66 @@
             }
         }
 
-        function setupCountdownSelect() {
-            const countdownSelect = document.getElementById('countdownSelect');
-            if (countdownSelect) {
-                countdownSelect.addEventListener('change', () => {
-                    selectedCountdown = parseInt(countdownSelect.value);
+        function setupFlashToggle() {
+            const flashToggle = document.getElementById('floatingFlashToggle');
+            if (flashToggle) {
+                flashToggle.addEventListener('click', () => {
+                    isFlashEnabled = !isFlashEnabled;
+                    flashToggle.title = `Flash: ${isFlashEnabled ? 'On' : 'Off'}`;
+                    flashToggle.classList.toggle('active', isFlashEnabled);
+                    console.log('Flash toggled:', isFlashEnabled);
                 });
+                console.log('Flash toggle event listener added');
+            } else {
+                console.error('Flash toggle button not found');
+            }
+        }
+
+        function updateFlashToggleVisibility() {
+            const flashToggle = document.getElementById('floatingFlashToggle');
+            if (!flashToggle) return;
+
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+            // Show flash toggle for:
+            // - Front camera (always uses white overlay)
+            // - Rear camera on mobile devices (uses native flash or fallback to white overlay)
+            if (currentFacingMode === 'user' || (isMobile && currentFacingMode === 'environment')) {
+                flashToggle.style.display = 'flex';
+            } else {
+                flashToggle.style.display = 'none';
+                isFlashEnabled = false;
+                flashToggle.classList.remove('active');
+                flashToggle.title = 'Flash: Off';
+            }
+        }
+
+        function setupCountdownToggle() {
+            const countdownToggle = document.getElementById('floatingCountdownToggle');
+            if (countdownToggle) {
+                countdownToggle.addEventListener('click', () => {
+                    currentCountdownIndex = (currentCountdownIndex + 1) % countdownOptions.length;
+                    selectedCountdown = countdownOptions[currentCountdownIndex];
+                    console.log('Countdown changed to:', selectedCountdown);
+                    updateCountdownToggleButton();
+                });
+                console.log('Countdown toggle event listener added');
+                updateCountdownToggleButton(); // Set initial state
+            } else {
+                console.error('Countdown toggle button not found');
+            }
+        }
+
+        function updateCountdownToggleButton() {
+            const countdownToggle = document.getElementById('floatingCountdownToggle');
+            if (countdownToggle) {
+                const countdownText = selectedCountdown === 0 ? '0s' : `${selectedCountdown}s`;
+                countdownToggle.title = `Countdown: ${countdownText}`;
+                countdownToggle.classList.toggle('active', selectedCountdown !== 0);
+                countdownToggle.innerHTML = `
+          
+            <span class="countdown-text">${countdownText}</span>
+        `;
             }
         }
 
@@ -2635,14 +2985,19 @@
         function setupFloatingCameraToggle() {
             const floatingToggle = document.getElementById('floatingCameraToggle');
             if (floatingToggle) {
+                // Remove existing listeners to prevent duplicates
+                floatingToggle.removeEventListener('click', toggleCamera);
                 floatingToggle.addEventListener('click', (e) => {
                     e.preventDefault();
                     e.stopPropagation();
+                    console.log('Floating camera toggle clicked');
                     toggleCamera();
+                }, {
+                    passive: false
                 });
                 console.log('Floating camera toggle event listener added');
             } else {
-                console.log('Floating camera toggle button not found');
+                console.error('Floating camera toggle button not found');
             }
         }
 
@@ -2651,15 +3006,12 @@
             if (floatingToggle) {
                 const isRearCamera = currentFacingMode === 'environment';
                 floatingToggle.title = isRearCamera ? 'Switch to Front Camera' : 'Switch to Rear Camera';
-
-                // Update icon berdasarkan kamera aktif
-                const icon = ` <svg id="cameraIcon" class="w-6 h-6" fill="none" stroke="currentColor"
-                                viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                            </svg>`;
-
-                floatingToggle.innerHTML = icon;
+                floatingToggle.innerHTML = `
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+        `;
             }
         }
         // Fungsi utama untuk validasi akses booth

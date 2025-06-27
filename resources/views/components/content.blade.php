@@ -21,9 +21,14 @@
         font-family: 'Poppins', sans-serif;
     }
 
-    #previewVideo {
+    #previewVideo,
+    #mobilePreviewVideo {
         background-color: #000;
+        transform: scaleX(-1);
+        /* Mirror the video preview */
     }
+
+    `;
 
     #previewFrameContainer {
         height: 100%;
@@ -602,7 +607,7 @@
         <div class="flex flex-row gap-6 justify-center items-center">
             <div class="w-3/5">
                 <div class="relative bg-white rounded-lg overflow-hidden" style="aspect-ratio: 4/3;">
-                    <video id="previewVideo" autoplay muted class="w-full h-full object-cover scale-x-[-1]"></video>
+                    <video id="previewVideo" autoplay muted class="w-full h-full object-cover"></video>
                     <div id="previewWatermark" class="hidden">
                         <div class="watermark-content">
                             <img src="{{ asset('logo.png') }}" alt="Logo" class="h-10">
@@ -619,59 +624,60 @@
                 </button>
             </div>
 
-            <div class="w-[190px] h-[450px] relative">
-                <div id="previewFrameContainer" class="w-full h-full relative bg-transparent shadow-md overflow-hidden">
-                    <div id="previewFrameImage" class="absolute inset-0 flex items-center justify-center bg-gray-100">
-                        <p class="text-gray-400 text-center p-4">Frame akan muncul di sini</p>
-                    </div>
+            <div class="relative" style="width: 172px; height: 450px;>
+                <div id="previewFrameContainer"
+                class="w-full h-full relative bg-transparent shadow-md overflow-hidden">
+                <div id="previewFrameImage" class="absolute inset-0 flex items-center justify-center bg-gray-100">
+                    <p class="text-gray-400 text-center p-4">Frame akan muncul di sini</p>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-    <div
-        class="relative bg-white rounded-t-xl shadow-xl w-full md:hidden mobile-modal-container max-h-[90vh] overflow-y-auto">
-        <div class="sticky top-0 z-10 bg-white rounded-t-xl border-b border-gray-200">
-            <div class="w-12 h-1.5 bg-gray-300 rounded-full mx-auto my-3"></div>
-            <h2 class="text-xl font-semibold px-4 pb-3 text-center">Frame Preview</h2>
-            <button
-                class="modal-close absolute top-3 right-4 text-2xl text-gray-500 hover:text-black cursor-pointer">×</button>
-        </div>
+<div
+    class="relative bg-white rounded-t-xl shadow-xl w-full md:hidden mobile-modal-container max-h-[90vh] overflow-y-auto">
+    <div class="sticky top-0 z-10 bg-white rounded-t-xl border-b border-gray-200">
+        <div class="w-12 h-1.5 bg-gray-300 rounded-full mx-auto my-3"></div>
+        <h2 class="text-xl font-semibold px-4 pb-3 text-center">Frame Preview</h2>
+        <button
+            class="modal-close absolute top-3 right-4 text-2xl text-gray-500 hover:text-black cursor-pointer">×</button>
+    </div>
 
-        <div class="p-4 flex flex-col gap-6">
-            <div class="w-full">
-                <div class="relative bg-white rounded-lg overflow-hidden" style="aspect-ratio: 4/3;">
-                    <video id="mobilePreviewVideo" autoplay muted
-                        class="w-full h-full object-cover scale-x-[-1]"></video>
-                    <div id="mobilePreviewWatermark" class="hidden">
-                        <div class="watermark-content">
-                            <img src="{{ asset('logo.png') }}" alt="Logo" class="h-10">
-                        </div>
-                    </div>
-                    <div id="mobilePreviewCountdownOverlay"
-                        class="absolute inset-0 flex items-center justify-center text-6xl font-bold text-white/90">
+    <div class="p-4 flex flex-col gap-6">
+        <div class="w-full">
+            <div class="relative bg-white rounded-lg overflow-hidden" style="aspect-ratio: 4/3;">
+                <video id="mobilePreviewVideo" autoplay muted class="w-full h-full object-cover"></video>
+                <div id="mobilePreviewWatermark" class="hidden">
+                    <div class="watermark-content">
+                        <img src="{{ asset('logo.png') }}" alt="Logo" class="h-10">
                     </div>
                 </div>
-
-                <button id="mobilePreviewCaptureButton"
-                    class="mt-4 w-full py-3 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-medium transition-colors">
-                    📷 Start Session
-                </button>
+                <div id="mobilePreviewCountdownOverlay"
+                    class="absolute inset-0 flex items-center justify-center text-6xl font-bold text-white/90">
+                </div>
             </div>
 
-            <div class="w-full flex justify-center items-center pb-4">
-                <div class="w-[190px] h-[450px] relative">
-                    <div id="mobilePreviewFrameContainer"
-                        class="w-full h-full relative bg-transparent shadow-md overflow-hidden">
-                        <div id="mobilePreviewFrameImage"
-                            class="absolute inset-0 flex items-center justify-center bg-gray-100">
-                            <p class="text-gray-400 text-center p-4">Frame akan muncul di sini</p>
-                        </div>
-                    </div>
+            <button id="mobilePreviewCaptureButton"
+                class="mt-4 w-full py-3 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-medium transition-colors">
+                📷 Start Session
+            </button>
+        </div>
+
+        <div class="w-full flex justify-center items-center pb-4">
+            <div class="relative"
+                style="width: 172px; height: 450px;>
+                <div id="mobilePreviewFrameContainer"
+                class="w-full h-full relative bg-transparent shadow-md overflow-hidden">
+                <div id="mobilePreviewFrameImage"
+                    class="absolute inset-0 flex items-center justify-center bg-gray-100">
+                    <p class="text-gray-400 text-center p-4">Frame akan muncul di sini</p>
                 </div>
             </div>
         </div>
     </div>
+</div>
+</div>
 </div>
 
 <script>
@@ -1144,45 +1150,65 @@
 
     function initializePhotoSlots(frameElement, isMobile = false) {
         console.log(`Initializing photo slots for ${isMobile ? 'mobile' : 'desktop'}`);
+
         if (isMobile) {
             window.mobilePhotoSlots = [];
         } else {
             window.photoSlots = [];
         }
 
+        // Remove existing slots
         const existingSlots = frameElement.querySelectorAll('.photo-slot');
         existingSlots.forEach(slot => slot.remove());
 
+        // Perbaikan: Posisi slot yang lebih presisi sesuai dengan frame template
         const slotPositions = [{
                 top: '16%',
-                left: '50%'
+                left: '50%',
+                width: '150px',
+                height: '110px'
             },
             {
-                top: '42%',
-                left: '50%'
+                top: '43%',
+                left: '50%',
+                width: '150px',
+                height: '110px'
             },
             {
-                top: '68%',
-                left: '50%'
+                top: '69%',
+                left: '50%',
+                width: '150px',
+                height: '110px'
             },
         ];
 
         for (let i = 0; i < 3; i++) {
             const photoSlot = document.createElement('div');
             photoSlot.className = 'photo-slot';
-            photoSlot.style.width = '160px';
-            photoSlot.style.height = '110px';
-            photoSlot.style.position = 'absolute';
-            photoSlot.style.top = slotPositions[i].top;
-            photoSlot.style.left = slotPositions[i].left;
-            photoSlot.style.transform = 'translate(-50%, -50%)';
-            photoSlot.style.backgroundColor = '#e6e6e6';
+            photoSlot.style.cssText = `
+                width: ${slotPositions[i].width};
+                height: ${slotPositions[i].height};
+                position: absolute;
+                top: ${slotPositions[i].top};
+                left: ${slotPositions[i].left};
+                transform: translate(-50%, -50%);
+                background-color: #f3f4f6;
+                border-radius: 8px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                overflow: hidden;
+                z-index: 10;
+            `;
 
             const img = document.createElement('img');
-            img.style.width = '100%';
-            img.style.height = '100%';
-            img.style.objectFit = 'cover';
-            img.style.display = 'none';
+            img.style.cssText = `
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                display: none;
+                border-radius: 6px;
+            `;
             photoSlot.appendChild(img);
 
             frameElement.appendChild(photoSlot);
@@ -1195,6 +1221,10 @@
                 window.photoSlots.push(img);
             }
         }
+
+        console.log(
+            `Photo slots initialized: ${isMobile ? window.mobilePhotoSlots?.length : window.photoSlots?.length} slots`
+        );
     }
 
     function startPhotoSession(isMobile = false) {

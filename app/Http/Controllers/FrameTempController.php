@@ -16,7 +16,11 @@ class FrameTempController extends Controller
         $categories = Category::all();
         $topFrames = Frame::with('category')->orderBy('used', 'desc')->take(3)->get();
 
-        // Base query dengan eager loading testimoni untuk menghitung rating
+        // Fetch custom frames (frames with category 'custom')
+        $customCategory = Category::where('name', 'custom')->first();
+        $customFrames = $customCategory ? Frame::where('category_id', $customCategory->id)->take(4)->get() : collect([]);
+
+        // Base query for other frames
         $query = Frame::with(['category', 'testimonis'])
             ->withAvg('testimonis', 'rating');
 
@@ -47,15 +51,14 @@ class FrameTempController extends Controller
             $query->orderBy('created_at', 'desc');
         }
 
-
         $frames = $query->get();
 
         // Jika request AJAX, return partial view
         if ($request->ajax()) {
-            return view('frame', compact('categories', 'frames', 'selectedCategory', 'topFrames'))->render();
+            return view('frame', compact('categories', 'frames', 'selectedCategory', 'topFrames', 'customFrames'))->render();
         }
 
-        return view('frame', compact('categories', 'frames', 'selectedCategory', 'topFrames'));
+        return view('frame', compact('categories', 'frames', 'selectedCategory', 'topFrames', 'customFrames'));
     }
 
     public function getFrameTemplate(Request $request, $frameId)
