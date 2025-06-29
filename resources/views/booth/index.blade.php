@@ -38,6 +38,8 @@
                 <div class="relative mx-auto" style="width: min(90vw, 660px); max-width: 660px; aspect-ratio: 4/3;">
                     <video id="video" autoplay
                         class="w-full h-full bg-gray-200 rounded-xl shadow-md scale-x-[-1] object-cover"></video>
+
+
                     <div id="countdown-overlay"
                         class="absolute top-0 left-0 w-full h-full flex justify-center items-center text-8xl font-bold text-white pointer-events-none"
                         style="text-shadow: 0 0 10px rgba(0, 0, 0, 0.7);"></div>
@@ -112,16 +114,35 @@
                 <div id="frameTemplate" class="w-full h-full relative bg-white rounded-lg shadow-lg">
                     @include($templatePath, ['frame' => $frame])
 
-                    <!-- White overlay divs dengan class untuk kontrol visibility -->
+                    <!-- White overlay divs untuk placeholder -->
                     <div class="photo-overlay absolute top-[20px] left-[10px] w-[170px] h-[120px] bg-gray-100 z-10 rounded-sm border-2 border-dashed border-gray-300"
-                        data-slot="0">
-                    </div>
+                        data-slot="0"></div>
                     <div class="photo-overlay absolute top-[150px] left-[10px] w-[170px] h-[120px] bg-gray-100 z-10 rounded-sm border-2 border-dashed border-gray-300"
-                        data-slot="1">
-                    </div>
+                        data-slot="1"></div>
                     <div class="photo-overlay absolute top-[280px] left-[10px] w-[170px] h-[120px] bg-gray-100 z-10 rounded-sm border-2 border-dashed border-gray-300"
-                        data-slot="2">
-                    </div>
+                        data-slot="2"></div>
+
+                    <!-- Watermark divs baru yang selalu di atas -->
+                    @if (!$frame->isFree())
+                        <div class="watermark absolute top-[20px] left-[10px] w-[170px] h-[120px] z-30 pointer-events-none opacity-40"
+                            data-slot="0">
+                            <div class="flex items-center justify-center h-full bg-black bg-opacity-50 p-2 rounded-lg">
+                                <img src="{{ asset('logo.png') }}" alt="Watermark" class="h-24">
+                            </div>
+                        </div>
+                        <div class="watermark absolute top-[150px] left-[10px] w-[170px] h-[120px] z-30 pointer-events-none opacity-40"
+                            data-slot="1">
+                            <div class="flex items-center justify-center h-full bg-black bg-opacity-50 p-2 rounded-lg">
+                                <img src="{{ asset('logo.png') }}" alt="Watermark" class="h-24">
+                            </div>
+                        </div>
+                        <div class="watermark absolute top-[280px] left-[10px] w-[170px] h-[120px] z-30 pointer-events-none opacity-40"
+                            data-slot="2">
+                            <div class="flex items-center justify-center h-full bg-black bg-opacity-50 p-2 rounded-lg">
+                                <img src="{{ asset('logo.png') }}" alt="Watermark" class="h-24">
+                            </div>
+                        </div>
+                    @endif
                 </div>
                 <p class="text-[10px] text-center font-bold mt-5">TEKAN FOTO UNTUK RETAKE FOTO</p>
                 <div class="flex flex-col justify-center items-center gap-4 mt-5">
@@ -257,6 +278,25 @@
     <input type="hidden" id="frameIsPaid" value="{{ $frame->isFree() ? 'false' : 'true' }}">
 
     <style>
+        .watermark {
+            position: absolute;
+            z-index: 30;
+            /* Pastikan lebih tinggi dari foto (z-index: 25) */
+            pointer-events: none;
+            /* Agar watermark tidak mengganggu interaksi */
+            opacity: 0.4;
+            /* Sesuaikan opacity sesuai kebutuhan */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .watermark img {
+            max-height: 100%;
+            max-width: 100%;
+            object-fit: contain;
+        }
+
         @keyframes modalFadeIn {
             from {
                 opacity: 0;
@@ -1836,6 +1876,14 @@
                 return;
             }
 
+            // Simpan referensi ke semua elemen watermark
+            const watermarks = frameContainer.querySelectorAll('.watermark');
+
+            // Sembunyikan watermark sementara
+            watermarks.forEach(watermark => {
+                watermark.style.display = 'none';
+            });
+
             const targetWidth = 1080;
             const scaleFactor = targetWidth / frameContainer.offsetWidth;
 
@@ -1857,9 +1905,19 @@
                         showTestimoniModal();
                     }, 1000);
                 }
+
+                // Kembalikan visibilitas watermark setelah rendering
+                watermarks.forEach(watermark => {
+                    watermark.style.display = 'flex';
+                });
             }).catch(error => {
                 console.error('Error generating photo strip:', error);
                 alert('Failed to generate HD photo strip. Try again.');
+
+                // Pastikan watermark dikembalikan meskipun terjadi error
+                watermarks.forEach(watermark => {
+                    watermark.style.display = 'flex';
+                });
             });
         }
 
