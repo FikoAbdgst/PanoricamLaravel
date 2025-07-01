@@ -36,6 +36,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         }
         return view('admin.dashboard');
     })->name('dashboard');
+    Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
 
     // Rute CRUD frame
     Route::get('/frames', [FrameController::class, 'index'])->name('frames.index');
@@ -62,6 +63,22 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/transactions', [AdminController::class, 'transactions'])->name('transactions.index');
     Route::post('/transactions/{id}/approve', [AdminController::class, 'approveTransaction'])->name('transactions.approve');
     Route::post('/transactions/{id}/reject', [AdminController::class, 'rejectTransaction'])->name('transactions.reject');
+
+    Route::prefix('transactions')->name('transactions.')->group(function () {
+        Route::get('/', [AdminController::class, 'transactions'])->name('index');
+        Route::post('/{id}/approve', [AdminController::class, 'approveTransaction'])->name('approve');
+        Route::post('/{id}/reject', [AdminController::class, 'rejectTransaction'])->name('reject');
+        Route::get('/check-status/{orderId}', [AdminController::class, 'checkPaymentStatus'])->name('check-status');
+    });
+
+    // Testimoni routes (jika belum ada)
+    Route::prefix('testimoni')->name('testimoni.')->group(function () {
+        Route::get('/', [TestimoniController::class, 'index'])->name('index');
+        Route::delete('/{id}', [TestimoniController::class, 'destroy'])->name('destroy');
+        Route::delete('/bulk-delete', [TestimoniController::class, 'bulkDelete'])->name('bulk-delete');
+        Route::get('/export', [TestimoniController::class, 'export'])->name('export');
+        Route::get('/stats', [TestimoniController::class, 'getStats'])->name('stats');
+    });
 });
 
 Route::get('/maintenance', function () {

@@ -11,20 +11,20 @@
     @stack('styles')
 </head>
 
-<body class="bg-gray-100 w-full">
-    <div class="flex min-h-screen">
-        <!-- Include the navbar component -->
-        @include('components.sidebar')
+<body class="bg-gray-100 overflow-x-hidden">
+    <!-- Include the sidebar component -->
+    @include('components.sidebar')
 
-        <!-- Main content -->
-        <main class="flex-1">
+    <!-- Main content dengan padding left untuk desktop -->
+    <main class="lg:ml-64 min-h-screen transition-all duration-300 ease-in-out">
+        <!-- Content wrapper dengan padding top untuk mobile toggle button -->
+        <div class="pt-16 lg:pt-6 px-4 lg:px-6">
             @yield('section')
-        </main>
+        </div>
+    </main>
 
-        <!-- Scripts -->
-        @stack('scripts')
-
-    </div>
+    <!-- Scripts -->
+    @stack('scripts')
 </body>
 
 </html>

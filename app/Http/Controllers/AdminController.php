@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Admin;
 use App\Models\Transaction;
 use App\Models\Frame;
+use App\Models\Testimoni;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Session;
@@ -286,6 +287,90 @@ class AdminController extends Controller
                 'success' => false,
                 'message' => 'Transaksi tidak ditemukan.'
             ], 404);
+        }
+    }
+
+    // Tambahkan method ini ke AdminController atau DashboardController Anda
+
+    public function dashboard()
+    {
+        try {
+            // Statistik Transaksi
+            $transactionStats = [
+                'total' => Transaction::count(),
+                'pending' => Transaction::where('status', 'pending')->count(),
+                'approved' => Transaction::where('status', 'approved')->count(),
+                'rejected' => Transaction::where('status', 'rejected')->count(),
+                'today' => Transaction::whereDate('created_at', today())->count(),
+                'last_24h' => Transaction::where('created_at', '>=', now()->subDay())->count(),
+            ];
+
+            // Transaksi 24 jam terakhir
+            $recentTransactions = Transaction::with('frame')
+                ->where('created_at', '>=', now()->subDay())
+                ->orderBy('created_at', 'desc')
+                ->take(5)
+                ->get();
+
+            // Transaksi pending (belum di-approve)
+            $pendingTransactions = Transaction::with('frame')
+                ->where('status', 'pending')
+                ->orderBy('created_at', 'desc')
+                ->take(10)
+                ->get();
+
+            // Statistik Testimoni
+            $testimoniStats = [
+                'total' => Testimoni::count(),
+                'today' => Testimoni::whereDate('created_at', today())->count(),
+                'last_24h' => Testimoni::where('created_at', '>=', now()->subDay())->count(),
+                'average_rating' => round(Testimoni::avg('rating'), 1),
+                'by_rating' => [
+                    5 => Testimoni::where('rating', 5)->count(),
+                    4 => Testimoni::where('rating', 4)->count(),
+                    3 => Testimoni::where('rating', 3)->count(),
+                    2 => Testimoni::where('rating', 2)->count(),
+                    1 => Testimoni::where('rating', 1)->count(),
+                ]
+            ];
+
+            // Testimoni terbaru
+            $recentTestimoni = Testimoni::orderBy('created_at', 'desc')
+                ->take(5)
+                ->get();
+
+            // Revenue stats (jika ada kolom amount di transaksi)
+            $revenueStats = [
+                'today' => Transaction::where('status', 'approved')
+                    ->whereDate('created_at', today())
+                    ->sum('amount'),
+                'this_month' => Transaction::where('status', 'approved')
+                    ->whereMonth('created_at', now()->month)
+                    ->whereYear('created_at', now()->year)
+                    ->sum('amount'),
+                'total' => Transaction::where('status', 'approved')->sum('amount'),
+            ];
+
+            return view('admin.dashboard', compact(
+                'transactionStats',
+                'recentTransactions',
+                'pendingTransactions',
+                'testimoniStats',
+                'recentTestimoni',
+                'revenueStats'
+            ));
+        } catch (\Exception $e) {
+            Log::error('Dashboard error: ' . $e->getMessage());
+
+            // Return dengan data kosong jika error
+            return view('admin.dashboard', [
+                'transactionStats' => ['total' => 0, 'pending' => 0, 'approved' => 0, 'rejected' => 0, 'today' => 0, 'last_24h' => 0],
+                'recentTransactions' => collect(),
+                'pendingTransactions' => collect(),
+                'testimoniStats' => ['total' => 0, 'today' => 0, 'last_24h' => 0, 'average_rating' => 0, 'by_rating' => []],
+                'recentTestimoni' => collect(),
+                'revenueStats' => ['today' => 0, 'this_month' => 0, 'total' => 0]
+            ])->with('error', 'Terjadi kesalahan saat memuat dashboard.');
         }
     }
 }
