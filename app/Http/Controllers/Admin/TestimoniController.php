@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Frame;
 use App\Models\Testimoni;
 use Illuminate\Http\Request;
 
@@ -158,5 +159,24 @@ class TestimoniController extends Controller
         };
 
         return response()->stream($callback, 200, $headers);
+    }
+    public function getFrameStatus(Request $request, $frameId)
+    {
+        try {
+            $frame = Frame::findOrFail($frameId);
+
+            return response()->json([
+                'id' => $frame->id,
+                'name' => $frame->name,
+                'price' => $frame->price,
+                'formatted_price' => 'Rp ' . number_format($frame->price, 0, ',', '.'),
+                'isFree' => $frame->price == 0 // Explicitly check if price is 0
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Frame not found',
+                'message' => $e->getMessage()
+            ], 404);
+        }
     }
 }

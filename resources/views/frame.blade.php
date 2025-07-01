@@ -2,6 +2,101 @@
 
 @section('hero_section')
     <style>
+        /* Payment Modal Styles */
+        #paymentModal {
+            display: none;
+            /* Initially hidden */
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+            overflow: hidden;
+            /* Prevent modal itself from scrolling */
+        }
+
+        #paymentModal.show {
+            display: flex;
+            /* Show modal with flex */
+        }
+
+        #paymentModal .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            /* Semi-transparent black */
+            backdrop-filter: blur(4px);
+            /* Optional: slight blur for effect */
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        #paymentModal .modal-backdrop.show {
+            opacity: 1;
+        }
+
+        #paymentModal .modal-content {
+            position: relative;
+            background: white;
+            border-radius: 1rem;
+            max-width: 32rem;
+            /* max-w-lg */
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            transform: translateY(0);
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+
+        #paymentModal .modal-content.hide {
+            transform: translateY(100%);
+            opacity: 0;
+        }
+
+        /* Prevent body scroll when modal is open */
+        body.modal-open {
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+        }
+
+
+        }
+
+        /* Mobile-specific modal styles */
+        @media (max-width: 640px) {
+            #paymentModal {
+                align-items: center;
+                justify-content: center;
+            }
+
+            #paymentModal .modal-content {
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                border-radius: 1rem;
+                max-height: 95vh;
+                width: 90%;
+                margin: 0;
+            }
+        }
+
+        /* Drag handle for mobile */
+        .modal-drag-handle {
+            width: 3rem;
+            height: 0.375rem;
+            background-color: #d1d5db;
+            border-radius: 9999px;
+            margin: 0.75rem auto;
+            cursor: grab;
+        }
+
         /* Preview Modal Styles */
         #previewCameraModal {
             font-family: 'Poppins', sans-serif;
@@ -947,7 +1042,7 @@
                                             </a>
                                         @else
                                             <button
-                                                onclick="showPremiumModal({{ $frame->id }}, '{{ number_format($frame->price, 0, ',', '.') }}')"
+                                                onclick="showPremiumModal({{ $frame->id }}, '{{ number_format($frame->price, 0, ',', '.') }}', '{{ addslashes($frame->name) }}', '{{ asset('storage/' . $frame->image_path) }}')"
                                                 class="mt-2 cursor-pointer inline-flex items-center justify-center px-4 py-2.5 border border-transparent text-sm font-medium rounded-full text-white bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 w-full transition-all duration-300 shadow-sm hover:shadow-md">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2"
                                                     fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1083,82 +1178,206 @@
     </div>
 </div>
 
-<div id="paymentModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-    <div class="bg-white rounded-2xl p-6 w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="text-xl font-bold text-gray-800">Pembayaran Premium</h3>
-            <button onclick="closePaymentModal()" class="text-gray-500 hover:text-gray-700">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
-                    </path>
-                </svg>
-            </button>
+<div id="paymentModal" class="fixed inset-0 hidden z-50 flex items-center justify-center">
+    <div class="modal-backdrop absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+    <div class="modal-content bg-white rounded-2xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto relative">
+        <!-- Header with gradient background -->
+        <div class="bg-gradient-to-r from-[#FEF3E2] to-[#FEF3E2]/70 rounded-t-2xl p-6 border-b-2 border-[#BF3131]/20">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-1">Pembayaran Premium</h3>
+                    <p class="text-sm text-gray-600">Upgrade untuk akses frame eksklusif</p>
+                </div>
+                <!-- Close Button (Visible on all devices) -->
+                <button onclick="closePaymentModal()"
+                    class="modal-close text-gray-500 hover:text-[#BF3131] transition duration-300 hover:scale-110">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
         </div>
 
-        <form id="paymentForm" enctype="multipart/form-data">
-            @csrf
-            <input type="hidden" id="frameId" name="frame_id">
-
-            <!-- Frame Info -->
-            <div class="mb-4 p-3 bg-gray-50 rounded-lg">
-                <p class="text-sm text-gray-600">Frame Premium</p>
-                <p class="font-bold text-lg" id="framePrice">Rp 0</p>
-            </div>
-
-            <!-- Payment Methods -->
-            <div class="mb-4">
-                <h4 class="font-semibold mb-3">Metode Pembayaran:</h4>
-
-                <!-- Bank Transfer -->
-                <div class="mb-3 p-3 border rounded-lg">
-                    <h5 class="font-medium mb-2">Transfer Bank</h5>
-                    <div class="text-sm text-gray-600">
-                        <p><strong>Bank BCA:</strong> 1234567890</p>
-                        <p><strong>A.n:</strong> Photobooth App</p>
+        <!-- Modal Content -->
+        <div class="p-6">
+            <form id="paymentForm" enctype="multipart/form-data">
+                <input type="hidden" id="frameId" name="frame_id">
+                <!-- Frame Info Card -->
+                <div
+                    class="mb-6 p-4 bg-gradient-to-r from-[#FEF3E2] to-[#FEF3E2]/50 rounded-xl border-2 border-[#BF3131]/20 relative overflow-hidden">
+                    <div class="absolute -right-2 -top-2 w-8 h-8 text-[#BF3131] opacity-10">
+                        <svg fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
+                                clip-rule="evenodd"></path>
+                        </svg>
                     </div>
-                </div>
-
-                <!-- QRIS -->
-                <div class="mb-3 p-3 border rounded-lg">
-                    <h5 class="font-medium mb-2">QRIS</h5>
-                    <div class="flex justify-center">
-                        <div class="w-32 h-32 bg-gray-200 rounded flex items-center justify-center">
-                            <span class="text-gray-500 text-xs">QR Code</span>
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-600 font-medium" id="frameName">Frame Premium</p>
+                            <p class="font-bold text-2xl text-[#BF3131]" id="framePrice">Rp 25.000</p>
+                        </div>
+                        <div
+                            class="w-16 h-16 rounded-lg overflow-hidden border-2 border-[#BF3131]/20 bg-white flex items-center justify-center">
+                            <img id="framePreview" src="https://via.placeholder.com/60x60/BF3131/FFFFFF?text=Frame"
+                                alt="Frame Preview" class="w-full h-full object-cover rounded">
                         </div>
                     </div>
-                    <p class="text-xs text-gray-500 text-center mt-1">Scan QR Code untuk pembayaran</p>
                 </div>
-            </div>
 
-            <!-- Email (Optional) -->
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-1">
-                    Email (Opsional - untuk mengirim link akses)
-                </label>
-                <input type="email" name="email"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="email@example.com">
-            </div>
+                <!-- Payment Methods -->
+                <div class="mb-6">
+                    <h4 class="font-bold text-lg mb-4 text-gray-800 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-[#BF3131]" fill="currentColor" viewBox="0 0 20 20">
+                            <path
+                                d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4zM18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z">
+                            </path>
+                        </svg>
+                        Metode Pembayaran
+                    </h4>
+                    <!-- Payment Method Dropdown -->
+                    <div class="mb-4">
+                        <select id="paymentMethod" name="payment_method" required
+                            class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#BF3131]/50 focus:border-[#BF3131] transition duration-300 bg-white">
+                            <option value="">Pilih Metode Pembayaran</option>
+                            <option value="bank_transfer">Transfer Bank</option>
+                            <option value="qris">QRIS</option>
+                        </select>
+                    </div>
+                    <!-- Payment Details Container -->
+                    <div id="paymentDetailsContainer" class="hidden">
+                        <!-- Bank Transfer Details -->
+                        <div id="bankTransferDetails"
+                            class="mb-4 p-4 border-2 border-[#BF3131]/20 rounded-xl bg-gradient-to-r from-[#FEF3E2]/30 to-transparent">
+                            <div class="flex items-center mb-3">
+                                <div
+                                    class="w-8 h-8Cabe bg-[#BF3131]/10 rounded-full flex items-center justify-center mr-3">
+                                    <svg class="w-4 h-4 text-[#BF3131]" fill="currentColor" viewBox="0 0 20 20">
+                                        <path
+                                            d="M4 4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2H4zm0 2h12v2H4V6zm0 4h12v4H4v-4z">
+                                        </path>
+                                    </svg>
+                                </div>
+                                <h5 class="font-semibold text-gray-800">Transfer Bank</h5>
+                            </div>
+                            <div class="text-sm text-gray-600 ml-11 space-y-2">
+                                <div
+                                    class="flex justify-between items-center p-3 bg-white rounded-lg border border-gray-100">
+                                    <span class="font-medium">Bank BCA:</span>
+                                    <div class="text-right">
+                                        <span class="font-mono font-bold text-[#BF3131]">1234567890</span>
+                                        <button type="button" onclick="copyToClipboard('1234567890')"
+                                            class="ml-2 text-xs text-[#BF3131] hover:text-[#F16767]">
+                                            Copy
+                                        </button>
+                                    </div>
+                                </div>
+                                <div
+                                    class="flex justify-between items-center p-3 bg-white rounded-lg border border-gray-100">
+                                    <span class="font-medium">A.n:</span>
+                                    <span class="font-semibold">Photobooth App</span>
+                                </div>
+                                <div class="mt-3 p-2 bg-yellow-50 border border-yellow-200 rounded-lg">
+                                    <p class="text-xs text-yellow-800">
+                                        <strong>Instruksi:</strong> Transfer sesuai jumlah yang tertera, lalu upload
+                                        bukti transfer di bawah.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- QRIS Details -->
+                        <div id="qrisDetails"
+                            class="mb-4 p-4 border-2 border-[#BF3131]/20 rounded-xl bg-gradient-to-r from-[#FEF3E2]/30 to-transparent">
+                            <div class="flex items-center mb-3">
+                                <div
+                                    class="w-8 h-8 bg-[#BF3131]/10 rounded-full flex items-center justify-center mr-3">
+                                    <svg class="w-4 h-4 textছটি text-[#BF3131]" fill="currentColor"
+                                        viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd"
+                                            d="M3 4a1 1 0 011-1h3a1 1 0 011 1v3a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm2 2V5h1v1H5zM3 13a1 1 0 011-1h3a1 1 0 011 1v3a1 1 0 01-1 1H4a1 1 0 01-1-1v-3zm2 2v-1h1v1H5zM13 3a1 1 0 00-1 1v3a1 1 0 001 1h3a1 1 0 001-1V4a1 1 0 00-1-1h-3zm1 2v1h1V5h-1z"
+                                            clip-rule="evenodd"></path>
+                                    </svg>
+                                </div>
+                                <h5 class="font-semibold text-gray-800">QRIS</h5>
+                            </div>
+                            <div class="flex flex-col items-center ml-11">
+                                <div
+                                    class="w-48 h-48 bg-white rounded-xl border-2 border-dashed border-[#BF3131]/30 flex items-center justify-center mb-3">
+                                    <div class="text-center">
+                                        <svg class="w-12 h-12 text-[#BF3131] mx-auto mb-2" fill="currentColor"
+                                            viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd"
+                                                d="M3 4a1 1 0 011-1h3a1 1 0 011 1v3a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm2 2V5h1v1H5zM3 13a1 1 0 011-1h3a1 1 0 011 1v3a1 1 0 01-1 1H4a1 1 0 01-1-1v-3zm2 2v-1h1v1H5zM13 3a1 1 0 00-1 1v3a1 1 0 001 1h3a1 1 0 001-1V4a1 1 0 00-1-1h-3zm1 2v1h1V5h-1z"
+                                                clip-rule="evenodd"></path>
+                                        </svg>
+                                        <span class="text-[#BF3131] text-sm font-medium">QR Code QRIS</span>
+                                    </div>
+                                </div>
+                                <p class="text-sm text-gray-600 text-center mb-2">Scan QR Code untuk pembayaran</p>
+                                <div class="w-full p-2 bg-blue-50 border border-blue-200 rounded-lg">
+                                    <p class="text-xs text-blue-800 text-center">
+                                        <strong>Instruksi:</strong> Scan QR Code dengan aplikasi pembayaran digital,
+                                        lalu upload bukti pembayaran.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-            <!-- Payment Proof -->
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-1">
-                    Bukti Pembayaran <span class="text-red-500">*</span>
-                </label>
-                <input type="file" name="payment_proof" accept="image/*" required
-                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <p class="text-xs text-gray-500 mt-1">Upload screenshot/foto bukti transfer</p>
-            </div>
+                <!-- Email Input -->
+                <div class="mb-4">
+                    <label class="flex items-center text-sm font-semibold text-gray-700 mb-2">
+                        <svg class="w-4 h-4 mr-2 text-[#BF3131]" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path>
+                            <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path>
+                        </svg>
+                        Email
+                    </label>
+                    <input type="email" name="email"
+                        class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#BF3131]/50 focus:border-[#BF3131] transition duration-300"
+                        placeholder="email@example.com" required>
+                </div>
 
-            <!-- Submit Button -->
-            <button type="submit"
-                class="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 transition-colors">
-                Submit Pembayaran
-            </button>
-        </form>
+                <!-- Payment Proof -->
+                <div class="mb-6">
+                    <label class="flex items-center text-sm font-semibold text-gray-700 mb-2">
+                        <svg class="w-4 h-4 mr-2 text-[#BF3131]" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z"
+                                clip-rule="evenodd"></path>
+                        </svg>
+                        Bukti Pembayaran <span class="text-[#BF3131]">*</span>
+                    </label>
+                    <div class="relative">
+                        <input type="file" name="payment_proof" accept="image/*" required
+                            class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#BF3131]/50 focus:border-[#BF3131] transition duration-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-medium file:bg-[#BF3131] file:text-white hover:file:bg-[#F16767]">
+                    </div>
+                    <p class="text-xs text-gray-500 mt-2 flex items-center">
+                        <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                                clip-rule="evenodd"></path>
+                        </svg>
+                        Upload screenshot/foto bukti transfer
+                    </p>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit"
+                    class="w-full bg-gradient-to-r from-[#BF3131] to-[#F16767] text-white py-4 px-6 rounded-xl font-semibold hover:from-[#F16767] hover:to-[#BF3131] transition duration-300 shadow-lg hover:shadow-xl transform hover:scale-[1.02] flex items-center justify-center">
+                    <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                            clip-rule="evenodd"></path>
+                    </svg>
+                    Submit Pembayaran
+                </button>
+            </form>
+        </div>
     </div>
 </div>
-
 <script>
     // Configure toastr options
     toastr.options = {
@@ -1181,35 +1400,198 @@
     let currentFacingMode = 'user';
     let isTogglingCamera = false;
 
-    function showPremiumModal(frameId, price) {
-        currentFrameId = frameId;
-        currentFramePrice = price;
+    document.getElementById('paymentMethod').addEventListener('change', function() {
+        const selectedMethod = this.value;
+        const detailsContainer = document.getElementById('paymentDetailsContainer');
+        const bankDetails = document.getElementById('bankTransferDetails');
+        const qrisDetails = document.getElementById('qrisDetails');
 
-        document.getElementById('frameId').value = frameId;
-        document.getElementById('framePrice').textContent = 'Rp ' + price;
-        document.getElementById('paymentModal').classList.remove('hidden');
-        document.getElementById('paymentModal').classList.add('flex');
+        if (selectedMethod) {
+            detailsContainer.classList.remove('hidden');
+
+            // Hide all details first
+            bankDetails.style.display = 'none';
+            qrisDetails.style.display = 'none';
+
+            // Show selected method details
+            if (selectedMethod === 'bank_transfer') {
+                bankDetails.style.display = 'block';
+            } else if (selectedMethod === 'qris') {
+                qrisDetails.style.display = 'block';
+            }
+        } else {
+            detailsContainer.classList.add('hidden');
+        }
+    });
+
+    // Show Payment Modal
+    function showPremiumModal(frameId, price, frameName, frameImageUrl) {
+        const paymentData = {
+            frame_id: frameId,
+            price: price,
+            frame_name: frameName,
+            frame_image: frameImageUrl,
+            timestamp: Date.now()
+        };
+        localStorage.setItem('pendingPremiumFrame', JSON.stringify(paymentData));
+
+        const storedData = localStorage.getItem('pendingPremiumFrame');
+        if (!storedData) {
+            console.error('Gagal menyimpan data frame.');
+            toastr.error('Gagal menyimpan data frame. Silakan coba lagi.');
+            return;
+        }
+
+        try {
+            const parsedData = JSON.parse(storedData);
+            if (parsedData.frame_id !== frameId || parsedData.price !== price) {
+                console.error('Data frame tidak valid.');
+                localStorage.removeItem('pendingPremiumFrame');
+                toastr.error('Data frame tidak valid.');
+                return;
+            }
+
+            // Update modal content
+            document.getElementById('frameId').value = frameId;
+            document.getElementById('framePrice').textContent = 'Rp ' + price;
+            document.getElementById('frameName').textContent = 'Frame ' + frameName || 'Frame Premium';
+
+            const framePreview = document.getElementById('framePreview');
+            if (frameImageUrl && frameImageUrl !== '') {
+                framePreview.src = frameImageUrl;
+                framePreview.alt = frameName || 'Frame Preview';
+            } else {
+                framePreview.src = 'https://via.placeholder.com/60x60/BF3131/FFFFFF?text=Frame';
+                framePreview.alt = 'Frame Preview';
+            }
+
+            // Show modal
+            const modal = document.getElementById('paymentModal');
+            const modalBackdrop = modal.querySelector('.modal-backdrop');
+            const modalContent = modal.querySelector('.modal-content');
+
+            modal.classList.remove('hidden');
+            modal.classList.add('show');
+            document.body.classList.add('modal-open');
+
+            setTimeout(() => {
+                modalBackdrop.classList.add('show');
+                modalContent.classList.remove('hide');
+            }, 50);
+
+            // Enable drag-to-close for mobile
+            enableDragToClose(modalContent);
+        } catch (error) {
+            console.error('Error parsing pendingPremiumFrame:', error);
+            localStorage.removeItem('pendingPremiumFrame');
+            toastr.error('Terjadi kesalahan saat memproses data frame.');
+        }
     }
 
+    // Close Payment Modal
     function closePaymentModal() {
-        document.getElementById('paymentModal').classList.add('hidden');
-        document.getElementById('paymentModal').classList.remove('flex');
-        document.getElementById('paymentForm').reset();
+        const modal = document.getElementById('paymentModal');
+        const modalBackdrop = modal.querySelector('.modal-backdrop');
+        const modalContent = modal.querySelector('.modal-content');
+
+        modalBackdrop.classList.remove('show');
+        modalContent.classList.add('hide');
+
+        setTimeout(() => {
+            modal.classList.add('hidden');
+            modal.classList.remove('show');
+            document.getElementById('paymentForm').reset();
+            document.body.classList.remove('modal-open');
+            localStorage.removeItem('pendingPremiumFrame');
+        }, 300);
     }
+
+    // Enable Drag-to-Close for Mobile Modal
+    function enableDragToClose(element) {
+        if (!element || window.innerWidth > 640) return; // Only enable on mobile
+
+        let startY = 0;
+        let currentY = 0;
+        let isDragging = false;
+        let startTime = 0;
+
+        element.addEventListener('touchstart', function(e) {
+            const target = e.target;
+            const isHeaderArea = target.closest('.modal-drag-handle') || target.closest('.bg-gradient-to-r');
+
+            if (isHeaderArea) {
+                startY = e.touches[0].clientY;
+                startTime = Date.now();
+                isDragging = true;
+                element.style.transition = ''; // Remove transition during drag
+            }
+        }, {
+            passive: true
+        });
+
+        element.addEventListener('touchmove', function(e) {
+            if (!isDragging) return;
+
+            currentY = e.touches[0].clientY;
+            const dragDistance = currentY - startY;
+
+            if (dragDistance > 0) {
+                element.style.transform = `translateY(${dragDistance}px)`;
+                const opacity = Math.max(0.5, 1 - (dragDistance / 300));
+                element.style.opacity = opacity;
+                document.querySelector('#paymentModal .modal-backdrop').style.opacity = opacity;
+            }
+        }, {
+            passive: true
+        });
+
+        element.addEventListener('touchend', function() {
+            if (!isDragging) return;
+
+            const dragDistance = currentY - startY;
+            const dragTime = Date.now() - startTime;
+            const dragVelocity = dragDistance / dragTime;
+
+            if (dragDistance > 150 || (dragDistance > 50 && dragVelocity > 0.5)) {
+                closePaymentModal();
+            } else {
+                element.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
+                element.style.transform = '';
+                element.style.opacity = '';
+                document.querySelector('#paymentModal .modal-backdrop').style.opacity = '';
+
+                setTimeout(() => {
+                    element.style.transition = '';
+                }, 300);
+            }
+
+            isDragging = false;
+        }, {
+            passive: true
+        });
+    }
+
+    // Handle backdrop click to close modal
+    document.getElementById('paymentModal').addEventListener('click', function(e) {
+        if (e.target.classList.contains('modal-backdrop')) {
+            closePaymentModal();
+        }
+    });
+
 
     function showPleaseWaitModal(orderId) {
         const modal = document.createElement('div');
         modal.id = 'pleaseWaitModal';
         modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
         modal.innerHTML = `
-                    <div class="bg-white rounded-2xl p-6 w-full max-w-md mx-4">
-                        <div class="text-center">
-                            <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-500 mx-auto mb-4"></div>
-                            <h3 class="text-xl font-bold text-gray-800 mb-2">Menunggu Konfirmasi</h3>
-                            <p class="text-gray-600">Pembayaran Anda (Order ID: ${orderId}) sedang diproses. Silakan tunggu konfirmasi dari admin.</p>
-                        </div>
-                    </div>
-                `;
+            <div class="bg-white rounded-2xl p-6 w-full max-w-md mx-4">
+                <div class="text-center">
+                    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-500 mx-auto mb-4"></div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-2">Menunggu Konfirmasi</h3>
+                    <p class="text-gray-600">Pembayaran Anda (Order ID: ${orderId}) sedang diproses. Silakan tunggu konfirmasi dari admin.</p>
+                </div>
+            </div>
+        `;
         document.body.appendChild(modal);
     }
 
@@ -1218,6 +1600,21 @@
         if (modal) {
             modal.remove();
         }
+    }
+
+    function copyToClipboard(text) {
+        navigator.clipboard.writeText(text).then(function() {
+            // Show feedback
+            const event = new CustomEvent('showToast', {
+                detail: {
+                    message: 'Nomor rekening berhasil disalin!',
+                    type: 'success'
+                }
+            });
+            window.dispatchEvent(event);
+        }).catch(function(err) {
+            console.error('Could not copy text: ', err);
+        });
     }
 
     document.getElementById('paymentForm').addEventListener('submit', async function(e) {
@@ -1267,11 +1664,7 @@
         }
     });
 
-    document.getElementById('paymentModal').addEventListener('click', function(e) {
-        if (e.target === this) {
-            closePaymentModal();
-        }
-    });
+
 
     function startPaymentStatusCheck(orderId, frameId) {
         const interval = setInterval(async () => {
@@ -1294,10 +1687,11 @@
                     pendingPayment.status = 'approved';
                     localStorage.setItem('pendingPayment', JSON.stringify(pendingPayment));
 
-                    // Construct the booth URL dynamically
+                    // Bersihkan data pendingPremiumFrame setelah pembayaran disetujui
+                    localStorage.removeItem('pendingPremiumFrame');
+
                     const boothUrl =
                         `/booth?frame_id=${encodeURIComponent(frameId)}&order_id=${encodeURIComponent(orderId)}`;
-
                     toastr.success('Pembayaran telah disetujui! Anda akan diarahkan ke booth.',
                         'Berhasil', {
                             onHidden: () => {
@@ -1308,6 +1702,7 @@
                     clearInterval(interval);
                     closePleaseWaitModal();
                     localStorage.removeItem('pendingPayment');
+                    localStorage.removeItem('pendingPremiumFrame');
                     toastr.error('Pembayaran ditolak oleh admin. Silakan coba lagi.', 'Gagal');
                 }
             } catch (error) {
@@ -1316,48 +1711,33 @@
         }, 5000);
     }
 
-    // Fungsi untuk validasi dan redirect berdasarkan localStorage
     function validateAndRedirectIfApproved() {
         try {
             const pendingPaymentLS = localStorage.getItem('pendingPayment');
-
             const pendingPayment = JSON.parse(pendingPaymentLS || '{}');
 
-            // Validasi apakah data lengkap dan status approved
             if (pendingPayment &&
                 pendingPayment.status === 'approved' &&
                 pendingPayment.frame_id &&
                 pendingPayment.order_id) {
-
                 console.log('Found approved payment, redirecting to booth...', pendingPayment);
-
-                // Konstruksi URL booth
                 const boothUrl =
                     `/booth?frame_id=${encodeURIComponent(pendingPayment.frame_id)}&order_id=${encodeURIComponent(pendingPayment.order_id)}`;
-
-                // Redirect ke booth
                 window.location.href = boothUrl;
-                return true; // Menandakan bahwa redirect dilakukan
+                return true;
             }
 
-            return false; // Tidak ada redirect
-
+            return false;
         } catch (error) {
             console.error('Error validating payment data:', error);
-            // Jika ada error parsing JSON, bersihkan storage yang rusak
             localStorage.removeItem('pendingPayment');
             return false;
         }
     }
 
-
-
-
-    // Fungsi untuk cek status pembayaran secara manual
     async function checkCurrentPaymentStatus() {
         try {
             const pendingPaymentLS = localStorage.getItem('pendingPayment');
-
             const pendingPayment = JSON.parse(pendingPaymentLS || '{}');
 
             if (pendingPayment && pendingPayment.order_id && pendingPayment.status === 'pending') {
@@ -1373,18 +1753,15 @@
                 const result = await response.json();
 
                 if (result.status === 'approved') {
-                    // Update status di storage
                     pendingPayment.status = 'approved';
                     localStorage.setItem('pendingPayment', JSON.stringify(pendingPayment));
-
-                    // Redirect ke booth
+                    localStorage.removeItem('pendingPremiumFrame');
                     const boothUrl =
                         `/booth?frame_id=${encodeURIComponent(pendingPayment.frame_id)}&order_id=${encodeURIComponent(pendingPayment.order_id)}`;
                     window.location.href = boothUrl;
-
                 } else if (result.status === 'rejected') {
-                    // Hapus data jika ditolak
                     localStorage.removeItem('pendingPayment');
+                    localStorage.removeItem('pendingPremiumFrame');
                     toastr.error('Pembayaran ditolak oleh admin.', 'Gagal');
                 }
             }
@@ -1393,26 +1770,86 @@
         }
     }
 
-    // Update fungsi DOMContentLoaded yang sudah ada
+    // Fungsi untuk memeriksa dan membuka modal pembayaran otomatis berdasarkan localStorage
+    function checkAndOpenPaymentModal() {
+        try {
+            const pendingPremiumFrame = localStorage.getItem('pendingPremiumFrame');
+            if (!pendingPremiumFrame) {
+                return false;
+            }
+
+            const data = JSON.parse(pendingPremiumFrame);
+            const currentTime = Date.now();
+
+            // Validasi data: pastikan frame_id, price, dan timestamp ada
+            if (!data.frame_id || !data.price || !data.timestamp) {
+                console.warn('Invalid pendingPremiumFrame data:', data);
+                localStorage.removeItem('pendingPremiumFrame');
+                return false;
+            }
+
+            // Validasi timestamp (misalnya, kadaluarsa setelah 1 jam)
+            if (currentTime - data.timestamp > 60 * 60 * 1000) {
+                console.log('Pending premium frame data expired');
+                localStorage.removeItem('pendingPremiumFrame');
+                return false;
+            }
+
+            // Validasi tambahan: pastikan frame_id ada di daftar frame
+            return fetch(`/get-frame-status/${data.frame_id}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Frame not found: ${data.frame_id}`);
+                    }
+                    return response.json();
+                })
+                .then(frameData => {
+                    if (frameData.price > 0 && frameData.price.toString() === data.price) {
+                        console.log('Valid pendingPremiumFrame found, opening payment modal:', data);
+                        showPremiumModal(data.frame_id, data.price, data.frame_name, data.frame_image);
+                        return true;
+                    } else {
+                        console.warn('Frame price mismatch or free frame:', frameData);
+                        localStorage.removeItem('pendingPremiumFrame');
+                        return false;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error validating frame status:', error);
+                    localStorage.removeItem('pendingPremiumFrame');
+                    return false;
+                });
+        } catch (error) {
+            console.error('Error checking pendingPremiumFrame:', error);
+            localStorage.removeItem('pendingPremiumFrame');
+            return false;
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
         clearDownloadedData();
 
         // Validasi dan redirect jika ada pembayaran yang sudah disetujui
         const redirected = validateAndRedirectIfApproved();
 
-        // Jika tidak ada redirect, lanjutkan inisialisasi normal
+        // Jika tidak ada redirect, lanjutkan inisialisasi
         if (!redirected) {
-            initializeToggleFilter();
-            setupFrameCards();
-            attachAllListeners();
+            // Periksa dan buka modal pembayaran otomatis jika ada data valid
+            checkAndOpenPaymentModal().then(opened => {
+                // Hanya inisialisasi UI lainnya jika modal tidak dibuka otomatis
+                if (!opened) {
+                    initializeToggleFilter();
+                    setupFrameCards();
+                    attachAllListeners();
 
-            // Cek pembayaran pending yang masih aktif
-            const pendingPayment = JSON.parse(localStorage.getItem('pendingPayment') || '{}');
-
-            if (pendingPayment.status === 'pending' && pendingPayment.order_id && pendingPayment.frame_id) {
-                showPleaseWaitModal(pendingPayment.order_id);
-                startPaymentStatusCheck(pendingPayment.order_id, pendingPayment.frame_id);
-            }
+                    const pendingPayment = JSON.parse(localStorage.getItem('pendingPayment') || '{}');
+                    if (pendingPayment.status === 'pending' && pendingPayment.order_id && pendingPayment
+                        .frame_id) {
+                        showPleaseWaitModal(pendingPayment.order_id);
+                        startPaymentStatusCheck(pendingPayment.order_id, pendingPayment.frame_id);
+                    }
+                }
+            });
 
             window.addEventListener('popstate', function() {
                 location.reload();
@@ -1426,9 +1863,13 @@
                 console.log('Loading html2canvas script...');
             }
         }
+        const paymentModal = document.getElementById('paymentModal');
+        if (paymentModal.classList.contains('show')) {
+            document.body.classList.add('modal-open');
+            enableDragToClose(paymentModal.querySelector('.modal-content'));
+        }
     });
 
-    // Fungsi untuk dipanggil secara manual jika diperlukan
     function forceCheckAndRedirect() {
         const redirected = validateAndRedirectIfApproved();
         if (!redirected) {
@@ -1436,6 +1877,7 @@
         }
     }
 
+    // Fungsi lainnya tetap sama seperti sebelumnya
     function setupFrameCards() {
         const frameCards = document.querySelectorAll('.frame-card');
         console.log(`Found ${frameCards.length} frame cards`);
@@ -1471,13 +1913,11 @@
                 }
             }
 
-            // Remove existing listeners to prevent duplicates
             previewBtn.removeEventListener('click', openPreviewCameraModal);
             previewBtn.addEventListener('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
                 console.log('Preview button clicked for frame ID:', frameId);
-                // Add your preview modal logic here
                 openPreviewCameraModal(e);
             });
         });
@@ -1495,7 +1935,6 @@
             return;
         }
 
-        // Reset state before opening modal
         resetModalState();
 
         const mobileModalContainer = modal.querySelector('.mobile-modal-container');
@@ -1511,11 +1950,9 @@
         const watermark = document.getElementById('previewWatermark');
         const mobileWatermark = document.getElementById('mobilePreviewWatermark');
 
-        // Perbaikan: Set modal display dan class dengan delay
         document.body.classList.add('modal-open');
         modal.style.display = 'flex';
 
-        // Delay untuk smooth animation
         setTimeout(() => {
             modalBackdrop.classList.add('show');
             if (mobileModalContainer) {
@@ -1547,18 +1984,15 @@
 
             fetchFrameDetails(frameId);
 
-            // Fetch frame template dengan error handling yang lebih baik
             fetch(`/get-frame-template/${frameId}`)
                 .then(response => {
                     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                     return response.text();
                 })
                 .then(html => {
-                    // Perbaikan: Pastikan frame template ditampilkan dengan benar
                     previewFrameImage.innerHTML = html;
                     mobilePreviewFrameImage.innerHTML = html;
 
-                    // Perbaikan: Tambahkan class untuk styling yang tepat
                     previewFrameContainer.className = 'frame-container-desktop';
                     mobilePreviewFrameContainer.className = 'frame-container-mobile';
 
@@ -1583,7 +2017,6 @@
                 });
         }
 
-        // Camera initialization
         if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
             const isMobile = window.innerWidth <= 768;
             const videoConstraints = {
@@ -1630,7 +2063,6 @@
                 });
         }
 
-        // Event listeners dengan perbaikan
         const modalCloseButtons = modal.querySelectorAll('.modal-close');
         modalCloseButtons.forEach(btn => {
             btn.removeEventListener('click', closePreviewCameraModal);
@@ -1643,7 +2075,6 @@
             toggleCameraButton.addEventListener('click', toggleCamera);
         }
 
-        // Perbaikan: Event listener untuk backdrop click yang lebih spesifik
         window.removeEventListener('click', handleModalBackdropClick);
         window.addEventListener('click', handleModalBackdropClick);
 
@@ -1659,16 +2090,13 @@
         const toggleCameraButton = document.getElementById('toggleCameraButton');
         const captureButton = document.getElementById('mobilePreviewCaptureButton');
 
-        // Perbaikan: Cek apakah klik berada di area yang diizinkan
         const isClickOnVideo = mobileVideo && mobileVideo.contains(e.target);
         const isClickOnToggleButton = toggleCameraButton && toggleCameraButton.contains(e.target);
         const isClickOnCaptureButton = captureButton && captureButton.contains(e.target);
         const isClickOnFramePreview = e.target.closest('#mobilePreviewFrameContainer');
         const isClickOnModalContent = e.target.closest('.mobile-modal-container > div:not(.modal-backdrop)');
 
-        // Hanya tutup modal jika klik pada backdrop, bukan pada elemen interaktif
         if (e.target === modal || e.target.classList.contains('modal-backdrop')) {
-            // Pastikan tidak ada elemen interaktif yang diklik
             if (!isClickOnVideo && !isClickOnToggleButton && !isClickOnCaptureButton &&
                 !isClickOnFramePreview && !isClickOnModalContent) {
                 closePreviewCameraModal();
@@ -1685,7 +2113,6 @@
         let startTime = 0;
 
         element.addEventListener('touchstart', function(e) {
-            // Perbaikan: Hanya izinkan drag dari area header modal
             const target = e.target;
             const isHeaderArea = target.closest('.sticky.top-0') || target.classList.contains('w-12');
 
@@ -1704,10 +2131,8 @@
             currentY = e.touches[0].clientY;
             const dragDistance = currentY - startY;
 
-            // Hanya izinkan drag ke bawah
             if (dragDistance > 0) {
                 element.style.transform = `translateY(${dragDistance}px)`;
-                // Tambahkan opacity effect
                 const opacity = Math.max(0.5, 1 - (dragDistance / 300));
                 element.style.opacity = opacity;
             }
@@ -1722,11 +2147,9 @@
             const dragTime = Date.now() - startTime;
             const dragVelocity = dragDistance / dragTime;
 
-            // Perbaikan: Logika penutupan yang lebih baik
             if (dragDistance > 150 || (dragDistance > 50 && dragVelocity > 0.5)) {
                 closePreviewCameraModal();
             } else {
-                // Reset position dengan smooth animation
                 element.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
                 element.style.transform = '';
                 element.style.opacity = '';
@@ -1750,7 +2173,6 @@
         const mobileVideo = document.getElementById('mobilePreviewVideo');
         const desktopModal = modal.querySelector('.md\\:block');
 
-        // Perbaikan: Animasi penutupan yang lebih smooth
         if (mobileModalContainer) {
             mobileModalContainer.classList.remove('show');
             mobileModalContainer.classList.add('hide');
@@ -1764,7 +2186,6 @@
 
         modalBackdrop.classList.remove('show');
 
-        // Stop camera stream
         if (window.stream) {
             const tracks = window.stream.getTracks();
             tracks.forEach(track => track.stop());
@@ -1773,7 +2194,6 @@
             window.stream = null;
         }
 
-        // Remove event listeners
         const captureButton = document.getElementById('previewCaptureButton');
         const mobileCaptureButton = document.getElementById('mobilePreviewCaptureButton');
         if (captureButton) captureButton.removeEventListener('click', startPhotoSession);
@@ -1783,7 +2203,6 @@
         resetModalState();
         document.body.classList.remove('modal-open');
 
-        // Perbaikan: Delay yang lebih tepat untuk penutupan modal
         setTimeout(() => {
             modal.style.display = 'none';
             if (mobileModalContainer) {
@@ -1841,9 +2260,6 @@
                 if (slotWatermark) slotWatermark.remove();
             });
         }
-
-
-        // Reset toggle button
 
         if (toggleButton) {
             toggleButton.disabled = false;
@@ -1917,11 +2333,9 @@
             window.photoSlots = [];
         }
 
-        // Remove existing slots
         const existingSlots = frameElement.querySelectorAll('.photo-slot');
         existingSlots.forEach(slot => slot.remove());
 
-        // Perbaikan: Posisi slot yang lebih presisi sesuai dengan frame template
         const slotPositions = [{
                 top: '16%',
                 left: '50%',
@@ -2074,28 +2488,19 @@
         canvas.height = video.videoHeight;
         const ctx = canvas.getContext('2d');
 
-        // Update mirroring logic untuk mobile
         if (isMobile && currentFacingMode === 'user') {
-            // Mirror untuk front camera
             ctx.translate(canvas.width, 0);
             ctx.scale(-1, 1);
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
             ctx.setTransform(1, 0, 0, 1, 0, 0);
         } else if (!isMobile) {
-            // Desktop selalu mirror
             ctx.translate(canvas.width, 0);
             ctx.scale(-1, 1);
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
             ctx.setTransform(1, 0, 0, 1, 0, 0);
         } else {
-            // Back camera mobile - tidak di-mirror
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
         }
-
-        ctx.translate(canvas.width, 0);
-        ctx.scale(-1, 1);
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        ctx.setTransform(1, 0, 0, 1, 0, 0);
 
         const addWatermark = () => {
             return new Promise((resolve) => {
@@ -2202,16 +2607,13 @@
                 applyWatermarkVisibility(mobileWatermark);
                 console.log('Frame status fetched:', data);
 
-                // Show toastr notification for premium frames in preview
                 if (data.price > 0) {
                     const price = new Intl.NumberFormat('id-ID').format(data.price);
-                    toastr.info(
-                        `Frame ini memerlukan pembayaran sebesar ${price} IDR untuk penggunaan penuh.`,
+                    toastr.info(`Frame ini memerlukan pembayaran sebesar ${price} IDR untuk penggunaan penuh.`,
                         'Frame Premium', {
                             "timeOut": "4000",
                             "positionClass": "toast-top-center"
-                        }
-                    );
+                        });
                 }
 
                 return data;
@@ -2241,37 +2643,29 @@
             <svg class="w-12 h-12 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
             </svg>
-            <p>GagalPrimero gagal mengakses kamera. Silakan periksa izin kamera atau coba browser lain.</p>
+            <p>Gagal mengakses kamera. Silakan periksa izin kamera atau coba browser lain.</p>
         `;
         video.parentElement.appendChild(errorMessage);
         captureButton.disabled = true;
         captureButton.textContent = 'Kamera Tidak Tersedia';
     }
 
-
     function initializeToggleFilter() {
-        // Handle both mobile and desktop toggle buttons
         const toggleButtons = document.querySelectorAll('#toggleFilter');
 
         toggleButtons.forEach(toggleButton => {
-            // Different logic for mobile vs desktop
+            const isMobile = toggleButton.closest('.block.sm\\:hidden') !== null;
             let filterOptions;
 
-            // Check if this is mobile (block sm:hidden) or desktop (hidden sm:flex)
-            const isMobile = toggleButton.closest('.block.sm\\:hidden') !== null;
-
             if (isMobile) {
-                // Mobile: filter options are sibling elements
                 filterOptions = toggleButton.closest('.block.sm\\:hidden').querySelector('#filterOptions');
             } else {
-                // Desktop: filter options are in the same flex container, next sibling of the button's parent
                 const buttonContainer = toggleButton.closest('.flex.items-center.gap-4');
                 filterOptions = buttonContainer ? buttonContainer.querySelector('#filterOptions') : null;
             }
 
             const filterArrow = toggleButton.querySelector('#filterArrow');
 
-            // Check if all required elements exist
             if (!toggleButton || !filterOptions || !filterArrow) {
                 console.warn('Toggle filter elements not found for button:', {
                     toggleButton: !!toggleButton,
@@ -2279,7 +2673,7 @@
                     filterArrow: !!filterArrow,
                     isMobile: isMobile
                 });
-                return; // Skip this button if elements are missing
+                return;
             }
 
             console.log('Initializing toggle for:', isMobile ? 'Mobile' : 'Desktop', {
@@ -2298,14 +2692,13 @@
 
             newToggleButton.addEventListener('click', function(e) {
                 e.preventDefault();
-                e.stopPropagation(); // Prevent event bubbling
+                e.stopPropagation();
 
                 const currentlyOpen = !filterOptions.classList.contains('hidden');
-                isFilterOpen = !currentlyOpen; // Toggle global state
+                isFilterOpen = !currentlyOpen;
 
                 const newFilterArrow = newToggleButton.querySelector('#filterArrow');
 
-                // Toggle visibility
                 if (!currentlyOpen) {
                     showFilterOptions(filterOptions, newFilterArrow, newToggleButton, isMobile);
                 } else {
@@ -2322,7 +2715,6 @@
                         '.rating-filter-btn, .mobile-rating-filter-btn, .popular-filter-btn, .mobile-popular-filter-btn, .default-filter-btn, .mobile-default-filter-btn'
                     );
 
-                // Only close if click is completely outside the filter area AND not on a filter button
                 if (!isClickInsideFilter && !e.target.closest('[class*="filter-btn"]')) {
                     const newFilterArrow = newToggleButton.querySelector('#filterArrow');
                     isFilterOpen = false;
@@ -2337,8 +2729,6 @@
 
     function showFilterOptions(filterOptions, filterArrow, toggleButton, isMobile) {
         filterOptions.classList.remove('hidden');
-
-        // Add appropriate display class based on mobile/desktop
         if (isMobile) {
             filterOptions.classList.add('animate-fade-in');
         } else {
@@ -2349,15 +2739,13 @@
             filterArrow.style.transform = 'rotate(180deg)';
         }
         toggleButton.classList.add('bg-[#BF3131]', 'text-white', 'border-[#BF3131]');
-        toggleButton.classList.remove('bg-gradient-to-r', 'from-gray-100', 'to-gray-200',
-            'text-gray-700', 'border-gray-300');
+        toggleButton.classList.remove('bg-gradient-to-r', 'from-gray-100', 'to-gray-200', 'text-gray-700',
+            'border-gray-300');
     }
 
     function hideFilterOptions(filterOptions, filterArrow, toggleButton, isMobile) {
         filterOptions.classList.add('hidden');
         filterOptions.classList.remove('animate-fade-in');
-
-        // Remove flex class for desktop
         if (!isMobile) {
             filterOptions.classList.remove('flex');
         }
@@ -2366,14 +2754,13 @@
             filterArrow.style.transform = 'rotate(0deg)';
         }
         toggleButton.classList.remove('bg-[#BF3131]', 'text-white', 'border-[#BF3131]');
-        toggleButton.classList.add('bg-gradient-to-r', 'from-gray-100', 'to-gray-200',
-            'text-gray-700', 'border-gray-300');
+        toggleButton.classList.add('bg-gradient-to-r', 'from-gray-100', 'to-gray-200', 'text-gray-700',
+            'border-gray-300');
     }
 
     function attachAllListeners() {
         console.log('Attaching all listeners...');
 
-        // Attach category listeners
         const categoryLinks = document.querySelectorAll('.category-btn, .category-btn-mobile');
         categoryLinks.forEach(link => {
             const newLink = link.cloneNode(true);
@@ -2387,7 +2774,6 @@
             });
         });
 
-        // UPDATED: Attach filter listeners - keep filter state
         const filterLinks = document.querySelectorAll(
             '.filter-btn, .mobile-filter-btn, ' +
             '.rating-filter-btn, .mobile-rating-filter-btn, ' +
@@ -2401,12 +2787,11 @@
 
             newLink.addEventListener('click', function(e) {
                 e.preventDefault();
-                e.stopPropagation(); // ADDED: Prevent event bubbling
+                e.stopPropagation();
 
                 const url = this.getAttribute('href');
                 console.log('Filter clicked:', url);
 
-                // Determine filter type based on class
                 let filterType = 'filter';
                 if (this.classList.contains('rating-filter-btn') || this.classList.contains(
                         'mobile-rating-filter-btn')) {
@@ -2419,14 +2804,12 @@
                     filterType = 'default';
                 }
 
-                isFilterOpen = true; // Ensure filter stays open
+                isFilterOpen = true;
                 handleFilterRequest(url, filterType);
             });
         });
 
-        // Re-initialize toggle filter after content update
         initializeToggleFilter();
-
         console.log('All listeners attached successfully');
     }
 
@@ -2439,7 +2822,6 @@
         const scrollPosition = window.scrollY;
         console.log(`${filterType} filter clicked:`, url);
 
-        // Show loading indicator with specific message
         showLoadingIndicator(filterType);
 
         fetch(url, {
@@ -2458,7 +2840,6 @@
                 return response.text();
             })
             .then(html => {
-                // Add minimum delay for better UX
                 return new Promise(resolve => {
                     setTimeout(() => resolve(html), 300);
                 });
@@ -2471,24 +2852,13 @@
                 if (newContent) {
                     const currentContent = document.querySelector('.content_section');
                     if (currentContent) {
-                        // Check if the response contains frames
-                        const framesGrid = newContent.querySelector('.grid');
-                        const noFramesMessage = newContent.querySelector('.text-center.py-20');
-
-                        // Smooth transition
                         currentContent.style.transition = 'opacity 0.3s ease';
                         currentContent.style.opacity = '0';
 
                         setTimeout(() => {
                             currentContent.outerHTML = newContent.outerHTML;
-
-                            // Update URL - PINDAHKAN KE SINI AGAR SELALU DIEKSEKUSI
                             window.history.pushState({}, '', url);
-
-                            // Restore scroll position
                             window.scrollTo(0, scrollPosition);
-
-                            // Reattach listeners
                             attachAllListeners();
                             if (typeof setupFrameCards === 'function') {
                                 setupFrameCards();
@@ -2509,47 +2879,34 @@
                     } else {
                         console.error('Current content_section not found');
                         hideLoadingIndicator();
-                        // TETAP UPDATE URL MESKIPUN ERROR
                         window.history.pushState({}, '', url);
                         console.error('Failed to update content section');
                     }
                 } else {
                     console.error('New content_section not found in response');
                     hideLoadingIndicator();
-
-                    // TETAP UPDATE URL DAN KATEGORI MESKIPUN TIDAK ADA FRAME
                     window.history.pushState({}, '', url);
-
                     updateCategorySelection(url);
-
                     displayNoFramesMessage(url);
-
                     console.log('Displayed no frames message');
                 }
             })
             .catch(error => {
                 console.error(`Error fetching ${filterType}:`, error);
                 hideLoadingIndicator();
-
-                // TETAP UPDATE URL MESKIPUN ERROR
                 window.history.pushState({}, '', url);
-
                 updateCategorySelection(url);
-
                 displayNoFramesMessage(url);
-
                 console.log('Displayed no frames message due to fetch error');
             });
     }
 
     function updateCategorySelection(url) {
-        // Parse URL to get category parameter
         const urlObj = new URL(url, window.location.origin);
         const categoryId = urlObj.searchParams.get('category');
 
         console.log('Updating category selection for categoryId:', categoryId);
 
-        // Remove active class from all category buttons
         const allCategoryBtns = document.querySelectorAll(
             '.category-btn .category-icon, .category-btn-mobile .category-icon-mobile');
         allCategoryBtns.forEach(btn => {
@@ -2557,11 +2914,7 @@
         });
 
         if (categoryId) {
-            // PERBAIKAN: Cari berdasarkan href yang berisi category parameter
-            const selectedCategoryBtns = document.querySelectorAll(
-                `a[href*="category=${categoryId}"]`
-            );
-
+            const selectedCategoryBtns = document.querySelectorAll(`a[href*="category=${categoryId}"]`);
             selectedCategoryBtns.forEach(link => {
                 const categoryIcon = link.querySelector('.category-icon, .category-icon-mobile');
                 if (categoryIcon) {
@@ -2570,12 +2923,9 @@
                 }
             });
         } else {
-            // PERBAIKAN: Cari link "Semua" yang tidak memiliki parameter category
             const allCategoryLinks = document.querySelectorAll('a[href*="frametemp"]');
-
             allCategoryLinks.forEach(link => {
                 const href = link.getAttribute('href');
-                // Pastikan ini adalah link "Semua" (tidak ada parameter category)
                 if (href && !href.includes('category=')) {
                     const categoryIcon = link.querySelector('.category-icon, .category-icon-mobile');
                     if (categoryIcon) {
@@ -2591,15 +2941,12 @@
         const framesSection = document.querySelector('.mt-12');
         if (!framesSection) return;
 
-        // Parse URL to get category info
         const urlObj = new URL(url, window.location.origin);
         const categoryId = urlObj.searchParams.get('category');
 
         let categoryName = 'ini';
         if (categoryId) {
-            // PERBAIKAN: Cari nama kategori dari link yang aktif
             const categoryLinks = document.querySelectorAll(`a[href*="category=${categoryId}"]`);
-
             for (let link of categoryLinks) {
                 const categoryLabel = link.querySelector('.category-label, .category-label-mobile');
                 if (categoryLabel) {
@@ -2623,17 +2970,9 @@
 
     function showLoadingIndicator(filterType = 'filter') {
         const framesSection = document.querySelector('.mt-12');
-
         if (framesSection) {
-            // Store original content
             framesSection.setAttribute('data-original-content', framesSection.innerHTML);
 
-            // Determine loading message based on filter type
-            let loadingMessage = 'Memuat Frame...';
-            let loadingSubtext = 'Mohon tunggu sebentar';
-            let loadingIcon = '🔄';
-
-            // Get  category name from the DOM or URL
             const urlParams = new URLSearchParams(window.location.search);
             const categoryId = urlParams.get('category');
             let categoryName = 'ini';
@@ -2644,6 +2983,7 @@
                 categoryName = activeCategory ? activeCategory.textContent : 'Unknown Category';
             }
 
+            let loadingMessage = 'Memuat Frame...';
             switch (filterType) {
                 case 'category':
                     loadingMessage = `Memuat Kategori "${categoryName}"...`;
@@ -2657,36 +2997,23 @@
                 case 'default':
                     loadingMessage = 'Memuat Urutan Default...';
                     break;
-                default:
-                    loadingMessage = 'Memuat Frame...';
             }
 
-            // Create loading overlay that covers the entire frames area
             const loadingHTML = `
             <div id="frames-loading-overlay" class="relative">
-                <!-- Loading backdrop -->
                 <div class="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 rounded-2xl"></div>
-                
-                <!-- Loading content -->
-                <div class="relative z-20 text-center py-32 bg-[#FEF3E2] ">
-                    <!-- Animated loader -->
+                <div class="relative z-20 text-center py-32 bg-[#FEF3E2]">
                     <div class="flex justify-center mb-6">
                         <div class="relative">
-                            <!-- Outer spinning ring -->
                             <div class="animate-spin rounded-full h-16 w-16 border-4 border-gray-200"></div>
                             <div class="animate-spin rounded-full h-16 w-16 border-4 border-[#BF3131] border-t-transparent absolute top-0 left-0"></div>
                         </div>
                     </div>
-                    
-                    <!-- Loading text with animation -->
                     <div class="space-y-2">
-                        <h3 class="text-xl font-semibold text-gray-800 ">
-                            ${loadingMessage}
-                        </h3>
+                        <h3 class="text-xl font-semibold text-gray-800">${loadingMessage}</h3>
                     </div>
                 </div>
             </div>
-            
             <style>
                 @keyframes loading-progress {
                     0% { width: 0%; }
@@ -2695,7 +3022,6 @@
                 }
             </style>
         `;
-
             framesSection.innerHTML = loadingHTML;
             framesSection.style.transition = 'all 0.3s ease';
         }
@@ -2709,27 +3035,23 @@
     }
 
     function toggleCamera() {
-        if (isTogglingCamera) return; // Prevent multiple toggles
+        if (isTogglingCamera) return;
 
         isTogglingCamera = true;
         const toggleButton = document.getElementById('toggleCameraButton');
         const cameraIcon = document.getElementById('cameraIcon');
         const mobileVideo = document.getElementById('mobilePreviewVideo');
 
-        // Disable button dan ubah icon selama proses
         toggleButton.disabled = true;
         cameraIcon.style.opacity = '0.5';
 
-        // Hentikan stream yang sedang berjalan
         if (window.stream) {
             const tracks = window.stream.getTracks();
             tracks.forEach(track => track.stop());
         }
 
-        // Toggle facing mode
         currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
 
-        // Request new camera stream
         const constraints = {
             video: {
                 width: {
@@ -2752,15 +3074,12 @@
 
                 mobileVideo.onloadedmetadata = function() {
                     mobileVideo.play();
-
-                    // Update video mirroring based on camera
                     if (currentFacingMode === 'user') {
-                        mobileVideo.classList.add('scale-x-[-1]'); // Mirror front camera
+                        mobileVideo.classList.add('scale-x-[-1]');
                     } else {
-                        mobileVideo.classList.remove('scale-x-[-1]'); // Don't mirror back camera
+                        mobileVideo.classList.remove('scale-x-[-1]');
                     }
 
-                    // Re-enable button
                     toggleButton.disabled = false;
                     cameraIcon.style.opacity = '1';
                     isTogglingCamera = false;
@@ -2771,7 +3090,6 @@
             .catch(err => {
                 console.error("Error switching camera: ", err);
 
-                // Fallback: try without exact constraint
                 const fallbackConstraints = {
                     video: {
                         width: {
@@ -2792,7 +3110,6 @@
 
                         mobileVideo.onloadedmetadata = function() {
                             mobileVideo.play();
-
                             if (currentFacingMode === 'user') {
                                 mobileVideo.classList.add('scale-x-[-1]');
                             } else {
@@ -2806,38 +3123,29 @@
                     })
                     .catch(fallbackErr => {
                         console.error("Fallback camera switch failed: ", fallbackErr);
-
-                        // Revert to previous camera mode
                         currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
-
-                        // Show error message
                         alert(
                             'Tidak dapat mengganti kamera. Pastikan perangkat Anda memiliki kamera depan dan belakang.'
                         );
-
                         toggleButton.disabled = false;
                         cameraIcon.style.opacity = '1';
                         isTogglingCamera = false;
                     });
             });
     }
-    // Fungsi untuk memeriksa dan menghapus data jika status downloaded
+
     function clearDownloadedData() {
         try {
             const downloadedStatusLS = localStorage.getItem('pendingPayment');
-
-            if (downloadedStatusLS || downloadedStatusSS) {
-                const status = JSON.parse(downloadedStatusLS || '{}');
-                if (status.status === 'downloaded') {
-                    console.log('Found downloaded status, clearing data...');
-                    localStorage.removeItem('downloadStatus');
-                    localStorage.removeItem('pendingPayment');
-                    console.log('Downloaded data cleared successfully');
-                }
+            const status = JSON.parse(downloadedStatusLS || '{}');
+            if (status.status === 'downloaded') {
+                console.log('Found downloaded status, clearing data...');
+                localStorage.removeItem('downloadStatus');
+                localStorage.removeItem('pendingPayment');
+                console.log('Downloaded data cleared successfully');
             }
         } catch (error) {
             console.error('Error clearing downloaded data:', error);
-            // Bersihkan storage jika ada error parsing
             localStorage.removeItem('downloadStatus');
             localStorage.removeItem('pendingPayment');
         }

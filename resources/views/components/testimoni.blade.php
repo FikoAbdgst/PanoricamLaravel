@@ -202,6 +202,7 @@
             transition: all 0.3s ease;
             display: inline-block;
             text-decoration: none;
+            cursor: pointer;
         }
 
         .frame-info-badge::before {
@@ -243,6 +244,159 @@
         /* Prevent testimonial card hover from affecting frame button when button is hovered */
         .testimonial-card:hover .frame-info-badge:not(:hover)::before {
             left: 100%;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(8px);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal.show {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #ffffff 0%, #fefefe 100%);
+            margin: auto;
+            padding: 2rem;
+            border: 3px solid #BF3131;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+            transform: scale(0.7);
+            transition: transform 0.3s ease;
+            box-shadow: 0 25px 50px rgba(191, 49, 49, 0.25);
+        }
+
+        .modal.show .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #FEF3E2;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 2rem;
+            cursor: pointer;
+            color: #BF3131;
+            transition: all 0.3s ease;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-close:hover {
+            background-color: #BF3131;
+            color: white;
+            transform: rotate(90deg);
+        }
+
+        .modal-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #BF3131, #F16767);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(191, 49, 49, 0.7);
+            }
+
+            70% {
+                box-shadow: 0 0 0 20px rgba(191, 49, 49, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(191, 49, 49, 0);
+            }
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #BF3131, #F16767);
+            color: white;
+            border: 2px solid transparent;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #F16767, #BF3131);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(191, 49, 49, 0.3);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: #BF3131;
+            border: 2px solid #BF3131;
+        }
+
+        .btn-secondary:hover {
+            background: #FEF3E2;
+            transform: translateY(-2px);
+        }
+
+        .loading-overlay {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            z-index: 10;
+        }
+
+        .loading-overlay.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
     </style>
 </head>
@@ -317,8 +471,6 @@
                             <div class="h-px bg-gradient-to-l from-transparent via-[#BF3131] to-transparent w-32"></div>
                         </div>
 
-
-
                         <p class="text-2xl font-semibold text-gray-700 mb-2">
                             "Setiap detik adalah kenangan, setiap foto adalah cerita"
                         </p>
@@ -327,14 +479,52 @@
                             menciptakan momen tak terlupakan
                         </p>
                     </div>
-
-
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Payment Modal -->
+    <div id="paymentModal" class="modal">
+        <div class="modal-content">
+            <div class="loading-overlay" id="modalLoading">
+                <div class="loading-spinner"></div>
+            </div>
+
+            <div class="modal-header">
+                <h2 class="text-2xl font-bold text-gray-800">Frame Berbayar</h2>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+
+            <div class="text-center">
+                <div class="modal-icon">
+                    <i class="fas fa-credit-card text-white text-3xl"></i>
+                </div>
+
+                <h3 class="text-xl font-semibold text-gray-800 mb-4">Pembayaran Diperlukan</h3>
+                <p class="text-gray-600 mb-2 leading-relaxed">
+                    Frame ini berbayar, silahkan anda untuk melakukan pembayaran terlebih dahulu.
+                </p>
+                <div id="frameDetails" class="bg-[#FEF3E2] rounded-lg p-4 my-4 border-2 border-[#BF3131]">
+                    <div class="flex items-center justify-between">
+                        <span class="font-semibold text-gray-700">Harga Frame:</span>
+                        <span id="framePrice" class="text-[#BF3131] font-bold text-lg">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-buttons">
+
+                <button class="btn btn-primary" onclick="proceedPayment()">
+                    <i class="fas fa-shopping-cart mr-2"></i>Bayar Sekarang
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
         let allTestimonis = [];
+        let currentFrameId = null;
 
         // Load initial data
         document.addEventListener('DOMContentLoaded', function() {
@@ -431,21 +621,137 @@
                         
                         <!-- Frame info -->
                         ${testimoni.frame ? `
-                                                                    <a href="/booth?frame_id=${testimoni.frame.id}" class="frame-info-badge">
-                                                                        <div class="flex items-center justify-center space-x-2">
-                                                                            <i class="fas fa-image frame-icon text-[#BF3131] transition-colors duration-300"></i>
-                                                                            <span class="text-sm font-semibold frame-text text-gray-700 transition-colors duration-300">
-                                                                                Frame: ${testimoni.frame.name}
-                                                                            </span>
-                                                                            <i class="fas fa-check-circle frame-check text-green-500 text-sm transition-colors duration-300"></i>
-                                                                        </div>
-                                                                    </a>
-                                                                ` : ''}
+                                                        <div class="frame-info-badge" onclick="handleFrameClickSimple(${testimoni.frame.id})">
+                                                            <div class="flex items-center justify-center space-x-2">
+                                                                <i class="fas fa-image frame-icon text-[#BF3131] transition-colors duration-300"></i>
+                                                                <span class="text-sm font-semibold frame-text text-gray-700 transition-colors duration-300">
+                                                                    Frame: ${testimoni.frame.name}
+                                                                </span>
+                                                                <i class="fas fa-check-circle frame-check text-green-500 text-sm transition-colors duration-300"></i>
+                                                            </div>
+                                                        </div>
+                                                    ` : ''}
                     </div>
-
                 </div>
             `;
         }
+
+        function handleFrameClickSimple(frameId) {
+            currentFrameId = frameId;
+
+            // Cari frame dari data testimoni
+            const testimoni = allTestimonis.find(t => t.frame && t.frame.id == frameId);
+
+            if (testimoni && testimoni.frame) {
+                const price = Number(testimoni.frame.price);
+                console.log('Frame price:', price, typeof price);
+
+                if (price === 0) {
+                    console.log('Free frame detected, redirecting...');
+                    window.location.href = `/booth?frame_id=${frameId}`;
+                    return;
+                }
+            }
+
+            // Jika tidak gratis atau tidak ketemu, tampilkan modal
+            console.log('Paid frame or unknown, showing modal...');
+            showModal();
+
+            // Set harga dari data lokal jika ada
+            if (testimoni && testimoni.frame && testimoni.frame.price > 0) {
+                document.getElementById('framePrice').textContent =
+                    `Rp ${testimoni.frame.price.toLocaleString('id-ID')}`;
+            } else {
+                document.getElementById('framePrice').textContent = 'Hubungi Admin';
+            }
+        }
+
+        // Show modal
+        function showModal() {
+            const modal = document.getElementById('paymentModal');
+            modal.style.display = 'flex';
+            setTimeout(() => {
+                modal.classList.add('show');
+            }, 10);
+
+            // Prevent body scroll
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Close modal
+        function closeModal() {
+            const modal = document.getElementById('paymentModal');
+            modal.classList.remove('show');
+            setTimeout(() => {
+                modal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }, 300);
+
+            currentFrameId = null;
+        }
+
+        // Show modal loading
+        function showModalLoading() {
+            document.getElementById('modalLoading').classList.add('show');
+        }
+
+        // Hide modal loading
+        function hideModalLoading() {
+            document.getElementById('modalLoading').classList.remove('show');
+        }
+
+        // Proceed to payment
+        function proceedPayment() {
+            if (currentFrameId) {
+                // Cari data frame dari testimoni
+                const testimoni = allTestimonis.find(t => t.frame && t.frame.id == currentFrameId);
+                let framePrice = 0;
+
+                if (testimoni && testimoni.frame) {
+                    framePrice = testimoni.frame.price;
+                } else {
+                    // Jika tidak ketemu di testimoni, ambil dari modal display
+                    const priceText = document.getElementById('framePrice').textContent;
+                    // Extract number from "Rp 25.000" format
+                    const priceMatch = priceText.match(/[\d.,]+/);
+                    if (priceMatch) {
+                        framePrice = parseInt(priceMatch[0].replace(/[.,]/g, ''));
+                    }
+                }
+
+                // Simpan data pembayaran ke localStorage
+                const paymentData = {
+                    frame_id: currentFrameId,
+                    price: framePrice,
+                    timestamp: Date.now()
+                };
+
+                try {
+                    localStorage.setItem('pendingPremiumFrame', JSON.stringify(paymentData));
+                    console.log('Payment data saved:', paymentData);
+                } catch (error) {
+                    console.error('Error saving to localStorage:', error);
+                }
+
+                // Redirect ke halaman booth dengan frame_id
+                window.location.href = `/booth?frame_id=${currentFrameId}`;
+            }
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('paymentModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeModal();
+            }
+        });
 
         // Generate stars
         function generateStars(rating) {
@@ -472,6 +778,79 @@
 
             const emojis = emojisByRating[rating] || emojisByRating[5];
             return emojis[Math.floor(Math.random() * emojis.length)];
+        }
+
+        // Load mock data for demo
+        function loadMockData() {
+            const mockTestimonis = [{
+                    id: 1,
+                    name: "Sarah Johnson",
+                    message: "PhotoBooth ini sangat keren! Hasil fotonya berkualitas tinggi dan framenya beragam. Sangat puas dengan pelayanannya!",
+                    rating: 5,
+                    created_at: new Date().toISOString(),
+                    frame: {
+                        id: 1,
+                        name: "Wedding Classic",
+                        price: 25000,
+                        isFree: false
+                    }
+                },
+                {
+                    id: 2,
+                    name: "Michael Chen",
+                    message: "Pengalaman yang luar biasa! Frame gratis sudah bagus, tapi frame premium benar-benar worth it. Recommended!",
+                    rating: 5,
+                    created_at: new Date(Date.now() - 86400000).toISOString(),
+                    frame: {
+                        id: 2,
+                        name: "Basic Frame",
+                        price: 0,
+                        isFree: true
+                    }
+                },
+                {
+                    id: 3,
+                    name: "Lisa Amanda",
+                    message: "Suka banget dengan hasilnya! Framenya lucu-lucu dan cocok untuk acara ulang tahun. Terima kasih!",
+                    rating: 4,
+                    created_at: new Date(Date.now() - 172800000).toISOString(),
+                    frame: {
+                        id: 3,
+                        name: "Birthday Fun",
+                        price: 15000,
+                        isFree: false
+                    }
+                },
+                {
+                    id: 4,
+                    name: "David Pratama",
+                    message: "Frame gratisnya sudah bagus banget! Kualitas foto juga oke. Thanks PhotoBooth!",
+                    rating: 5,
+                    created_at: new Date(Date.now() - 259200000).toISOString(),
+                    frame: {
+                        id: 4,
+                        name: "Simple & Clean",
+                        price: 0,
+                        isFree: true
+                    }
+                },
+                {
+                    id: 5,
+                    name: "Maria Santos",
+                    message: "Frame premium memang beda! Detail dan kualitasnya sangat memuaskan. Worth every penny!",
+                    rating: 5,
+                    created_at: new Date(Date.now() - 345600000).toISOString(),
+                    frame: {
+                        id: 5,
+                        name: "Premium Gold",
+                        price: 50000,
+                        isFree: false
+                    }
+                }
+            ];
+
+            allTestimonis = mockTestimonis;
+            displayMarqueeTestimonis(allTestimonis);
         }
 
         // Auto-load mock data for demo
