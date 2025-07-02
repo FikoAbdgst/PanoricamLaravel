@@ -126,19 +126,19 @@
                     @if (!$frame->isFree())
                         <div class="watermark absolute top-[20px] left-[10px] w-[170px] h-[120px] z-30 pointer-events-none opacity-40"
                             data-slot="0">
-                            <div class="flex items-center justify-center h-full bg-black bg-opacity-50 p-2 rounded-lg">
+                            <div class="flex items-center justify-center h-full  p-2 rounded-lg">
                                 <img src="{{ asset('logo.png') }}" alt="Watermark" class="h-24">
                             </div>
                         </div>
                         <div class="watermark absolute top-[150px] left-[10px] w-[170px] h-[120px] z-30 pointer-events-none opacity-40"
                             data-slot="1">
-                            <div class="flex items-center justify-center h-full bg-black bg-opacity-50 p-2 rounded-lg">
+                            <div class="flex items-center justify-center h-full  p-2 rounded-lg">
                                 <img src="{{ asset('logo.png') }}" alt="Watermark" class="h-24">
                             </div>
                         </div>
                         <div class="watermark absolute top-[280px] left-[10px] w-[170px] h-[120px] z-30 pointer-events-none opacity-40"
                             data-slot="2">
-                            <div class="flex items-center justify-center h-full bg-black bg-opacity-50 p-2 rounded-lg">
+                            <div class="flex items-center justify-center h-full  p-2 rounded-lg">
                                 <img src="{{ asset('logo.png') }}" alt="Watermark" class="h-24">
                             </div>
                         </div>
@@ -273,11 +273,198 @@
             </div>
         </div>
     </div>
+    <div id="retakeModal"
+        class="fixed z-50 left-0 top-0 w-full h-full bg-black bg-opacity-70 overflow-auto justify-center items-center hidden">
+        <div id="retakeModalContent"
+            class="mx-auto w-11/12 max-w-[450px] rounded-3xl shadow-xl p-6 sm:p-8 relative flex flex-col items-center">
+            <button
+                class="retake-modal-close absolute top-4 right-4 text-2xl font-bold text-gray-500 bg-transparent border-none cursor-pointer hover:text-gray-800 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[#BF3131] rounded-full w-8 h-8 flex items-center justify-center">&times;</button>
+            <h2 class="text-2xl sm:text-3xl mb-3 text-gray-800 font-semibold text-center">Retake Your Photo?</h2>
+            <p class="text-gray-600 text-base sm:text-lg text-center mb-6 px-2">This will replace your current photo
+                with a new one. Are you sure?</p>
+            <div class="flex gap-4 justify-center w-full">
+                <button id="cancelRetakeButton"
+                    class="bg-gray-600 text-white border-none py-3 px-6 text-sm font-medium rounded-xl cursor-pointer transition-all duration-300 ease-in-out hover:bg-gray-700 hover:scale-105 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-gray-500">
+                    Cancel
+                </button>
+                <button id="confirmRetakeButton"
+                    class="retake-button-icon bg-[#BF3131] text-white border-none py-3 px-6 text-sm font-medium rounded-xl cursor-pointer transition-all duration-300 ease-in-out hover:bg-[#F16767] hover:scale-105 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[#BF3131]">
+                    Retake
+                </button>
+            </div>
+        </div>
+    </div>
+    <div id="resetModal"
+        class="fixed z-50 left-0 top-0 w-full h-full bg-black bg-opacity-70 overflow-auto justify-center items-center hidden">
+        <div id="resetModalContent"
+            class="mx-auto w-11/12 max-w-[450px] rounded-3xl shadow-xl p-6 sm:p-8 relative flex flex-col items-center">
+            <button
+                class="reset-modal-close absolute top-4 right-4 text-2xl font-bold text-gray-500 bg-transparent border-none cursor-pointer hover:text-gray-800 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[#BF3131] rounded-full w-8 h-8 flex items-center justify-center">×</button>
+            <h2 class="text-2xl sm:text-3xl mb-3 text-gray-800 font-semibold text-center">Reset All Photos?</h2>
+            <p class="text-gray-600 text-base sm:text-lg text-center mb-6 px-2">This will clear all photos in the
+                slots. This action cannot be undone.</p>
+            <div class="flex gap-4 justify-center w-full">
+                <button id="cancelResetButton"
+                    class="bg-gray-600 text-white border-none py-3 px-6 text-sm font-medium rounded-xl cursor-pointer transition-all duration-300 ease-in-out hover:bg-gray-700 hover:scale-105 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-gray-500">
+                    Cancel
+                </button>
+                <button id="confirmResetButton"
+                    class="reset-button-icon bg-[#BF3131] text-white border-none py-3 px-6 text-sm font-medium rounded-xl cursor-pointer transition-all duration-300 ease-in-out hover:bg-[#F16767] hover:scale-105 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[#BF3131]">
+                    Reset
+                </button>
+            </div>
+        </div>
+    </div>
 
     <input type="hidden" id="frameId" value="{{ $frame->id }}">
     <input type="hidden" id="frameIsPaid" value="{{ $frame->isFree() ? 'false' : 'true' }}">
 
     <style>
+        /* Retake Modal Styles */
+        /* Animasi untuk modal */
+        @keyframes modalScaleIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes modalSlideUp {
+            0% {
+                transform: translateY(100%);
+            }
+
+            100% {
+                transform: translateY(0);
+            }
+        }
+
+        /* Styling Modal */
+        #retakeModal {
+            backdrop-filter: blur(8px);
+            transition: all 0.3s ease-in-out;
+        }
+
+        #retakeModalContent {
+            background: linear-gradient(135deg, #FEF3E2 0%, #FFF7ED 100%);
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        /* Tombol dengan ikon */
+        .retake-button-icon::before {
+            content: '\1F4F7';
+            /* Ikon kamera Unicode */
+            margin-right: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        /* Responsivitas */
+        @media (max-width: 768px) {
+            #retakeModal {
+                align-items: flex-end;
+            }
+
+            #retakeModalContent {
+                width: 100%;
+                max-width: 100%;
+                margin: 0;
+                border-radius: 1.5rem 1.5rem 0 0;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                height: auto;
+                max-height: 85vh;
+                padding: 1.5rem 1.25rem;
+                padding-bottom: calc(1.5rem + env(safe-area-inset-bottom, 16px));
+                animation: modalSlideUp 0.4s ease-out;
+            }
+        }
+
+        @media (min-width: 769px) {
+            #retakeModalContent {
+                animation: modalScaleIn 0.4s ease-out;
+            }
+        }
+
+        /* Animasi closing */
+        .modal-closing {
+            animation: modalScaleOut 0.3s ease-out;
+        }
+
+        @keyframes modalScaleOut {
+            0% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            100% {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+        }
+
+        #resetModal {
+            backdrop-filter: blur(8px);
+            transition: all 0.3s ease-in-out;
+        }
+
+        #resetModalContent {
+            background: linear-gradient(135deg, #FEF3E2 0%, #FFF7ED 100%);
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        /* Tombol dengan ikon */
+        .reset-button-icon::before {
+            content: '\1F5D1';
+            /* Ikon tempat sampah Unicode untuk reset */
+            margin-right: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        /* Responsivitas */
+        @media (max-width: 768px) {
+            #resetModal {
+                align-items: flex-end;
+            }
+
+            #resetModalContent {
+                width: 100%;
+                max-width: 100%;
+                margin: 0;
+                border-radius: 1.5rem 1.5rem 0 0;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                height: auto;
+                max-height: 85vh;
+                padding: 1.5rem 1.25rem;
+                padding-bottom: calc(1.5rem + env(safe-area-inset-bottom, 16px));
+                animation: modalSlideUp 0.4s ease-out;
+            }
+        }
+
+        @media (min-width: 769px) {
+            #resetModalContent {
+                animation: modalScaleIn 0.4s ease-out;
+            }
+        }
+
+        /* Animasi closing */
+        .modal-closing {
+            animation: modalScaleOut 0.3s ease-out;
+        }
+
         .watermark {
             position: absolute;
             z-index: 30;
@@ -1321,6 +1508,7 @@
         // Update DOMContentLoaded listener
         document.addEventListener('DOMContentLoaded', function() {
             initializeBoothPageWithSingleSession();
+
             const frameIsPaidElement = document.getElementById('frameIsPaid');
 
             if (!frameIsPaidElement) {
@@ -1819,20 +2007,152 @@
 
         function setupRetakeButtonListeners() {
             retakeButtons.forEach(button => {
+                const newButton = button.cloneNode(true);
+                button.parentNode.replaceChild(newButton, button);
+            });
+
+            retakeButtons = document.querySelectorAll('.retake-button');
+
+            retakeButtons.forEach(button => {
                 button.addEventListener('click', function(e) {
                     e.stopPropagation();
                     const index = parseInt(this.getAttribute('data-index'));
                     const hasPhoto = this.getAttribute('data-has-photo') === 'true';
-
                     if (hasPhoto && !capturing) {
-                        const confirmRetake = confirm("Do you want to retake this photo?");
-                        if (confirmRetake) {
-                            clearPhotoSlot(index);
-                        }
+                        showRetakeModal(index);
                     }
                 });
             });
         }
+
+        function showRetakeModal(index) {
+            const retakeModal = document.getElementById('retakeModal');
+            const confirmRetakeButton = document.getElementById('confirmRetakeButton');
+            const cancelRetakeButton = document.getElementById('cancelRetakeButton');
+            const retakeModalClose = document.querySelector('.retake-modal-close');
+
+            if (retakeModal && confirmRetakeButton && cancelRetakeButton && retakeModalClose) {
+                retakeModal.setAttribute('data-retake-index', index);
+                retakeModal.style.display = 'flex';
+
+                // Bersihkan event listener sebelumnya
+                const newConfirmButton = confirmRetakeButton.cloneNode(true);
+                confirmRetakeButton.parentNode.replaceChild(newConfirmButton, confirmRetakeButton);
+                const newCancelButton = cancelRetakeButton.cloneNode(true);
+                cancelRetakeButton.parentNode.replaceChild(newCancelButton, cancelRetakeButton);
+                const newCloseButton = retakeModalClose.cloneNode(true);
+                retakeModalClose.parentNode.replaceChild(newCloseButton, retakeModalClose);
+
+                // Tambahkan event listener baru
+                document.querySelector('#confirmRetakeButton').addEventListener('click', () => {
+                    const slotIndex = parseInt(retakeModal.getAttribute('data-retake-index'));
+                    clearPhotoSlot(slotIndex); // Asumsi fungsi ini ada di kode asli
+                    updateRetakeButtonsState(); // Asumsi fungsi ini ada di kode asli
+                    closeRetakeModal();
+                });
+
+                document.querySelector('#cancelRetakeButton').addEventListener('click', closeRetakeModal);
+                document.querySelector('.retake-modal-close').addEventListener('click', closeRetakeModal);
+
+                retakeModal.addEventListener('click', (e) => {
+                    if (e.target === retakeModal) {
+                        closeRetakeModal();
+                    }
+                }, {
+                    once: true
+                });
+
+                // Fokus pada tombol Cancel untuk aksesibilitas
+                document.querySelector('#cancelRetakeButton').focus();
+            }
+        }
+
+        function closeRetakeModal() {
+            const retakeModal = document.getElementById('retakeModal');
+            const retakeModalContent = document.getElementById('retakeModalContent');
+            if (retakeModal && retakeModalContent) {
+                retakeModalContent.classList.add('modal-closing');
+                setTimeout(() => {
+                    retakeModal.style.display = 'none';
+                    retakeModalContent.classList.remove('modal-closing');
+                }, 300);
+            }
+        }
+
+        function setupResetButtonListener() {
+            if (resetButton) {
+                // Clone the button to avoid duplicate event listeners
+                const newButton = resetButton.cloneNode(true);
+                resetButton.parentNode.replaceChild(newButton, resetButton);
+                resetButton = document.getElementById('resetButton');
+
+                resetButton.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    // Check if there are any photos in the slots
+                    const hasPhotos = Array.from(photoSlots).some(slot => !isPhotoSlotEmpty(slot));
+                    if (hasPhotos && !capturing) {
+                        showResetModal();
+                    } else {
+                        console.log('No photos to reset or capture in progress');
+                    }
+                });
+            }
+        }
+
+        function showResetModal() {
+            const resetModal = document.getElementById('resetModal');
+            const confirmResetButton = document.getElementById('confirmResetButton');
+            const cancelResetButton = document.getElementById('cancelResetButton');
+            const resetModalClose = document.querySelector('.reset-modal-close');
+
+            if (resetModal && confirmResetButton && cancelResetButton && resetModalClose) {
+                resetModal.style.display = 'flex';
+
+                // Clone buttons to avoid duplicate event listeners
+                const newConfirmButton = confirmResetButton.cloneNode(true);
+                confirmResetButton.parentNode.replaceChild(newConfirmButton, confirmResetButton);
+                const newCancelButton = cancelResetButton.cloneNode(true);
+                cancelResetButton.parentNode.replaceChild(newCancelButton, cancelResetButton);
+                const newCloseButton = resetModalClose.cloneNode(true);
+                resetModalClose.parentNode.replaceChild(newCloseButton, resetModalClose);
+
+                // Add event listeners
+                document.querySelector('#confirmResetButton').addEventListener('click', () => {
+                    resetPhotos(); // Call resetPhotos on confirmation
+                    updateRetakeButtonsState();
+                    closeResetModal();
+                });
+
+                document.querySelector('#cancelResetButton').addEventListener('click', closeResetModal);
+                document.querySelector('.reset-modal-close').addEventListener('click', closeResetModal);
+
+                resetModal.addEventListener('click', (e) => {
+                    if (e.target === resetModal) {
+                        closeResetModal();
+                    }
+                }, {
+                    once: true
+                });
+
+                // Focus on Cancel button for accessibility
+                document.querySelector('#cancelResetButton').focus();
+            } else {
+                console.error('Reset modal elements not found');
+            }
+        }
+
+        function closeResetModal() {
+            const resetModal = document.getElementById('resetModal');
+            const resetModalContent = document.getElementById('resetModalContent');
+            if (resetModal && resetModalContent) {
+                resetModalContent.classList.add('modal-closing');
+                setTimeout(() => {
+                    resetModal.style.display = 'none';
+                    resetModalContent.classList.remove('modal-closing');
+                }, 300);
+            }
+        }
+
 
         function resetPhotos() {
             clearInterval(timer);
@@ -2182,7 +2502,7 @@
         function setupEventListeners() {
             console.log('Setting up event listeners...');
 
-            // Tambahkan setup camera toggle
+            // Camera toggle
             setupCameraToggle();
             setupFloatingCameraToggle();
 
@@ -2231,7 +2551,6 @@
                 });
             });
 
-            // Continue with other event listeners...
             if (uploadModalClose) {
                 uploadModalClose.addEventListener('click', () => {
                     if (uploadModal) uploadModal.style.display = 'none';
@@ -2241,42 +2560,13 @@
                 });
             }
 
-            document.querySelectorAll('.photo-slot-container').forEach((container, index) => {
-                container.addEventListener('click', function() {
-                    const hasPhoto = this.getAttribute('data-has-photo') === 'true';
-                    if (hasPhoto && !capturing) {
-                        const confirmRetake = confirm("Do you want to retake this photo?");
-                        if (confirmRetake) {
-                            clearPhotoSlot(index);
-                        }
-                    }
-                });
-            });
-
-            retakeButtons.forEach(button => {
-                button.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    const index = parseInt(this.getAttribute('data-index'));
-                    const hasPhoto = this.getAttribute('data-has-photo') === 'true';
-                    if (hasPhoto && !capturing) {
-                        const confirmRetake = confirm("Do you want to retake this photo?");
-                        if (confirmRetake) {
-                            clearPhotoSlot(index);
-                        }
-                    }
-                });
-            });
-
             if (finishButton) {
                 finishButton.addEventListener('click', openPreviewModal);
             }
 
-            if (resetButton) resetButton.addEventListener('click', resetPhotos);
             if (modalDownloadButton) modalDownloadButton.addEventListener('click', downloadPhotoStrip);
             if (modalShareButton) modalShareButton.addEventListener('click', sharePhotoStrip);
             if (modalGifButton) modalGifButton.addEventListener('click', createGifFromPhotos);
-
-            setupRetakeButtonListeners();
 
             window.addEventListener('click', (e) => {
                 if (modal && e.target === modal) {
@@ -2337,10 +2627,17 @@
                         slot.style.objectFit = 'cover';
                         slot.style.objectPosition = 'center';
                         slot.src = '';
-                        slot.alt = '';
+                        slot.alt = `Photo slot ${index + 1}`;
                         slot.style.position = 'relative';
                         slot.style.zIndex = '1';
                         console.log(`Photo slot ${index} initialized`);
+
+                        // Ensure parent container has data-photo-index
+                        const container = slot.closest('.photo-slot-container');
+                        if (container) {
+                            container.setAttribute('data-photo-index', index);
+                            container.setAttribute('data-has-photo', 'false');
+                        }
                     }
                 });
 
@@ -2349,9 +2646,11 @@
                 setupMirrorToggle();
                 setupCountdownToggle();
                 setupFlashToggle();
-                setupSettingsToggle(); // Tambahkan setup tombol setting
+                setupSettingsToggle();
                 setupEventListeners();
                 setupTestimoniEventListeners();
+                setupRetakeButtonListeners();
+                setupResetButtonListener(); // Ensure this is called
 
                 if (captureButton) {
                     captureButton.innerHTML = `

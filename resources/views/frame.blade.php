@@ -2,6 +2,90 @@
 
 @section('hero_section')
     <style>
+        #acceptModal,
+        #rejectModal {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+            overflow: hidden;
+        }
+
+        #acceptModal.show,
+        #rejectModal.show {
+            display: flex;
+        }
+
+        #acceptModal .modal-backdrop,
+        #rejectModal .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        #acceptModal .modal-backdrop.show,
+        #rejectModal .modal-backdrop.show {
+            opacity: 1;
+        }
+
+        #acceptModal .modal-content,
+        #rejectModal .modal-content {
+            position: relative;
+            background: white;
+            border-radius: 1rem;
+            max-width: 32rem;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            transform: translateY(0);
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+
+        #acceptModal .modal-content.hide,
+        #rejectModal .modal-content.hide {
+            transform: translateY(100%);
+            opacity: 0;
+        }
+
+        /* Please Wait Modal Styles */
+        #pleaseWaitModal {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+            background-color: rgba(0, 0, 0, 0.6);
+            /* Matches paymentModal's modal-backdrop */
+            backdrop-filter: blur(4px);
+            /* Matches paymentModal's blur effect */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        #pleaseWaitModal .modal-content {
+            position: relative;
+            background: white;
+            border-radius: 1rem;
+            max-width: 32rem;
+            /* Matches paymentModal's max-width */
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            transform: translateY(0);
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+
         /* Payment Modal Styles */
         #paymentModal {
             display: none;
@@ -1250,18 +1334,10 @@
                         <!-- Bank Transfer Details -->
                         <div id="bankTransferDetails"
                             class="mb-4 p-4 border-2 border-[#BF3131]/20 rounded-xl bg-gradient-to-r from-[#FEF3E2]/30 to-transparent">
-                            <div class="flex items-center mb-3">
-                                <div
-                                    class="w-8 h-8Cabe bg-[#BF3131]/10 rounded-full flex items-center justify-center mr-3">
-                                    <svg class="w-4 h-4 text-[#BF3131]" fill="currentColor" viewBox="0 0 20 20">
-                                        <path
-                                            d="M4 4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2H4zm0 2h12v2H4V6zm0 4h12v4H4v-4z">
-                                        </path>
-                                    </svg>
-                                </div>
-                                <h5 class="font-semibold text-gray-800">Transfer Bank</h5>
-                            </div>
-                            <div class="text-sm text-gray-600 ml-11 space-y-2">
+                            <div class="text-sm text-gray-600 space-y-2">
+                                <h5
+                                    class="font-bold text-gray-800 text-center flex justify-center items-center text-xl">
+                                    Transfer Bank</h5>
                                 <div
                                     class="flex justify-between items-center p-3 bg-white rounded-lg border border-gray-100">
                                     <span class="font-medium">Bank BCA:</span>
@@ -1289,19 +1365,10 @@
                         <!-- QRIS Details -->
                         <div id="qrisDetails"
                             class="mb-4 p-4 border-2 border-[#BF3131]/20 rounded-xl bg-gradient-to-r from-[#FEF3E2]/30 to-transparent">
-                            <div class="flex items-center mb-3">
-                                <div
-                                    class="w-8 h-8 bg-[#BF3131]/10 rounded-full flex items-center justify-center mr-3">
-                                    <svg class="w-4 h-4 textছটি text-[#BF3131]" fill="currentColor"
-                                        viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd"
-                                            d="M3 4a1 1 0 011-1h3a1 1 0 011 1v3a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm2 2V5h1v1H5zM3 13a1 1 0 011-1h3a1 1 0 011 1v3a1 1 0 01-1 1H4a1 1 0 01-1-1v-3zm2 2v-1h1v1H5zM13 3a1 1 0 00-1 1v3a1 1 0 001 1h3a1 1 0 001-1V4a1 1 0 00-1-1h-3zm1 2v1h1V5h-1z"
-                                            clip-rule="evenodd"></path>
-                                    </svg>
-                                </div>
-                                <h5 class="font-semibold text-gray-800">QRIS</h5>
-                            </div>
-                            <div class="flex flex-col items-center ml-11">
+                            <div class="flex flex-col items-center">
+                                <h5
+                                    class="font-bold text-gray-800 text-center flex mb-2 justify-center items-center text-xl">
+                                    QRIS</h5>
                                 <div
                                     class="w-48 h-48 bg-white rounded-xl border-2 border-dashed border-[#BF3131]/30 flex items-center justify-center mb-3">
                                     <div class="text-center">
@@ -1375,6 +1442,45 @@
                     Submit Pembayaran
                 </button>
             </form>
+        </div>
+    </div>
+</div>
+<!-- Accept Modal -->
+<div id="acceptModal" class="fixed inset-0 hidden z-50 flex items-center justify-center">
+    <div class="modal-backdrop absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+    <div class="modal-content bg-white rounded-2xl p-6 w-full max-w-md mx-4">
+        <div class="text-center">
+            <svg class="w-16 h-16 text-green-500 mx-auto mb-4" fill="none" stroke="currentColor"
+                viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+            <h3 class="text-xl font-bold text-gray-800 mb-2">Pembayaran Disetujui</h3>
+            <p class="text-gray-600 mb-4">Pembayaran Anda (Order ID: <span id="acceptOrderId"></span>) telah
+                disetujui. Anda akan diarahkan ke booth.</p>
+            <button onclick="redirectToBooth()"
+                class="w-full py-3 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-lg text-sm font-medium transition-colors">
+                Lanjutkan ke Booth
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Reject Modal -->
+<div id="rejectModal" class="fixed inset-0 hidden z-50 flex items-center justify-center">
+    <div class="modal-backdrop absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+    <div class="modal-content bg-white rounded-2xl p-6 w-full max-w-md mx-4">
+        <div class="text-center">
+            <svg class="w-16 h-16 text-red-500 mx-auto mb-4" fill="none" stroke="currentColor"
+                viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+            <h3 class="text-xl font-bold text-gray-800 mb-2">Pembayaran Ditolak</h3>
+            <p class="text-gray-600 mb-4">Pembayaran Anda (Order ID: <span id="rejectOrderId"></span>) ditolak oleh
+                admin. Silakan coba lagi.</p>
+            <button onclick="closeRejectModal()"
+                class="w-full py-3 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-lg text-sm font-medium transition-colors">
+                Tutup
+            </button>
         </div>
     </div>
 </div>
@@ -1582,16 +1688,16 @@
     function showPleaseWaitModal(orderId) {
         const modal = document.createElement('div');
         modal.id = 'pleaseWaitModal';
-        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+        modal.className = 'fixed inset-0 flex items-center justify-center z-50';
         modal.innerHTML = `
-            <div class="bg-white rounded-2xl p-6 w-full max-w-md mx-4">
-                <div class="text-center">
-                    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-500 mx-auto mb-4"></div>
-                    <h3 class="text-xl font-bold text-gray-800 mb-2">Menunggu Konfirmasi</h3>
-                    <p class="text-gray-600">Pembayaran Anda (Order ID: ${orderId}) sedang diproses. Silakan tunggu konfirmasi dari admin.</p>
-                </div>
+        <div class="modal-content bg-white rounded-2xl p-6 w-full max-w-md mx-4">
+            <div class="text-center">
+                <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-500 mx-auto mb-4"></div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Menunggu Konfirmasi</h3>
+                <p class="text-gray-600">Pembayaran Anda (Order ID: ${orderId}) sedang diproses. Silakan tunggu konfirmasi dari admin.</p>
             </div>
-        `;
+        </div>
+    `;
         document.body.appendChild(modal);
     }
 
@@ -1690,25 +1796,90 @@
                     // Bersihkan data pendingPremiumFrame setelah pembayaran disetujui
                     localStorage.removeItem('pendingPremiumFrame');
 
-                    const boothUrl =
-                        `/booth?frame_id=${encodeURIComponent(frameId)}&order_id=${encodeURIComponent(orderId)}`;
-                    toastr.success('Pembayaran telah disetujui! Anda akan diarahkan ke booth.',
-                        'Berhasil', {
-                            onHidden: () => {
-                                window.location.href = boothUrl;
-                            }
-                        });
+                    // Show Accept Modal
+                    showAcceptModal(orderId, frameId);
                 } else if (result.status === 'rejected') {
                     clearInterval(interval);
                     closePleaseWaitModal();
                     localStorage.removeItem('pendingPayment');
                     localStorage.removeItem('pendingPremiumFrame');
-                    toastr.error('Pembayaran ditolak oleh admin. Silakan coba lagi.', 'Gagal');
+
+                    // Show Reject Modal
+                    showRejectModal(orderId);
                 }
             } catch (error) {
                 console.error('Error checking payment status:', error);
             }
         }, 5000);
+    }
+
+    // Show Accept Modal
+    function showAcceptModal(orderId, frameId) {
+        const modal = document.getElementById('acceptModal');
+        const modalBackdrop = modal.querySelector('.modal-backdrop');
+        const modalContent = modal.querySelector('.modal-content');
+        const orderIdElement = document.getElementById('acceptOrderId');
+
+        orderIdElement.textContent = orderId;
+        modal.classList.remove('hidden');
+        modal.classList.add('show');
+        document.body.classList.add('modal-open');
+
+        setTimeout(() => {
+            modalBackdrop.classList.add('show');
+            modalContent.classList.remove('hide');
+        }, 50);
+
+        // Store frameId for redirect
+        modal.dataset.frameId = frameId;
+    }
+
+    // Show Reject Modal
+    function showRejectModal(orderId) {
+        const modal = document.getElementById('rejectModal');
+        const modalBackdrop = modal.querySelector('.modal-backdrop');
+        const modalContent = modal.querySelector('.modal-content');
+        const orderIdElement = document.getElementById('rejectOrderId');
+
+        orderIdElement.textContent = orderId;
+        modal.classList.remove('hidden');
+        modal.classList.add('show');
+        document.body.classList.add('modal-open');
+
+        setTimeout(() => {
+            modalBackdrop.classList.add('show');
+            modalContent.classList.remove('hide');
+        }, 50);
+    }
+
+    // Redirect to Booth
+    function redirectToBooth() {
+        const modal = document.getElementById('acceptModal');
+        const frameId = modal.dataset.frameId;
+        const orderId = document.getElementById('acceptOrderId').textContent;
+        const boothUrl = `/booth?frame_id=${encodeURIComponent(frameId)}&order_id=${encodeURIComponent(orderId)}`;
+
+        modal.classList.add('hidden');
+        modal.classList.remove('show');
+        document.body.classList.remove('modal-open');
+
+        window.location.href = boothUrl;
+    }
+
+    // Close Reject Modal
+    function closeRejectModal() {
+        const modal = document.getElementById('rejectModal');
+        const modalBackdrop = modal.querySelector('.modal-backdrop');
+        const modalContent = modal.querySelector('.modal-content');
+
+        modalBackdrop.classList.remove('show');
+        modalContent.classList.add('hide');
+
+        setTimeout(() => {
+            modal.classList.add('hidden');
+            modal.classList.remove('show');
+            document.body.classList.remove('modal-open');
+        }, 300);
     }
 
     function validateAndRedirectIfApproved() {
@@ -1775,7 +1946,7 @@
         try {
             const pendingPremiumFrame = localStorage.getItem('pendingPremiumFrame');
             if (!pendingPremiumFrame) {
-                return false;
+                return Promise.resolve(false); // Return a resolved Promise with false
             }
 
             const data = JSON.parse(pendingPremiumFrame);
@@ -1785,14 +1956,14 @@
             if (!data.frame_id || !data.price || !data.timestamp) {
                 console.warn('Invalid pendingPremiumFrame data:', data);
                 localStorage.removeItem('pendingPremiumFrame');
-                return false;
+                return Promise.resolve(false); // Return a resolved Promise with false
             }
 
             // Validasi timestamp (misalnya, kadaluarsa setelah 1 jam)
             if (currentTime - data.timestamp > 60 * 60 * 1000) {
                 console.log('Pending premium frame data expired');
                 localStorage.removeItem('pendingPremiumFrame');
-                return false;
+                return Promise.resolve(false); // Return a resolved Promise with false
             }
 
             // Validasi tambahan: pastikan frame_id ada di daftar frame
@@ -1807,25 +1978,24 @@
                     if (frameData.price > 0 && frameData.price.toString() === data.price) {
                         console.log('Valid pendingPremiumFrame found, opening payment modal:', data);
                         showPremiumModal(data.frame_id, data.price, data.frame_name, data.frame_image);
-                        return true;
+                        return true; // Return true to indicate modal was opened
                     } else {
                         console.warn('Frame price mismatch or free frame:', frameData);
                         localStorage.removeItem('pendingPremiumFrame');
-                        return false;
+                        return false; // Return false if validation fails
                     }
                 })
                 .catch(error => {
                     console.error('Error validating frame status:', error);
                     localStorage.removeItem('pendingPremiumFrame');
-                    return false;
+                    return false; // Return false on error
                 });
         } catch (error) {
             console.error('Error checking pendingPremiumFrame:', error);
             localStorage.removeItem('pendingPremiumFrame');
-            return false;
+            return Promise.resolve(false); // Return a resolved Promise with false
         }
     }
-
     document.addEventListener('DOMContentLoaded', function() {
         clearDownloadedData();
 
@@ -1834,22 +2004,21 @@
 
         // Jika tidak ada redirect, lanjutkan inisialisasi
         if (!redirected) {
-            // Periksa dan buka modal pembayaran otomatis jika ada data valid
-            checkAndOpenPaymentModal().then(opened => {
-                // Hanya inisialisasi UI lainnya jika modal tidak dibuka otomatis
-                if (!opened) {
-                    initializeToggleFilter();
-                    setupFrameCards();
-                    attachAllListeners();
-
-                    const pendingPayment = JSON.parse(localStorage.getItem('pendingPayment') || '{}');
-                    if (pendingPayment.status === 'pending' && pendingPayment.order_id && pendingPayment
-                        .frame_id) {
-                        showPleaseWaitModal(pendingPayment.order_id);
-                        startPaymentStatusCheck(pendingPayment.order_id, pendingPayment.frame_id);
+            // Periksa pendingPayment di localStorage
+            const pendingPayment = JSON.parse(localStorage.getItem('pendingPayment') || '{}');
+            if (pendingPayment.status === 'pending' && pendingPayment.order_id && pendingPayment.frame_id) {
+                showPleaseWaitModal(pendingPayment.order_id);
+                startPaymentStatusCheck(pendingPayment.order_id, pendingPayment.frame_id);
+            } else {
+                // Inisialisasi UI lainnya hanya jika tidak ada modal yang dibuka
+                checkAndOpenPaymentModal().then(opened => {
+                    if (!opened) {
+                        initializeToggleFilter();
+                        setupFrameCards();
+                        attachAllListeners();
                     }
-                }
-            });
+                });
+            }
 
             window.addEventListener('popstate', function() {
                 location.reload();
@@ -1863,6 +2032,7 @@
                 console.log('Loading html2canvas script...');
             }
         }
+
         const paymentModal = document.getElementById('paymentModal');
         if (paymentModal.classList.contains('show')) {
             document.body.classList.add('modal-open');
@@ -3150,6 +3320,19 @@
             localStorage.removeItem('pendingPayment');
         }
     }
+
+    // Handle backdrop click for accept and reject modals
+    document.getElementById('acceptModal').addEventListener('click', function(e) {
+        if (e.target.classList.contains('modal-backdrop')) {
+            redirectToBooth(); // Redirect to booth on backdrop click for accept modal
+        }
+    });
+
+    document.getElementById('rejectModal').addEventListener('click', function(e) {
+        if (e.target.classList.contains('modal-backdrop')) {
+            closeRejectModal(); // Close reject modal on backdrop click
+        }
+    });
 </script>
 
 @endsection
