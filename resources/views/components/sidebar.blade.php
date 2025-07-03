@@ -10,7 +10,7 @@
         <div class="p-4 border-b border-gray-700 lg:border-b-0">
             <div class="flex items-center justify-between">
                 <div>
-                    <h2 class="text-2xl font-bold">Photobooth Admin</h2>
+                    <h2 class="text-2xl font-bold">Panoricam Admin</h2>
                     <p class="text-sm text-gray-400 mt-1">Selamat datang, {{ session('admin_name') }}</p>
                 </div>
                 <!-- Close button untuk mobile -->
