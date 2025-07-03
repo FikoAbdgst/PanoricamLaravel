@@ -202,6 +202,11 @@
     .mobile-modal-container {
         transform: translateY(100%);
         transition: transform 0.3s ease-out;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 60;
     }
 
     .mobile-modal-container.show {
@@ -210,6 +215,16 @@
 
     .mobile-modal-container.hide {
         transform: translateY(100%);
+    }
+
+    @media (max-width: 768px) {
+        #previewCameraModal .mobile-modal-container {
+            display: block !important;
+        }
+
+        #previewCameraModal .hidden.md\\:block {
+            display: none !important;
+        }
     }
 
     body.modal-open {
@@ -624,15 +639,61 @@
                 </button>
             </div>
 
-            <div class="relative" style="width: 172px; height: 450px;>
-                <div id="previewFrameContainer"
-                class="w-full h-full relative bg-transparent shadow-md overflow-hidden">
-                <div id="previewFrameImage" class="absolute inset-0 flex items-center justify-center bg-gray-100">
-                    <p class="text-gray-400 text-center p-4">Frame akan muncul di sini</p>
+            <div class="relative" style="width: 172px; height: 450px;">
+                <div id="previewFrameContainer" class="w-full h-full relative bg-transparent shadow-md overflow-hidden">
+                    <div id="previewFrameImage" class="absolute inset-0 flex items-center justify-center bg-gray-100">
+                        <p class="text-gray-400 text-center p-4">Frame akan muncul di sini</p>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Mobile Modal - Perbaikan struktur -->
+    <div
+        class="relative bg-white rounded-t-xl shadow-xl w-full md:hidden mobile-modal-container max-h-[90vh] overflow-y-auto">
+        <div class="sticky top-0 z-10 bg-white rounded-t-xl border-b border-gray-200">
+            <div class="w-12 h-1.5 bg-gray-300 rounded-full mx-auto my-3"></div>
+            <h2 class="text-xl font-semibold px-4 pb-3 text-center">Frame Preview</h2>
+            <button
+                class="modal-close absolute top-3 right-4 text-2xl text-gray-500 hover:text-black cursor-pointer">×</button>
+        </div>
+
+        <div class="p-4 flex flex-col gap-6">
+            <div class="w-full">
+                <div class="relative bg-white rounded-lg overflow-hidden" style="aspect-ratio: 4/3;">
+                    <video id="mobilePreviewVideo" autoplay muted class="w-full h-full object-cover"></video>
+                    <div id="mobilePreviewWatermark" class="hidden">
+                        <div class="watermark-content">
+                            <img src="{{ asset('logo.png') }}" alt="Logo" class="h-10">
+                        </div>
+                    </div>
+                    <div id="mobilePreviewCountdownOverlay"
+                        class="absolute inset-0 flex items-center justify-center text-6xl font-bold text-white/90">
+                    </div>
+                </div>
+
+                <button id="mobilePreviewCaptureButton"
+                    class="mt-4 w-full py-3 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-medium transition-colors">
+                    📷 Start Session
+                </button>
+            </div>
+
+            <div class="w-full flex justify-center items-center pb-4">
+                <div class="relative" style="width: 172px; height: 450px;">
+                    <div id="mobilePreviewFrameContainer"
+                        class="w-full h-full relative bg-transparent shadow-md overflow-hidden">
+                        <div id="mobilePreviewFrameImage"
+                            class="absolute inset-0 flex items-center justify-center bg-gray-100">
+                            <p class="text-gray-400 text-center p-4">Frame akan muncul di sini</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 </div>
 
 <div
@@ -826,8 +887,33 @@
 
         resetModalState();
 
+        // Perbaikan: Pastikan modal ditampilkan terlebih dahulu
+        modal.style.display = 'flex';
+        document.body.classList.add('modal-open');
+
         const mobileModalContainer = modal.querySelector('.mobile-modal-container');
         const modalBackdrop = modal.querySelector('.modal-backdrop');
+
+        // Perbaikan: Tambahkan class show ke backdrop
+        if (modalBackdrop) {
+            modalBackdrop.classList.add('show');
+        }
+
+        // Perbaikan: Untuk mobile, pastikan container ditampilkan dengan benar
+        const isMobile = window.innerWidth < 768;
+
+        if (isMobile && mobileModalContainer) {
+            // Reset transform dan pastikan visibility
+            mobileModalContainer.style.display = 'block';
+            mobileModalContainer.classList.remove('hide');
+
+            // Gunakan requestAnimationFrame untuk memastikan DOM sudah siap
+            requestAnimationFrame(() => {
+                mobileModalContainer.classList.add('show');
+                console.log('Mobile modal container shown');
+            });
+        }
+
         const video = document.getElementById('previewVideo');
         const mobileVideo = document.getElementById('mobilePreviewVideo');
         const previewFrameContainer = document.getElementById('previewFrameContainer');
@@ -836,21 +922,13 @@
         const mobilePreviewFrameImage = document.getElementById('mobilePreviewFrameImage');
         const captureButton = document.getElementById('previewCaptureButton');
         const mobileCaptureButton = document.getElementById('mobilePreviewCaptureButton');
-        const watermark = document.getElementById('previewWatermark');
-        const mobileWatermark = document.getElementById('mobilePreviewWatermark');
 
-        document.body.classList.add('modal-open');
-        modal.style.display = 'flex';
-        modalBackdrop.classList.add('show');
-
-        console.log('Modal display set to flex');
-
-        if (mobileModalContainer) {
-            setTimeout(() => {
-                mobileModalContainer.classList.add('show');
-                console.log('Mobile modal container shown');
-            }, 50);
-        }
+        console.log('Modal elements found:', {
+            modal: !!modal,
+            mobileModalContainer: !!mobileModalContainer,
+            mobileVideo: !!mobileVideo,
+            mobilePreviewFrameImage: !!mobilePreviewFrameImage
+        });
 
         if (frameId) {
             modal.setAttribute('data-frame-id', frameId);
@@ -858,8 +936,8 @@
 
             const loadingContent =
                 '<div class="flex items-center justify-center w-full h-full"><div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-500"></div></div>';
-            previewFrameImage.innerHTML = loadingContent;
-            mobilePreviewFrameImage.innerHTML = loadingContent;
+            if (previewFrameImage) previewFrameImage.innerHTML = loadingContent;
+            if (mobilePreviewFrameImage) mobilePreviewFrameImage.innerHTML = loadingContent;
 
             fetchFrameDetails(frameId);
 
@@ -869,8 +947,8 @@
                     return response.text();
                 })
                 .then(html => {
-                    previewFrameImage.innerHTML = html;
-                    mobilePreviewFrameImage.innerHTML = html;
+                    if (previewFrameImage) previewFrameImage.innerHTML = html;
+                    if (mobilePreviewFrameImage) mobilePreviewFrameImage.innerHTML = html;
                     initializePhotoSlots(previewFrameImage);
                     initializePhotoSlots(mobilePreviewFrameImage, true);
                     console.log('Frame template loaded successfully');
@@ -879,32 +957,20 @@
                     console.error('Error loading frame template:', error);
                     const errorContent = `
                     <div class="flex flex-col items-center justify-center w-full h-full text-red-500">
-                        <svg class="w-12 h-12 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <svg class="w-12 h-12 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
                         </svg>
                         <p class="text-center">Failed to load frame template.</p>
                     </div>
                 `;
-                    previewFrameImage.innerHTML = errorContent;
-                    mobilePreviewFrameImage.innerHTML = errorContent;
+                    if (previewFrameImage) previewFrameImage.innerHTML = errorContent;
+                    if (mobilePreviewFrameImage) mobilePreviewFrameImage.innerHTML = errorContent;
                     createDummySlots(previewFrameImage);
                     createDummySlots(mobilePreviewFrameImage, true);
                 });
-        } else {
-            console.error('No frame ID found');
-            const errorContent = `
-            <div class="flex flex-col items-center justify-center w-full h-full text-red-500">
-                <svg class="w-12 h-12 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-                </svg>
-                <p class="text-center">Cannot preview frame: No frame ID found.</p>
-                <p class="text-center text-sm mt-2">Please try again or select a different frame.</p>
-            </div>
-        `;
-            previewFrameImage.innerHTML = errorContent;
-            mobilePreviewFrameImage.innerHTML = errorContent;
         }
 
+        // Perbaikan: Inisialisasi kamera untuk kedua video element
         if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
             navigator.mediaDevices.getUserMedia({
                     video: {
@@ -918,27 +984,25 @@
                     }
                 })
                 .then(stream => {
-                    video.srcObject = stream;
-                    mobileVideo.srcObject = stream;
+                    if (video) {
+                        video.srcObject = stream;
+                        video.onloadedmetadata = () => video.play();
+                    }
+                    if (mobileVideo) {
+                        mobileVideo.srcObject = stream;
+                        mobileVideo.onloadedmetadata = () => mobileVideo.play();
+                    }
                     window.stream = stream;
-                    video.onloadedmetadata = function() {
-                        video.play();
-                    };
-                    mobileVideo.onloadedmetadata = function() {
-                        mobileVideo.play();
-                    };
-                    console.log('Webcam stream initialized');
+                    console.log('Webcam stream initialized for both desktop and mobile');
                 })
                 .catch(err => {
                     console.error("Error accessing webcam: ", err);
-                    handleCameraError(video, captureButton);
-                    handleCameraError(mobileVideo, mobileCaptureButton);
+                    if (video && captureButton) handleCameraError(video, captureButton);
+                    if (mobileVideo && mobileCaptureButton) handleCameraError(mobileVideo, mobileCaptureButton);
                 });
-        } else {
-            console.error("getUserMedia not supported");
-            alert("Your browser doesn't support camera access. Please try a different browser.");
         }
 
+        // Event listeners
         const modalCloseButtons = modal.querySelectorAll('.modal-close');
         modalCloseButtons.forEach(btn => {
             btn.removeEventListener('click', closePreviewCameraModal);
@@ -948,14 +1012,15 @@
         window.removeEventListener('click', handleModalBackdropClick);
         window.addEventListener('click', (e) => handleModalBackdropClick(e, scrollPosition));
 
-        captureButton.addEventListener('click', () => startPhotoSession(false));
-        mobileCaptureButton.addEventListener('click', () => startPhotoSession(true));
+        if (captureButton) captureButton.addEventListener('click', () => startPhotoSession(false));
+        if (mobileCaptureButton) mobileCaptureButton.addEventListener('click', () => startPhotoSession(true));
 
-        enableDragToClose(mobileModalContainer);
-
+        // Perbaikan: Body positioning untuk mobile
         document.body.style.position = 'fixed';
         document.body.style.top = `-${scrollPosition}px`;
         document.body.style.width = '100%';
+
+        console.log('Modal opened successfully');
     }
 
     function handleModalBackdropClick(e, scrollPosition) {
@@ -998,8 +1063,9 @@
         const modalBackdrop = modal.querySelector('.modal-backdrop');
         const video = document.getElementById('previewVideo');
         const mobileVideo = document.getElementById('mobilePreviewVideo');
-        const desktopModal = modal.querySelector('.md\\:block');
+        const desktopModal = modal.querySelector('.hidden.md\\:block');
 
+        // Perbaikan: Handle mobile modal close animation
         if (mobileModalContainer) {
             mobileModalContainer.classList.remove('show');
             mobileModalContainer.classList.add('hide');
@@ -1011,33 +1077,41 @@
             desktopModal.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
         }
 
-        modalBackdrop.classList.remove('show');
+        if (modalBackdrop) {
+            modalBackdrop.classList.remove('show');
+        }
 
+        // Cleanup camera stream
         if (window.stream) {
             const tracks = window.stream.getTracks();
             tracks.forEach(track => track.stop());
-            if (video.srcObject) video.srcObject = null;
-            if (mobileVideo.srcObject) mobileVideo.srcObject = null;
+            if (video && video.srcObject) video.srcObject = null;
+            if (mobileVideo && mobileVideo.srcObject) mobileVideo.srcObject = null;
             window.stream = null;
         }
 
+        // Cleanup event listeners
         const captureButton = document.getElementById('previewCaptureButton');
         const mobileCaptureButton = document.getElementById('mobilePreviewCaptureButton');
         if (captureButton) captureButton.removeEventListener('click', startPhotoSession);
         if (mobileCaptureButton) mobileCaptureButton.removeEventListener('click', startPhotoSession);
+
         window.removeEventListener('click', handleModalBackdropClick);
 
         resetModalState();
 
+        // Restore body positioning
         document.body.classList.remove('modal-open');
         document.body.style.position = '';
         document.body.style.top = '';
         window.scrollTo(0, scrollPosition);
 
+        // Hide modal after animation
         setTimeout(() => {
             modal.style.display = 'none';
             if (mobileModalContainer) {
                 mobileModalContainer.classList.remove('hide');
+                mobileModalContainer.style.display = '';
             }
             if (desktopModal) {
                 desktopModal.style.opacity = '';

@@ -621,16 +621,16 @@
                         
                         <!-- Frame info -->
                         ${testimoni.frame ? `
-                                                        <div class="frame-info-badge" onclick="handleFrameClickSimple(${testimoni.frame.id})">
-                                                            <div class="flex items-center justify-center space-x-2">
-                                                                <i class="fas fa-image frame-icon text-[#BF3131] transition-colors duration-300"></i>
-                                                                <span class="text-sm font-semibold frame-text text-gray-700 transition-colors duration-300">
-                                                                    Frame: ${testimoni.frame.name}
-                                                                </span>
-                                                                <i class="fas fa-check-circle frame-check text-green-500 text-sm transition-colors duration-300"></i>
-                                                            </div>
-                                                        </div>
-                                                    ` : ''}
+                                                                <div class="frame-info-badge" onclick="handleFrameClickSimple(${testimoni.frame.id})">
+                                                                    <div class="flex items-center justify-center space-x-2">
+                                                                        <i class="fas fa-image frame-icon text-[#BF3131] transition-colors duration-300"></i>
+                                                                        <span class="text-sm font-semibold frame-text text-gray-700 transition-colors duration-300">
+                                                                            Frame: ${testimoni.frame.name}
+                                                                        </span>
+                                                                        <i class="fas fa-check-circle frame-check text-green-500 text-sm transition-colors duration-300"></i>
+                                                                    </div>
+                                                                </div>
+                                                            ` : ''}
                     </div>
                 </div>
             `;
@@ -700,15 +700,19 @@
             document.getElementById('modalLoading').classList.remove('show');
         }
 
-        // Proceed to payment
         function proceedPayment() {
             if (currentFrameId) {
                 // Cari data frame dari testimoni
                 const testimoni = allTestimonis.find(t => t.frame && t.frame.id == currentFrameId);
                 let framePrice = 0;
+                let frameImageUrl = '';
 
                 if (testimoni && testimoni.frame) {
                     framePrice = testimoni.frame.price;
+                    // Prepend base URL to image_path, or use placeholder if image_path is missing
+                    frameImageUrl = testimoni.frame.image_path ?
+                        `http://127.0.0.1:8000/storage/${testimoni.frame.image_path}` :
+                        'https://via.placeholder.com/60x60/BF3131/FFFFFF?text=Frame';
                 } else {
                     // Jika tidak ketemu di testimoni, ambil dari modal display
                     const priceText = document.getElementById('framePrice').textContent;
@@ -717,12 +721,15 @@
                     if (priceMatch) {
                         framePrice = parseInt(priceMatch[0].replace(/[.,]/g, ''));
                     }
+                    // Fallback image URL with placeholder
+                    frameImageUrl = 'https://via.placeholder.com/60x60/BF3131/FFFFFF?text=Frame';
                 }
 
                 // Simpan data pembayaran ke localStorage
                 const paymentData = {
                     frame_id: currentFrameId,
                     price: framePrice,
+                    frame_image: frameImageUrl,
                     timestamp: Date.now()
                 };
 

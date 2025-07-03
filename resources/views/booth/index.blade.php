@@ -198,12 +198,18 @@
                 <button id="modalDownloadButton"
                     class="bg-[#BF3131] text-white border-none py-2 px-5 text-sm font-medium rounded-xl cursor-pointer transition-all duration-300 ease-in-out hover:bg-[#F16767] hover:scale-105 shadow-sm hover:shadow-lg">⬇
                     Download PNG</button>
-                <button id="modalGifButton"
-                    class="bg-[#4CAF50] text-white border-none py-2 px-5 text-sm font-medium rounded-xl cursor-pointer transition-all duration-300 ease-in-out hover:bg-[#45a049] hover:scale-105 shadow-sm hover:shadow-lg">🎬
-                    Create GIF</button>
-                <button id="modalShareButton"
-                    class="bg-[#BF3131] text-white border-none py-2 px-5 text-sm font-medium rounded-xl cursor-pointer transition-all duration-300 ease-in-out hover:bg-[#F16767] hover:scale-105 shadow-sm hover:shadow-lg">📤
-                    Share</button>
+                <!-- Hanya tampilkan tombol GIF untuk frame gratis -->
+                @if ($frame->isFree())
+                    <button id="modalGifButton"
+                        class="bg-[#4CAF50] text-white border-none py-2 px-5 text-sm font-medium rounded-xl cursor-pointer transition-all duration-300 ease-in-out hover:bg-[#45a049] hover:scale-105 shadow-sm hover:shadow-lg">🎬
+                        Create GIF</button>
+                @endif
+                <!-- Hanya tampilkan tombol Share untuk frame gratis -->
+                @if ($frame->isFree())
+                    <button id="modalShareButton"
+                        class="bg-[#BF3131] text-white border-none py-2 px-5 text-sm font-medium rounded-xl cursor-pointer transition-all duration-300 ease-in-out hover:bg-[#F16767] hover:scale-105 shadow-sm hover:shadow-lg">📤
+                        Share</button>
+                @endif
             </div>
         </div>
     </div>
@@ -315,12 +321,153 @@
             </div>
         </div>
     </div>
+    <div id="exitConfirmationModal"
+        class="fixed z-50 left-0 top-0 w-full h-full bg-black bg-opacity-70 overflow-auto justify-center items-center hidden">
+        <div id="exitConfirmationModalContent"
+            class="mx-auto w-11/12 max-w-[450px] rounded-3xl shadow-xl p-6 sm:p-8 relative flex flex-col items-center bg-[#FEF3E2]">
+            <button
+                class="exit-modal-close absolute top-4 right-4 text-2xl font-bold text-gray-500 bg-transparent border-none cursor-pointer hover:text-gray-800 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[#BF3131] rounded-full w-8 h-8 flex items-center justify-center">×</button>
+            <div class="w-16 h-16 mb-4 rounded-full bg-[#BF3131] flex items-center justify-center">
+                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
+            <h2 class="text-2xl sm:text-3xl mb-3 text-gray-800 font-semibold text-center">Konfirmasi Keluar</h2>
+            <p class="text-gray-600 text-base sm:text-lg text-center mb-6 px-2">Anda telah mendownload foto. Apakah
+                Anda yakin ingin kembali ke menu utama?</p>
+            <div class="flex gap-4 justify-center w-full">
+                <button id="cancelExitButton"
+                    class="bg-gray-600 text-white border-none py-3 px-6 text-sm font-medium rounded-xl cursor-pointer transition-all duration-300 ease-in-out hover:bg-gray-700 hover:scale-105 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-gray-500">
+                    Batal
+                </button>
+                <button id="confirmExitButton"
+                    class="bg-[#BF3131] text-white border-none py-3 px-6 text-sm font-medium rounded-xl cursor-pointer transition-all duration-300 ease-in-out hover:bg-[#F16767] hover:scale-105 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[#BF3131]">
+                    Kembali ke Menu
+                </button>
+            </div>
+        </div>
+    </div>
+    <div id="sessionEndModal"
+        class="fixed z-50 left-0 top-0 w-full h-full bg-black bg-opacity-70 overflow-auto justify-center items-center hidden">
+        <div id="sessionEndModalContent"
+            class="mx-auto w-11/12 max-w-[450px] rounded-3xl shadow-xl p-6 sm:p-8 relative flex flex-col items-center bg-[#FEF3E2]">
+            <button
+                class="session-end-modal-close absolute top-4 right-4 text-2xl font-bold text-gray-500 bg-transparent border-none cursor-pointer hover:text-gray-800 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[#BF3131] rounded-full w-8 h-8 flex items-center justify-center">×</button>
+            <div class="w-16 h-16 mb-4 rounded-full bg-[#BF3131] flex items-center justify-center">
+                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
+            <h2 class="text-2xl sm:text-3xl mb-3 text-gray-800 font-semibold text-center">Sesi Selesai</h2>
+            <p class="text-gray-600 text-base sm:text-lg text-center mb-6 px-2">Sesi Anda telah selesai karena foto
+                sudah didownload.</p>
+            <div class="flex gap-4 justify-center w-full">
+                <button id="confirmSessionEndButton"
+                    class="bg-[#BF3131] text-white border-none py-3 px-6 text-sm font-medium rounded-xl cursor-pointer transition-all duration-300 ease-in-out hover:bg-[#F16767] hover:scale-105 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[#BF3131]">
+                    Kembali ke Menu
+                </button>
+            </div>
+        </div>
+    </div>
 
     <input type="hidden" id="frameId" value="{{ $frame->id }}">
     <input type="hidden" id="frameIsPaid" value="{{ $frame->isFree() ? 'false' : 'true' }}">
 
     <style>
-        /* Retake Modal Styles */
+        /* Session End Modal Styles */
+        #sessionEndModal {
+            backdrop-filter: blur(8px);
+            transition: all 0.3s ease-in-out;
+        }
+
+        #sessionEndModalContent {
+            background: linear-gradient(135deg, #FEF3E2 0%, #FFF7ED 100%);
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            animation: modalScaleIn 0.4s ease-out;
+        }
+
+        @media (max-width: 768px) {
+            #sessionEndModal {
+                align-items: flex-end;
+            }
+
+            #sessionEndModalContent {
+                width: 100%;
+                max-width: 100%;
+                margin: 0;
+                border-radius: 1.5rem 1.5rem 0 0;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                height: auto;
+                max-height: 85vh;
+                padding: 1.5rem 1.25rem;
+                padding-bottom: calc(1.5rem + env(safe-area-inset-bottom, 16px));
+                animation: modalSlideUp 0.4s ease-out;
+            }
+        }
+
+        @media (min-width: 769px) {
+            #sessionEndModalContent {
+                animation: modalScaleIn 0.4s ease-out;
+            }
+        }
+
+        #sessionEndModal.modal-closing {
+            animation: modalScaleOut 0.3s ease-out;
+        }
+
+        /* Exit Confirmation Modal Styles */
+        #exitConfirmationModal {
+            backdrop-filter: blur(8px);
+            transition: all 0.3s ease-in-out;
+        }
+
+        #exitConfirmationModalContent {
+            background: linear-gradient(135deg, #FEF3E2 0%, #FFF7ED 100%);
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            animation: modalScaleIn 0.4s ease-out;
+        }
+
+        @media (max-width: 768px) {
+            #exitConfirmationModal {
+                align-items: flex-end;
+            }
+
+            #exitConfirmationModalContent {
+                width: 100%;
+                max-width: 100%;
+                margin: 0;
+                border-radius: 1.5rem 1.5rem 0 0;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                height: auto;
+                max-height: 85vh;
+                padding: 1.5rem 1.25rem;
+                padding-bottom: calc(1.5rem + env(safe-area-inset-bottom, 16px));
+                animation: modalSlideUp 0.4s ease-out;
+            }
+        }
+
+        @media (min-width: 769px) {
+            #exitConfirmationModalContent {
+                animation: modalScaleIn 0.4s ease-out;
+            }
+        }
+
+        #exitConfirmationModal.modal-closing {
+            animation: modalScaleOut 0.3s ease-out;
+        }
+
         /* Animasi untuk modal */
         @keyframes modalScaleIn {
             0% {
@@ -1123,7 +1270,7 @@
         const flashOverlay = document.getElementById('flash-overlay');
         let generatedGifBlob = null;
         let isFlashEnabled = false;
-        // Tambahkan variabel untuk melacak status tombol setting
+        let hasShownSessionEndAlert = false;
         let isSettingsOpen = false;
 
         let hasShownTestimoniModal = false;
@@ -1460,6 +1607,7 @@
         // Fungsi untuk redirect ke menu utama
         function redirectToMainMenu() {
             cleanupSession();
+            localStorage.removeItem('pendingPayment');
             window.location.href = '/';
         }
 
@@ -2220,6 +2368,42 @@
 
                 updatePaymentStatusToDownloaded();
 
+                // Hanya tampilkan tombol GIF dan Share untuk frame gratis atau setelah download selesai
+                const frameIsPaid = document.getElementById('frameIsPaid').value === 'true';
+                const modalGifButton = document.getElementById('modalGifButton');
+                const modalShareButton = document.getElementById('modalShareButton');
+
+                // Jika frame gratis, pastikan tombol ada di DOM
+                if (!frameIsPaid) {
+                    if (modalGifButton && modalShareButton) {
+                        modalGifButton.classList.remove('hidden');
+                        modalShareButton.classList.remove('hidden');
+                    }
+                } else {
+                    // Untuk frame berbayar, hanya tampilkan tombol setelah status downloaded
+                    if (getCurrentPaymentStatus() === 'downloaded') {
+                        // Jika tombol tidak ada di DOM, kita bisa menambahkannya secara dinamis
+                        if (!modalGifButton) {
+                            const gifButton = document.createElement('button');
+                            gifButton.id = 'modalGifButton';
+                            gifButton.className =
+                                'bg-[#4CAF50] text-white border-none py-2 px-5 text-sm font-medium rounded-xl cursor-pointer transition-all duration-300 ease-in-out hover:bg-[#45a049] hover:scale-yii105 shadow-sm hover:shadow-lg';
+                            gifButton.textContent = '🎬 Create GIF';
+                            gifButton.addEventListener('click', createGifFromPhotos);
+                            document.querySelector('#previewModal .flex-wrap').appendChild(gifButton);
+                        }
+                        if (!modalShareButton) {
+                            const shareButton = document.createElement('button');
+                            shareButton.id = 'modalShareButton';
+                            shareButton.className =
+                                'bg-[#BF3131] text-white border-none py-2 px-5 text-sm font-medium rounded-xl cursor-pointer transition-all duration-300 ease-in-out hover:bg-[#F16767] hover:scale-105 shadow-sm hover:shadow-lg';
+                            shareButton.textContent = '📤 Share';
+                            shareButton.addEventListener('click', sharePhotoStrip);
+                            document.querySelector('#previewModal .flex-wrap').appendChild(shareButton);
+                        }
+                    }
+                }
+
                 if (!hasShownTestimoniModal) {
                     setTimeout(() => {
                         showTestimoniModal();
@@ -2237,6 +2421,153 @@
                 // Pastikan watermark dikembalikan meskipun terjadi error
                 watermarks.forEach(watermark => {
                     watermark.style.display = 'flex';
+                });
+            });
+        }
+
+        function preloadImages(container, callback) {
+            const images = container.querySelectorAll('img');
+            let loadedCount = 0;
+            const totalImages = images.length;
+
+            if (totalImages === 0) {
+                callback();
+                return;
+            }
+
+            images.forEach(img => {
+                const newImg = new Image();
+                newImg.crossOrigin = 'anonymous';
+                newImg.onload = () => {
+                    loadedCount++;
+                    if (loadedCount === totalImages) {
+                        callback();
+                    }
+                };
+                newImg.onerror = () => {
+                    console.error('Failed to preload image:', img.src);
+                    loadedCount++;
+                    if (loadedCount === totalImages) {
+                        callback();
+                    }
+                };
+                newImg.src = img.src;
+            });
+        }
+
+        function openPreviewModal() {
+            const frameContainer = document.querySelector('.frame-container');
+            if (!frameContainer) {
+                console.error('Frame container not found');
+                return;
+            }
+
+            // Ensure watermarks are visible for preview
+            const watermarks = frameContainer.querySelectorAll('.watermark');
+            watermarks.forEach(watermark => {
+                watermark.style.display = 'flex';
+            });
+
+            preloadImages(frameContainer, () => {
+                const targetWidth = 1080;
+                const scaleFactor = targetWidth / frameContainer.offsetWidth;
+                let isPreviewGenerated = false;
+
+                function updateModal(imageData) {
+                    if (modalPhotostrip) {
+                        modalPhotostrip.innerHTML = '';
+                        const img = document.createElement('img');
+                        img.src = imageData;
+                        img.style.width = '100%';
+                        modalPhotostrip.appendChild(img);
+                        photoStripImage = imageData;
+
+                        if (modal) {
+                            modal.style.display = 'flex';
+                            const modalContent = document.getElementById('modalContent');
+                            if (modalContent) {
+                                modalContent.style.transform = 'translateY(0)';
+                            }
+
+                            const frameIsPaid = document.getElementById('frameIsPaid').value === 'true';
+                            const currentStatus = getCurrentPaymentStatus();
+                            const modalGifButton = document.getElementById('modalGifButton');
+                            const modalShareButton = document.getElementById('modalShareButton');
+
+                            // Jika frame gratis, pastikan tombol ditampilkan
+                            if (!frameIsPaid) {
+                                if (modalGifButton && modalShareButton) {
+                                    modalGifButton.classList.remove('hidden');
+                                    modalShareButton.classList.remove('hidden');
+                                }
+                            } else {
+                                // Untuk frame berbayar, hanya tampilkan tombol jika status downloaded
+                                if (currentStatus === 'downloaded') {
+                                    if (modalGifButton && modalShareButton) {
+                                        modalGifButton.classList.remove('hidden');
+                                        modalShareButton.classList.remove('hidden');
+                                    } else {
+                                        // Tambahkan tombol secara dinamis jika belum ada
+                                        if (!modalGifButton) {
+                                            const gifButton = document.createElement('button');
+                                            gifButton.id = 'modalGifButton';
+                                            gifButton.className =
+                                                'bg-[#4CAF50] text-white border-none py-2 px-5 text-sm font-medium rounded-xl cursor-pointer transition-all duration-300 ease-in-out hover:bg-[#45a049] hover:scale-105 shadow-sm hover:shadow-lg';
+                                            gifButton.textContent = '🎬 Create GIF';
+                                            gifButton.addEventListener('click', createGifFromPhotos);
+                                            document.querySelector('#previewModal .flex-wrap').appendChild(
+                                                gifButton);
+                                        }
+                                        if (!modalShareButton) {
+                                            const shareButton = document.createElement('button');
+                                            shareButton.id = 'modalShareButton';
+                                            shareButton.className =
+                                                'bg-[#BF3131] text-white border-none py-2 px-5 text-sm font-medium rounded-xl cursor-pointer transition-all duration-300 ease-in-out hover:bg-[#F16767] hover:scale-105 shadow-sm hover:shadow-lg';
+                                            shareButton.textContent = '📤 Share';
+                                            shareButton.addEventListener('click', sharePhotoStrip);
+                                            document.querySelector('#previewModal .flex-wrap').appendChild(
+                                                shareButton);
+                                        }
+                                    }
+                                } else {
+                                    // Pastikan tombol tersembunyi untuk frame berbayar sebelum download
+                                    if (modalGifButton) modalGifButton.classList.add('hidden');
+                                    if (modalShareButton) modalShareButton.classList.add('hidden');
+                                }
+                            }
+                        }
+                    }
+                    isPreviewGenerated = true;
+                }
+
+                html2canvas(frameContainer, {
+                    scale: scaleFactor,
+                    useCORS: true,
+                    logging: false
+                }).then(canvas => {
+                    const imageData = canvas.toDataURL('image/png', 1.0);
+                    savePhotos(imageData);
+                    updateModal(imageData);
+                }).catch(error => {
+                    console.error('Initial preview generation error:', error.message, error.stack);
+                    if (!isPreviewGenerated) {
+                        setTimeout(() => {
+                            html2canvas(frameContainer, {
+                                scale: scaleFactor,
+                                useCORS: true,
+                                logging: false,
+                                allowTaint: true
+                            }).then(canvas => {
+                                const imageData = canvas.toDataURL('image/png', 1.0);
+                                savePhotos(imageData);
+                                updateModal(imageData);
+                            }).catch(fallbackError => {
+                                console.error('Fallback preview generation failed:',
+                                    fallbackError.message, fallbackError.stack);
+                                console.warn('Failed to generate preview after retry');
+                            });
+                        }, 1000);
+                    }
                 });
             });
         }
@@ -2314,45 +2645,6 @@
             }
         }
 
-        function openPreviewModal() {
-            const frameContainer = document.querySelector('.frame-container');
-            if (!frameContainer) {
-                console.error('Frame container not found');
-                return;
-            }
-
-            const targetWidth = 1080;
-            const scaleFactor = targetWidth / frameContainer.offsetWidth;
-
-            html2canvas(frameContainer, {
-                scale: scaleFactor,
-                useCORS: true,
-                logging: false
-            }).then(canvas => {
-                const imageData = canvas.toDataURL('image/png', 1.0);
-                savePhotos(imageData);
-
-                if (modalPhotostrip) {
-                    modalPhotostrip.innerHTML = '';
-                    const img = document.createElement('img');
-                    img.src = imageData;
-                    img.style.width = '100%';
-                    modalPhotostrip.appendChild(img);
-                    photoStripImage = imageData;
-
-                    if (modal) {
-                        modal.style.display = 'flex';
-                        const modalContent = document.getElementById('modalContent');
-                        if (modalContent) {
-                            modalContent.style.transform = 'translateY(0)';
-                        }
-                    }
-                }
-            }).catch(error => {
-                console.error('Error generating preview:', error);
-                alert('Failed to generate preview');
-            });
-        }
 
         function savePhotos(finalImage) {
             const tokenElement = document.querySelector('meta[name="csrf-token"]');
@@ -3231,12 +3523,10 @@
                 }
             }
 
-            // Fungsi untuk mendapatkan status pembayaran saat ini
             function getCurrentPaymentStatus() {
                 try {
                     const pendingPaymentLS = localStorage.getItem('pendingPayment');
                     const paymentData = JSON.parse(pendingPaymentLS || '{}');
-
                     return paymentData.status || null;
                 } catch (error) {
                     console.error('Error getting payment status:', error);
@@ -3271,7 +3561,7 @@
                     return;
                 }
 
-                // Jika status adalah 'downloaded', tampilkan alert konfirmasi
+                // Jika status adalah 'downloaded', tampilkan modal konfirmasi
                 if (currentStatus === 'downloaded') {
                     showExitConfirmation();
                     return;
@@ -3323,19 +3613,70 @@
             });
 
             function showExitConfirmation() {
-                // Menggunakan confirm browser native
-                const userConfirmed = confirm(
-                    "Anda telah mendownload foto. Apakah Anda yakin ingin kembali ke menu utama?"
-                );
+                const exitModal = document.getElementById('exitConfirmationModal');
+                const confirmExitButton = document.getElementById('confirmExitButton');
+                const cancelExitButton = document.getElementById('cancelExitButton');
+                const exitModalClose = document.querySelector('.exit-modal-close');
 
-                if (userConfirmed) {
-                    // User memilih 'Yes/OK' - kembali ke menu utama
-                    executeCloseModal();
-                    setTimeout(() => {
-                        redirectToMainMenu();
-                    }, 400); // Delay sedikit untuk animasi close
+                if (exitModal && confirmExitButton && cancelExitButton && exitModalClose) {
+                    exitModal.style.display = 'flex';
+
+                    // Bersihkan event listener sebelumnya untuk mencegah duplikasi
+                    const newConfirmButton = confirmExitButton.cloneNode(true);
+                    confirmExitButton.parentNode.replaceChild(newConfirmButton, confirmExitButton);
+                    const newCancelButton = cancelExitButton.cloneNode(true);
+                    cancelExitButton.parentNode.replaceChild(newCancelButton, cancelExitButton);
+                    const newCloseButton = exitModalClose.cloneNode(true);
+                    exitModalClose.parentNode.replaceChild(newCloseButton, exitModalClose);
+
+                    // Tambahkan event listener baru
+                    document.querySelector('#confirmExitButton').addEventListener('click', () => {
+                        executeCloseModal();
+                        setTimeout(() => {
+                            redirectToMainMenu();
+                        }, 400); // Delay untuk animasi close
+                    });
+
+                    document.querySelector('#cancelExitButton').addEventListener('click',
+                        closeExitConfirmationModal);
+                    document.querySelector('.exit-modal-close').addEventListener('click',
+                        closeExitConfirmationModal);
+
+                    exitModal.addEventListener('click', (e) => {
+                        if (e.target === exitModal) {
+                            closeExitConfirmationModal();
+                        }
+                    }, {
+                        once: true
+                    });
+
+                    // Fokus pada tombol Batal untuk aksesibilitas
+                    document.querySelector('#cancelExitButton').focus();
+                } else {
+                    console.error('Exit confirmation modal elements not found');
+                    // Fallback ke confirm browser jika modal tidak ditemukan
+                    const userConfirmed = confirm(
+                        "Anda telah mendownload foto. Apakah Anda yakin ingin kembali ke menu utama?"
+                    );
+                    if (userConfirmed) {
+                        executeCloseModal();
+                        setTimeout(() => {
+                            redirectToMainMenu();
+                        }, 400);
+                    }
                 }
-                // Jika user memilih 'No/Cancel', tidak melakukan apa-apa (tetap di halaman)
+            }
+
+            function closeExitConfirmationModal() {
+                const exitModal = document.getElementById('exitConfirmationModal');
+                const exitModalContent = document.getElementById('exitConfirmationModalContent');
+                if (exitModal && exitModalContent) {
+                    exitModalContent.classList.add('modal-closing');
+                    setTimeout(() => {
+                        exitModal.style.display = 'none';
+                        exitModalContent.classList.remove('modal-closing');
+                    }, 300);
+                }
             }
         });
 
@@ -3541,26 +3882,72 @@
             console.log('Expired storage data cleaned up');
         }
 
-        // Fungsi untuk redirect ke halaman utama dengan pesan
         function redirectToMainMenuWithMessage(message) {
-            // Tampilkan pesan error sebelum redirect
-            if (typeof toastr !== 'undefined') {
-                toastr.error(message, 'Akses Ditolak');
-                setTimeout(() => {
-                    window.location.href = '/';
-                }, 2000);
-            } else if (typeof Swal !== 'undefined') {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Akses Ditolak',
-                    text: message,
-                    confirmButtonText: 'OK'
-                }).then(() => {
-                    window.location.href = '/';
+            if (hasShownSessionEndAlert) {
+                console.log('Session end alert already shown, skipping...');
+                return;
+            }
+
+            hasShownSessionEndAlert = true;
+
+            const sessionEndModal = document.getElementById('sessionEndModal');
+            const sessionEndModalContent = document.getElementById('sessionEndModalContent');
+            const confirmSessionEndButton = document.getElementById('confirmSessionEndButton');
+            const sessionEndModalClose = document.querySelector('.session-end-modal-close');
+
+            if (sessionEndModal && sessionEndModalContent && confirmSessionEndButton && sessionEndModalClose) {
+                // Update modal message
+                const messageElement = sessionEndModalContent.querySelector('p');
+                if (messageElement) {
+                    messageElement.textContent = message;
+                }
+
+                // Show modal
+                sessionEndModal.style.display = 'flex';
+
+                // Clone buttons to avoid duplicate event listeners
+                const newConfirmButton = confirmSessionEndButton.cloneNode(true);
+                confirmSessionEndButton.parentNode.replaceChild(newConfirmButton, confirmSessionEndButton);
+                const newCloseButton = sessionEndModalClose.cloneNode(true);
+                sessionEndModalClose.parentNode.replaceChild(newCloseButton, sessionEndModalClose);
+
+                // Add event listeners
+                document.querySelector('#confirmSessionEndButton').addEventListener('click', () => {
+                    closeSessionEndModal();
+                    setTimeout(() => {
+                        redirectToMainMenu();
+                    }, 400); // Delay for animation
                 });
+
+                document.querySelector('.session-end-modal-close').addEventListener('click', closeSessionEndModal);
+
+                sessionEndModal.addEventListener('click', (e) => {
+                    if (e.target === sessionEndModal) {
+                        closeSessionEndModal();
+                    }
+                }, {
+                    once: true
+                });
+
+                // Focus on confirm button for accessibility
+                document.querySelector('#confirmSessionEndButton').focus();
             } else {
+                // Fallback to alert if modal elements are missing
+                console.error('Session end modal elements not found, falling back to alert');
                 alert(message);
-                window.location.href = '/';
+                redirectToMainMenu();
+            }
+        }
+
+        function closeSessionEndModal() {
+            const sessionEndModal = document.getElementById('sessionEndModal');
+            const sessionEndModalContent = document.getElementById('sessionEndModalContent');
+            if (sessionEndModal && sessionEndModalContent) {
+                sessionEndModalContent.classList.add('modal-closing');
+                setTimeout(() => {
+                    sessionEndModal.style.display = 'none';
+                    sessionEndModalContent.classList.remove('modal-closing');
+                }, 300);
             }
         }
 

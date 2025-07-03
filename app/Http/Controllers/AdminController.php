@@ -60,6 +60,7 @@ class AdminController extends Controller
     public function transactions(Request $request)
     {
         try {
+            // Base query for filtered transactions
             $query = Transaction::with('frame');
 
             // Filter by status
@@ -68,11 +69,27 @@ class AdminController extends Controller
             }
 
             $transactions = $query->orderBy('created_at', 'desc')->get();
-            return view('admin.transactions.index', compact('transactions'));
+
+            // Calculate counts for all statuses independently
+            $counts = [
+                'total' => Transaction::count(),
+                'pending' => Transaction::where('status', 'pending')->count(),
+                'approved' => Transaction::where('status', 'approved')->count(),
+                'rejected' => Transaction::where('status', 'rejected')->count(),
+            ];
+
+            return view('admin.transactions.index', compact('transactions', 'counts'));
         } catch (\Exception $e) {
             Log::error('Error in transactions method: ' . $e->getMessage());
             $transactions = collect();
-            return view('admin.transactions.index', compact('transactions'))->with('error', 'An error occurred');
+            $counts = [
+                'total' => 0,
+                'pending' => 0,
+                'approved' => 0,
+                'rejected' => 0,
+            ];
+            return view('admin.transactions.index', compact('transactions', 'counts'))
+                ->with('error', 'An error occurred');
         }
     }
 

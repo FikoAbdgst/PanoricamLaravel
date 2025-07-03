@@ -45,48 +45,44 @@
                 <h3 class="text-lg font-semibold text-gray-900 mb-4">Filter Status</h3>
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
                     <a href="{{ route('admin.transactions.index') }}"
-                        class="group relative overflow-hidden rounded-xl p-4 transition-all duration-300 hover:shadow-lg {{ !request('status') ? 'bg-gradient-to-br from-blue-500 to-purple-600 text-white shadow-lg' : 'bg-gray-50 hover:bg-gray-100 text-gray-700' }}">
+                        class="group relative overflow-hidden rounded-xl p-4 transition-all duration-300 hover:shadow-lg {{ !request('status') ? 'bg-gradient-to-br from-blue-400 to-purple-300 text-white shadow-lg' : 'bg-gray-50 hover:bg-gray-100 text-gray-700' }}">
                         <div class="flex items-center justify-between">
                             <div>
                                 <div class="text-xs sm:text-sm font-medium opacity-90 mb-1">Semua</div>
-                                <div class="text-lg sm:text-xl font-bold">{{ $transactions ? $transactions->count() : 0 }}
-                                </div>
+                                <div class="text-lg sm:text-xl font-bold">{{ $counts['total'] }}</div>
                             </div>
                             <div class="text-2xl opacity-75">📊</div>
                         </div>
                     </a>
 
                     <a href="{{ route('admin.transactions.index', ['status' => 'pending']) }}"
-                        class="group relative overflow-hidden rounded-xl p-4 transition-all duration-300 hover:shadow-lg {{ request('status') == 'pending' ? 'bg-gradient-to-br from-yellow-400 to-orange-500 text-white shadow-lg' : 'bg-gray-50 hover:bg-yellow-50 text-gray-700' }}">
+                        class="group relative overflow-hidden rounded-xl p-4 transition-all duration-300 hover:shadow-lg {{ request('status') == 'pending' ? 'bg-gradient-to-br from-yellow-400 to-orange-300 text-white shadow-lg' : 'bg-gray-50 hover:bg-yellow-50 text-gray-700' }}">
                         <div class="flex items-center justify-between">
                             <div>
                                 <div class="text-xs sm:text-sm font-medium opacity-90 mb-1">Pending</div>
-                                <div class="text-lg sm:text-xl font-bold">
-                                    {{ $transactions ? $transactions->where('status', 'pending')->count() : 0 }}</div>
+                                <div class="text-lg sm:text-xl font-bold">{{ $counts['pending'] }}</div>
                             </div>
                             <div class="text-2xl opacity-75">⏳</div>
                         </div>
                     </a>
 
                     <a href="{{ route('admin.transactions.index', ['status' => 'approved']) }}"
-                        class="group relative overflow-hidden rounded-xl p-4 transition-all duration-300 hover:shadow-lg {{ request('status') == 'approved' ? 'bg-gradient-to-br from-green-500 to-emerald-600 text-white shadow-lg' : 'bg-gray-50 hover:bg-green-50 text-gray-700' }}">
+                        class="group relative overflow-hidden rounded-xl p-4 transition-all duration-300 hover:shadow-lg {{ request('status') == 'approved' ? 'bg-gradient-to-br from-green-400 to-emerald-300 text-white shadow-lg' : 'bg-gray-50 hover:bg-green-50 text-gray-700' }}">
                         <div class="flex items-center justify-between">
                             <div>
                                 <div class="text-xs sm:text-sm font-medium opacity-90 mb-1">Approved</div>
-                                <div class="text-lg sm:text-xl font-bold">
-                                    {{ $transactions ? $transactions->where('status', 'approved')->count() : 0 }}</div>
+                                <div class="text-lg sm:text-xl font-bold">{{ $counts['approved'] }}</div>
                             </div>
                             <div class="text-2xl opacity-75">✅</div>
                         </div>
                     </a>
 
                     <a href="{{ route('admin.transactions.index', ['status' => 'rejected']) }}"
-                        class="group relative overflow-hidden rounded-xl p-4 transition-all duration-300 hover:shadow-lg {{ request('status') == 'rejected' ? 'bg-gradient-to-br from-red-500 to-pink-600 text-white shadow-lg' : 'bg-gray-50 hover:bg-red-50 text-gray-700' }}">
+                        class="group relative overflow-hidden rounded-xl p-4 transition-all duration-300 hover:shadow-lg {{ request('status') == 'rejected' ? 'bg-gradient-to-br from-red-400 to-pink-300 text-white shadow-lg' : 'bg-gray-50 hover:bg-red-50 text-gray-700' }}">
                         <div class="flex items-center justify-between">
                             <div>
                                 <div class="text-xs sm:text-sm font-medium opacity-90 mb-1">Rejected</div>
-                                <div class="text-lg sm:text-xl font-bold">
-                                    {{ $transactions ? $transactions->where('status', 'rejected')->count() : 0 }}</div>
+                                <div class="text-lg sm:text-xl font-bold">{{ $counts['rejected'] }}</div>
                             </div>
                             <div class="text-2xl opacity-75">❌</div>
                         </div>
@@ -94,8 +90,10 @@
                 </div>
             </div>
 
+
             <!-- Desktop Table View -->
-            <div class="hidden lg:block bg-white rounded-xl shadow-sm overflow-hidden">
+            <div class="hidden
+                                    lg:block bg-white rounded-xl shadow-sm overflow-hidden">
                 <div class="overflow-x-auto">
                     <table class="min-w-full">
                         <thead class="bg-gradient-to-r from-gray-50 to-gray-100">
@@ -170,7 +168,8 @@
                                             @if (method_exists($transaction, 'getFormattedAmountAttribute'))
                                                 {{ $transaction->formatted_amount }}
                                             @else
-                                                Rp {{ number_format($transaction->amount ?? 0, 0, ',', '.') }}
+                                                Rp
+                                                {{ number_format($transaction->amount ?? 0, 0, ',', '.') }}
                                             @endif
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
@@ -198,7 +197,8 @@
                                                     <svg class="w-4 h-4" fill="none" stroke="currentColor"
                                                         viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                                            stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z">
+                                                        </path>
                                                         <path stroke-linecap="round" stroke-linejoin="round"
                                                             stroke-width="2"
                                                             d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z">
@@ -242,8 +242,11 @@
                                                 </svg>
                                             </div>
                                             <div>
-                                                <h3 class="text-lg font-medium text-gray-900 mb-1">Belum ada transaksi</h3>
-                                                <p class="text-gray-500">Transaksi akan muncul di sini setelah ada
+                                                <h3 class="text-lg font-medium text-gray-900 mb-1">
+                                                    Belum ada transaksi</h3>
+                                                <p class="text-gray-500">Transaksi akan muncul di
+                                                    sini
+                                                    setelah ada
                                                     pembayaran</p>
                                             </div>
                                         </div>
@@ -300,7 +303,8 @@
                                     <div>
                                         <span
                                             class="text-xs font-medium text-gray-500 uppercase tracking-wide">Email</span>
-                                        <p class="text-sm text-gray-900 mt-1">{{ $transaction->email ?: 'Tidak ada' }}</p>
+                                        <p class="text-sm text-gray-900 mt-1">
+                                            {{ $transaction->email ?: 'Tidak ada' }}</p>
                                     </div>
                                     <div>
                                         <span
@@ -309,7 +313,8 @@
                                             @if (method_exists($transaction, 'getFormattedAmountAttribute'))
                                                 {{ $transaction->formatted_amount }}
                                             @else
-                                                Rp {{ number_format($transaction->amount ?? 0, 0, ',', '.') }}
+                                                Rp
+                                                {{ number_format($transaction->amount ?? 0, 0, ',', '.') }}
                                             @endif
                                         </p>
                                     </div>
@@ -342,7 +347,8 @@
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor"
                                                     viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z">
+                                                    </path>
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                         d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z">
                                                     </path>
@@ -382,8 +388,11 @@
                                 </path>
                             </svg>
                         </div>
-                        <h3 class="text-lg font-semibold text-gray-900 mb-2">Belum ada transaksi</h3>
-                        <p class="text-gray-500">Transaksi akan muncul di sini setelah ada pembayaran</p>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2">Belum ada transaksi
+                        </h3>
+                        <p class="text-gray-500">Transaksi akan muncul di sini setelah ada
+                            pembayaran
+                        </p>
                     </div>
                 @endif
             </div>

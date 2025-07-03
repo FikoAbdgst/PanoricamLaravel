@@ -55,21 +55,28 @@
         }
 
         /* Please Wait Modal Styles */
+        /* Please Wait Modal Styles */
         #pleaseWaitModal {
-            display: flex;
+            display: none;
+            /* Initially hidden */
             align-items: center;
             justify-content: center;
-            z-index: 50;
-            background-color: rgba(0, 0, 0, 0.6);
-            /* Matches paymentModal's modal-backdrop */
-            backdrop-filter: blur(4px);
-            /* Matches paymentModal's blur effect */
+            z-index: 60;
+            /* Higher z-index to ensure it’s above other modals */
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
             overflow: hidden;
+            /* Prevent scrolling */
+        }
+
+        #pleaseWaitModal.show {
+            display: flex;
+            /* Show modal when active */
         }
 
         #pleaseWaitModal .modal-content {
@@ -77,13 +84,25 @@
             background: white;
             border-radius: 1rem;
             max-width: 32rem;
-            /* Matches paymentModal's max-width */
-            width: 100%;
-            max-height: 90vh;
-            overflow-y: auto;
+            width: 90%;
+            /* Responsive width */
+            padding: 1.5rem;
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
             transform: translateY(0);
             transition: transform 0.3s ease, opacity 0.3s ease;
+            overflow: hidden;
+            /* Prevent scrolling within modal */
+        }
+
+
+
+        /* Mobile-specific adjustments */
+        @media (max-width: 640px) {
+            #pleaseWaitModal .modal-content {
+                width: 95%;
+                max-height: 80vh;
+                /* Limit height for mobile */
+            }
         }
 
         /* Payment Modal Styles */
@@ -150,7 +169,6 @@
         }
 
 
-        }
 
         /* Mobile-specific modal styles */
         @media (max-width: 640px) {
@@ -1699,12 +1717,20 @@
         </div>
     `;
         document.body.appendChild(modal);
+
+        // Show the modal
+        modal.classList.add('show');
+        document.body.classList.add('modal-open'); // Prevent body scroll
     }
 
     function closePleaseWaitModal() {
         const modal = document.getElementById('pleaseWaitModal');
         if (modal) {
-            modal.remove();
+            modal.classList.remove('show');
+            setTimeout(() => {
+                modal.remove();
+                document.body.classList.remove('modal-open'); // Re-enable body scroll
+            }, 300); // Match transition duration
         }
     }
 
@@ -1952,21 +1978,18 @@
             const data = JSON.parse(pendingPremiumFrame);
             const currentTime = Date.now();
 
-            // Validasi data: pastikan frame_id, price, dan timestamp ada
             if (!data.frame_id || !data.price || !data.timestamp) {
                 console.warn('Invalid pendingPremiumFrame data:', data);
                 localStorage.removeItem('pendingPremiumFrame');
                 return Promise.resolve(false); // Return a resolved Promise with false
             }
 
-            // Validasi timestamp (misalnya, kadaluarsa setelah 1 jam)
             if (currentTime - data.timestamp > 60 * 60 * 1000) {
                 console.log('Pending premium frame data expired');
                 localStorage.removeItem('pendingPremiumFrame');
                 return Promise.resolve(false); // Return a resolved Promise with false
             }
 
-            // Validasi tambahan: pastikan frame_id ada di daftar frame
             return fetch(`/get-frame-status/${data.frame_id}`)
                 .then(response => {
                     if (!response.ok) {
