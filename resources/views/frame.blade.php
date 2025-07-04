@@ -1796,8 +1796,6 @@
         }
     });
 
-
-
     function startPaymentStatusCheck(orderId, frameId) {
         const interval = setInterval(async () => {
             try {

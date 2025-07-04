@@ -371,11 +371,94 @@
             </div>
         </div>
     </div>
+    <div id="welcomeModal"
+        class="fixed z-50 left-0 top-0 w-full h-full bg-black bg-opacity-70 overflow-auto justify-center items-center hidden">
+        <div
+            class="bg-[#FEF3E2] mx-auto w-[60%] sm:w-4/5  rounded-3xl shadow-lg p-6 sm:p-8 relative flex flex-col items-center welcome-modal">
+            <button
+                class="welcome-modal-close absolute top-4 right-4 text-2xl font-bold text-gray-400 bg-transparent border-none cursor-pointer hover:text-black">×</button>
+
+            <div class="welcome-step active flex flex-col items-center">
+                <h2 class="text-2xl mb-4 text-gray-800 font-bold text-center">Langkah 1: Ambil Foto</h2>
+                <img src="{{ asset('step1.jpg') }}" alt="Step 1" class="w-full max-w-[1000px] rounded-lg mb-6">
+            </div>
+            <div class="welcome-step flex flex-col items-center">
+                <h2 class="text-2xl mb-4 text-gray-800 font-bold text-center">Langkah 2: Fitur Setting Kamera</h2>
+                <img src="{{ asset('step2.jpg') }}" alt="Step 2" class="w-full max-w-[1000px] rounded-lg mb-6">
+            </div>
+            <div class="welcome-step flex flex-col items-center">
+                <h2 class="text-2xl mb-4 text-gray-800 font-bold text-center">Langkah 3: Sesuaikan Foto</h2>
+                <img src="{{ asset('step3.jpg') }}" alt="Step 3" class="w-full max-w-[1000px] rounded-lg mb-6">
+            </div>
+            <div class="welcome-step flex flex-col items-center">
+                <h2 class="text-2xl mb-4 text-gray-800 font-bold text-center">Langkah 4: Reset / Unduh</h2>
+                <img src="{{ asset('step4.jpg') }}" alt="Step 3" class="w-full max-w-[1000px] rounded-lg mb-6">
+            </div>
+            <div class="flex justify-center mb-4">
+                <div class="step-indicator active"></div>
+                <div class="step-indicator"></div>
+                <div class="step-indicator"></div>
+                <div class="step-indicator"></div>
+            </div>
+            <div class="flex gap-4 justify-center w-full">
+                <button id="welcomePrevButton"
+                    class="bg-gray-500 text-white border-none py-2.5 px-5 text-sm font-medium rounded-xl cursor-pointer transition-all duration-300 ease-in-out hover:bg-gray-600 hover:scale-105 shadow-sm hover:shadow-lg hidden">
+                    Sebelumnya
+                </button>
+                <button id="welcomeNextButton"
+                    class="bg-[#BF3131] text-white border-none py-2.5 px-5 text-sm font-medium rounded-xl cursor-pointer transition-all duration-300 ease-in-out hover:bg-[#F16767] hover:scale-105 shadow-sm hover:shadow-lg">
+                    Selanjutnya
+                </button>
+                <button id="welcomeFinishButton"
+                    class="bg-[#BF3131] text-white border-none py-2.5 px-5 text-sm font-medium rounded-xl cursor-pointer transition-all duration-300 ease-in-out hover:bg-[#F16767] hover:scale-105 shadow-sm hover:shadow-lg hidden">
+                    Mulai
+                </button>
+            </div>
+        </div>
+    </div>
 
     <input type="hidden" id="frameId" value="{{ $frame->id }}">
     <input type="hidden" id="frameIsPaid" value="{{ $frame->isFree() ? 'false' : 'true' }}">
 
     <style>
+        .welcome-modal {
+            animation: modalFadeIn 0.4s ease-out;
+            width: 80%;
+            overflow-y: auto;
+        }
+
+        .welcome-step {
+            display: none;
+        }
+
+        .welcome-step.active {
+            display: flex;
+        }
+
+        .step-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #d1d5db;
+            margin: 0 4px;
+        }
+
+        .step-indicator.active {
+            background-color: #BF3131;
+        }
+
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
         /* Session End Modal Styles */
         #sessionEndModal {
             backdrop-filter: blur(8px);
@@ -1272,6 +1355,8 @@
         let isFlashEnabled = false;
         let hasShownSessionEndAlert = false;
         let isSettingsOpen = false;
+        let currentWelcomeStep = 0;
+        const totalWelcomeSteps = 4;
 
         let hasShownTestimoniModal = false;
         let currentPhotoIndex = null;
@@ -2924,7 +3009,6 @@
                         slot.style.zIndex = '1';
                         console.log(`Photo slot ${index} initialized`);
 
-                        // Ensure parent container has data-photo-index
                         const container = slot.closest('.photo-slot-container');
                         if (container) {
                             container.setAttribute('data-photo-index', index);
@@ -2942,7 +3026,9 @@
                 setupEventListeners();
                 setupTestimoniEventListeners();
                 setupRetakeButtonListeners();
-                setupResetButtonListener(); // Ensure this is called
+                setupResetButtonListener();
+                setupWelcomeModalListeners(); // Tambahkan ini
+                showWelcomeModal(); // Tambahkan ini
 
                 if (captureButton) {
                     captureButton.innerHTML = `
@@ -4098,6 +4184,99 @@
                 currentStream.getTracks().forEach(track => track.stop());
             }
         });
+
+        function showWelcomeModal() {
+            const welcomeModal = document.getElementById('welcomeModal');
+            if (welcomeModal) {
+                welcomeModal.style.display = 'flex';
+                currentWelcomeStep = 0; // Reset to first step
+                updateWelcomeStep();
+            }
+        }
+
+        // Fungsi untuk memperbarui tampilan langkah
+        function updateWelcomeStep() {
+            const steps = document.querySelectorAll('.welcome-step');
+            const indicators = document.querySelectorAll('.step-indicator');
+            const prevButton = document.getElementById('welcomePrevButton');
+            const nextButton = document.getElementById('welcomeNextButton');
+            const finishButton = document.getElementById('welcomeFinishButton');
+
+            // Pastikan semua langkah disembunyikan terlebih dahulu
+            steps.forEach(step => step.classList.remove('active'));
+
+            // Tampilkan langkah aktif
+            if (steps[currentWelcomeStep]) {
+                steps[currentWelcomeStep].classList.add('active');
+            }
+
+            // Update indikator
+            indicators.forEach((indicator, index) => {
+                indicator.classList.toggle('active', index === currentWelcomeStep);
+            });
+
+            // Update tombol navigasi
+            if (prevButton) {
+                prevButton.classList.toggle('hidden', currentWelcomeStep === 0);
+            }
+            if (nextButton) {
+                nextButton.classList.toggle('hidden', currentWelcomeStep >= totalWelcomeSteps - 1);
+            }
+            if (finishButton) {
+                finishButton.classList.toggle('hidden', currentWelcomeStep < totalWelcomeSteps - 1);
+            }
+        }
+
+        // Fungsi untuk menutup modal langkah-langkah
+        function closeWelcomeModal() {
+            const welcomeModal = document.getElementById('welcomeModal');
+            if (welcomeModal) {
+                welcomeModal.style.display = 'none';
+            }
+        }
+
+        // Setup event listeners untuk modal langkah-langkah
+        function setupWelcomeModalListeners() {
+            const welcomeModal = document.getElementById('welcomeModal');
+            const prevButton = document.getElementById('welcomePrevButton');
+            const nextButton = document.getElementById('welcomeNextButton');
+            const finishButton = document.getElementById('welcomeFinishButton');
+            const closeButton = document.querySelector('.welcome-modal-close');
+
+            if (prevButton) {
+                prevButton.addEventListener('click', () => {
+                    if (currentWelcomeStep > 0) {
+                        currentWelcomeStep--;
+                        updateWelcomeStep();
+                    }
+                });
+            }
+
+            if (nextButton) {
+                nextButton.addEventListener('click', () => {
+                    if (currentWelcomeStep < totalWelcomeSteps - 1) {
+                        currentWelcomeStep++;
+                        updateWelcomeStep();
+                    }
+                });
+            }
+
+            if (finishButton) {
+                finishButton.addEventListener('click', closeWelcomeModal);
+            }
+
+            if (closeButton) {
+                closeButton.addEventListener('click', closeWelcomeModal);
+            }
+
+            if (welcomeModal) {
+                welcomeModal.addEventListener('click', (e) => {
+                    if (e.target === welcomeModal) {
+                        closeWelcomeModal();
+                    }
+                });
+            }
+        }
     </script>
 </body>
 
