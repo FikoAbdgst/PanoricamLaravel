@@ -391,7 +391,7 @@
                 <img src="{{ asset('step3.jpg') }}" alt="Step 3" class="w-full max-w-[1000px] rounded-lg mb-6">
             </div>
             <div class="welcome-step flex flex-col items-center">
-                <h2 class="text-2xl mb-4 text-gray-800 font-bold text-center">Langkah 4: Reset / Unduh</h2>
+                <h2 class="text-2xl mb-4 text-gray-800 font-bold text-center">Langkah 4: Reset dan Unduh</h2>
                 <img src="{{ asset('step4.jpg') }}" alt="Step 3" class="w-full max-w-[1000px] rounded-lg mb-6">
             </div>
             <div class="flex justify-center mb-4">
