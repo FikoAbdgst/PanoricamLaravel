@@ -1,103 +1,319 @@
-<!-- Footer Component -->
-<footer class="bg-[#BF3131] text-white font-['Poppins'] relative overflow-hidden">
-    <!-- Decorative elements -->
-    <div class="absolute inset-0 opacity-10 pointer-events-none">
-        <div class="absolute top-1/4 left-1/4 w-12 h-12">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
-                <path
-                    d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-            </svg>
-        </div>
-        <div class="absolute bottom-1/3 right-1/3 w-16 h-16">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
-                <path
-                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-            </svg>
-        </div>
-        <div class="absolute w-24 h-24 top-1/4 right-1/4 border-2 border-dashed border-white rounded-full"></div>
-        <div class="absolute w-32 h-32 bottom-1/4 left-1/4 border-2 border-dashed border-white rounded-full"></div>
-    </div>
+<!DOCTYPE html>
+<html lang="id">
 
-    <!-- Polaroid decoration on left -->
-    <div class="absolute -left-8 -top-16 transform -rotate-12 opacity-20 hidden lg:block">
-        <div class="w-40 h-48 bg-white p-2 shadow-lg">
-            <div class="h-32 bg-gray-200"></div>
-            <div class="h-12 flex items-center justify-center">
-                <div class="w-16 h-2 bg-gray-300"></div>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panoricam Footer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .floating-animation {
+            animation: floating 3s ease-in-out infinite;
+        }
+
+        .floating-animation:nth-child(2) {
+            animation-delay: 1s;
+        }
+
+        .floating-animation:nth-child(3) {
+            animation-delay: 2s;
+        }
+
+        @keyframes floating {
+
+            0%,
+            100% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .instagram-gradient {
+            background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+        }
+
+        .instagram-hover {
+            transition: all 0.3s ease;
+        }
+
+        .instagram-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(240, 148, 51, 0.4);
+        }
+
+        .camera-icon {
+            transition: transform 0.3s ease;
+        }
+
+        .camera-icon:hover {
+            transform: rotate(15deg) scale(1.1);
+        }
+
+        .gradient-text {
+            background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradient-shift 3s ease-in-out infinite;
+        }
+
+        @keyframes gradient-shift {
+
+            0%,
+            100% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+        }
+
+        .back-to-top {
+            transition: all 0.3s ease;
+        }
+
+        .back-to-top:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(255, 255, 255, 0.3);
+        }
+
+        .footer-decoration {
+            position: absolute;
+            opacity: 0.1;
+            pointer-events: none;
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .contact-info {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .feature-card {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Improved Footer -->
+    <footer
+        class="bg-gradient-to-br from-[#BF3131] via-[#A02828] to-[#8B1F1F] text-white font-['Poppins'] relative overflow-hidden">
+        <!-- Animated background decorations -->
+        <div class="absolute inset-0 opacity-5 pointer-events-none">
+            <div class="footer-decoration absolute top-10 left-10 w-20 h-20">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+                    <path
+                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                </svg>
+            </div>
+            <div class="footer-decoration absolute bottom-10 right-10 w-16 h-16">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+                    <path
+                        d="M9 11H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm2-7h-1V2h-2v2H8V2H6v2H5c-1.1 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11z" />
+                </svg>
             </div>
         </div>
-    </div>
 
-    <!-- Polaroid decoration on right -->
-    <div class="absolute -right-8 -top-10 transform rotate-12 opacity-20 hidden lg:block">
-        <div class="w-40 h-48 bg-white p-2 shadow-lg">
-            <div class="h-32 bg-gray-200"></div>
-            <div class="h-12 flex items-center justify-center">
-                <div class="w-16 h-2 bg-gray-300"></div>
+        <!-- Floating camera icons -->
+        <div class="absolute inset-0 pointer-events-none">
+
+            <div class="floating-animation absolute top-1/2 right-1/4 w-10 h-10 opacity-10">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+                    <path
+                        d="M12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5zM17.5 6.5c0-.83-.67-1.5-1.5-1.5h-1.79l-.74-.74c-.19-.19-.44-.29-.71-.29H10.24c-.27 0-.52.1-.71.29L8.79 5H7c-.83 0-1.5.67-1.5 1.5v9c0 .83.67 1.5 1.5 1.5h10c.83 0 1.5-.67 1.5-1.5v-9z" />
+                </svg>
             </div>
         </div>
-    </div>
 
-    <!-- Main footer content -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 flex flex-col items-center">
-        <!-- Logo and about section -->
-        <div class="flex items-center mb-4">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 relative">
+            <!-- Main footer content -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
 
-            <h1 class="mb-5 font-semibold text-gray-800 text-2xl  bg-transparent rounded-lg">
-                <span class="text-red-300">P</span><span class="text-pink-300">A</span><span
-                    class="text-green-400">N</span><span class="text-yellow-300">O</span><span
-                    class="text-blue-300">R</span><span class="text-purple-400">I</span><span
-                    class="text-yellow-300">C</span><span class="text-blue-300">A</span><span
-                    class="text-orange-300">M</span>
-            </h1>
+                <!-- Brand Section -->
+                <div class="text-center md:text-left">
+                    <div class="flex items-center justify-center md:justify-start mb-6">
+                        <div class="camera-icon mr-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"
+                                class="w-10 h-10">
+                                <path
+                                    d="M12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5zM17.5 6.5c0-.83-.67-1.5-1.5-1.5h-1.79l-.74-.74c-.19-.19-.44-.29-.71-.29H10.24c-.27 0-.52.1-.71.29L8.79 5H7c-.83 0-1.5.67-1.5 1.5v9c0 .83.67 1.5 1.5 1.5h10c.83 0 1.5-.67 1.5-1.5v-9z" />
+                            </svg>
+                        </div>
+                        <h1 class="text-3xl font-bold">
+                            <span class="text-red-300">P</span><span class="text-pink-300">A</span><span
+                                class="text-green-400">N</span><span class="text-yellow-300">O</span><span
+                                class="text-blue-300">R</span><span class="text-purple-400">I</span><span
+                                class="text-yellow-300">C</span><span class="text-blue-300">A</span><span
+                                class="text-orange-300">M</span>
+                        </h1>
+                    </div>
+                    <p class="text-white/80 text-lg leading-relaxed mb-6">
+                        Abadikan momen spesial Anda dengan frame keren dan berbagi dengan teman-teman!
+                    </p>
+
+                </div>
+
+                <!-- Instagram Section -->
+                <div class="text-center">
+                    <h3 class="text-xl font-semibold mb-6">Ikuti Kami</h3>
+                    <div class="flex justify-center mb-6">
+                        <a href="https://instagram.com/panoricam" target="_blank" rel="noopener noreferrer"
+                            class="instagram-gradient instagram-hover rounded-2xl p-4 inline-flex items-center space-x-3 text-white font-medium shadow-lg">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"
+                                class="w-6 h-6">
+                                <path
+                                    d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+                            </svg>
+                            <span>@panoricam</span>
+                        </a>
+                    </div>
+                    <p class="text-white/70 text-sm">
+                        Lihat foto-foto terbaru dan dapatkan inspirasi untuk event Anda berikutnya!
+                    </p>
+                </div>
+
+                <!-- Contact Info -->
+                <div class="text-center md:text-right">
+                    <h3 class="text-xl font-semibold mb-6">Hubungi Kami</h3>
+                    <div class="contact-info rounded-lg p-4 mb-4">
+                        <div class="flex items-center justify-center md:justify-end mb-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"
+                                class="w-5 h-5 mr-2">
+                                <path
+                                    d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" />
+                            </svg>
+                            <span class="text-white/90">+62 882-0013-30851</span>
+                        </div>
+                        <div class="flex items-center justify-center md:justify-end">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"
+                                class="w-5 h-5 mr-2">
+                                <path
+                                    d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" />
+                            </svg>
+                            <span class="text-white/90">panoricam5@gmail.com</span>
+                        </div>
+                    </div>
+                    <div class="feature-card rounded-lg p-3">
+                        <div class="flex items-center justify-center md:justify-end">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"
+                                class="w-4 h-4 mr-2">
+                                <path
+                                    d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+                            </svg>
+                            <span class="text-sm text-white/80">Banjar, Jawa Barat</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom section -->
+            <div class="border-t border-white/20 pt-8">
+                <div class="flex flex-col md:flex-row justify-between items-center">
+                    <div class="flex items-center mb-4 md:mb-0">
+                        <p class="text-white/70 text-sm">
+                            © 2025 Panoricam. All rights reserved.
+                        </p>
+                    </div>
+
+                    <div class="flex items-center space-x-6">
+                        <a href="#" class="text-white/70 hover:text-white text-sm transition-colors">
+                            Privacy Policy
+                        </a>
+                        <a href="#" class="text-white/70 hover:text-white text-sm transition-colors">
+                            Terms of Service
+                        </a>
+                        <button onclick="scrollToTop()"
+                            class="back-to-top bg-white/20 hover:bg-white/30 rounded-full p-2 transition-all">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"
+                                class="w-5 h-5">
+                                <path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
-        <p class="text-sm text-white/80 mb-4">
-            Abadikan momen spesial Anda dengan frame keren dan berbagi dengan teman-teman!
-        </p>
-        <div class="flex gap-6">
-            <a href="#" class="hover:text-[#FEF3E2] transition-colors ">
-                <span class="sr-only">Facebook</span>
-                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                    <path
-                        d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" />
-                </svg>
-            </a>
-            <a href="#" class="hover:text-[#FEF3E2] transition-colors ">
-                <span class="sr-only">Instagram</span>
-                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                    <path fill-rule="evenodd"
-                        d="M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.218 2.427.465a4.902 4.902 0 011.772 1.153 4.902 4.902 0 011.153 1.772c.247.636.416 1.363.465 2.427.048 1.067.06 1.407.06 4.123v.08c0 2.643-.012 2.987-.06 4.043-.049 1.064-.218 1.791-.465 2.427a4.902 4.902 0 01-1.153 1.772 4.902 4.902 0 01-1.772 1.153c-.636.247-1.363.416-2.427.465-1.067.048-1.407.06-4.123.06h-.08c-2.643 0-2.987-.012-4.043-.06-1.064-.049-1.791-.218-2.427-.465a4.902 4.902 0 01-1.772-1.153 4.902 4.902 0 01-1.153-1.772c-.247-.636-.416-1.363-.465-2.427-.047-1.024-.06-1.379-.06-3.808v-.63c0-2.43.013-2.784.06-3.808.049-1.064.218-1.791.465-2.427a4.902 4.902 0 011.153-1.772A4.902 4.902 0 015.45 2.525c.636-.247 1.363-.416 2.427-.465C8.901 2.013 9.256 2 11.685 2h.63zm-.081 1.802h-.468c-2.456 0-2.784.011-3.807.058-.975.045-1.504.207-1.857.344-.467.182-.8.398-1.15.748-.35.35-.566.683-.748 1.15-.137.353-.3.882-.344 1.857-.047 1.023-.058 1.351-.058 3.807v.468c0 2.456.011 2.784.058 3.807.045.975.207 1.504.344 1.857.182.466.399.8.748 1.15.35.35.683.566 1.15.748.353.137.882.3 1.857.344 1.054.048 1.37.058 4.041.058h.08c2.597 0 2.917-.01 3.96-.058.976-.045 1.505-.207 1.858-.344.466-.182.8-.398 1.15-.748.35-.35.566-.683.748-1.15.137-.353.3-.882.344-1.857.048-1.055.058-1.37.058-4.041v-.08c0-2.597-.01-2.917-.058-3.96-.045-.976-.207-1.505-.344-1.858a3.097 3.097 0 00-.748-1.15 3.098 3.098 0 00-1.15-.748c-.353-.137-.882-.3-1.857-.344-1.023-.047-1.351-.058-3.807-.058zM12 6.865a5.135 5.135 0 110 10.27 5.135 5.135 0 010-10.27zm0 1.802a3.333 3.333 0 100 6.666 3.333 3.333 0 000-6.666zm5.338-3.205a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4z"
-                        clip-rule="evenodd" />
-                </svg>
-            </a>
-            <a href="#" class="hover:text-[#FEF3E2] transition-colors ">
-                <span class="sr-only">Twitter</span>
-                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                    <path
-                        d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84" />
-                </svg>
-            </a>
-        </div>
+    </footer>
 
-        <!-- Bottom section with copyright etc -->
-        <div class="pt-8 mt-8 border-t border-white/20 flex flex-col md:flex-row justify-between items-center">
-            <p class="text-sm text-white/70">© 2025 Panoricam.</p>
-
-        </div>
-    </div>
-
-
-</footer>
-
-<script>
-    // Smooth scroll for back to top button
-    document.querySelectorAll('a[href="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function(e) {
-            e.preventDefault();
+    <script>
+        function scrollToTop() {
             window.scrollTo({
                 top: 0,
                 behavior: 'smooth'
             });
+        }
+
+        // Add some interactive effects
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animate elements on scroll
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, observerOptions);
+
+            // Observe footer elements
+            const footerElements = document.querySelectorAll('footer > div > *');
+            footerElements.forEach(el => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(20px)';
+                el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                observer.observe(el);
+            });
         });
-    });
-</script>
+    </script>
+</body>
+
+</html>

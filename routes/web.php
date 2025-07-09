@@ -55,15 +55,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::put('/categories/{category}', [CategoryController::class, 'update'])->name('categories.update');
     Route::delete('/categories/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');
 
-
-    Route::get('/testimoni', [TestimoniController::class, 'index'])->name('testimoni.index');
-    Route::patch('/testimoni/{id}/toggle', [TestimoniController::class, 'toggle'])->name('testimoni.toggle');
-    Route::delete('/testimoni/{id}', [TestimoniController::class, 'destroy'])->name('testimoni.destroy');
-
-    Route::get('/transactions', [AdminController::class, 'transactions'])->name('transactions.index');
-    Route::post('/transactions/{id}/approve', [AdminController::class, 'approveTransaction'])->name('transactions.approve');
-    Route::post('/transactions/{id}/reject', [AdminController::class, 'rejectTransaction'])->name('transactions.reject');
-
     Route::prefix('transactions')->name('transactions.')->group(function () {
         Route::get('/', [AdminController::class, 'transactions'])->name('index');
         Route::post('/{id}/approve', [AdminController::class, 'approveTransaction'])->name('approve');
@@ -74,6 +65,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
     // Testimoni routes (jika belum ada)
     Route::prefix('testimoni')->name('testimoni.')->group(function () {
         Route::get('/', [TestimoniController::class, 'index'])->name('index');
+        Route::patch('/{id}/toggle', [TestimoniController::class, 'toggle'])->name('toggle');
         Route::delete('/{id}', [TestimoniController::class, 'destroy'])->name('destroy');
         Route::delete('/bulk-delete', [TestimoniController::class, 'bulkDelete'])->name('bulk-delete');
         Route::get('/export', [TestimoniController::class, 'export'])->name('export');

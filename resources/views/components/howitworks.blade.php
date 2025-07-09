@@ -1,16 +1,14 @@
-<!-- How It Works Section -->
-<div class="py-16 bg-[#FEF3E2] font-['Poppins'] content_section relative">
+<div class="py-16 font-['Poppins'] content_section relative" data-aos="fade-up">
     <!-- Decorative elements -->
-
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-20">
         <!-- Section Header -->
-        <div class="text-center mb-16">
+        <div class="text-center mb-16" data-aos="fade-up">
             <h2 class="text-3xl font-bold text-gray-900 sm:text-4xl">
                 Cara Kerja
             </h2>
-            <div class="mt-2 w-24 h-1 bg-[#BF3131] mx-auto rounded-full"></div>
-            <p class="mt-4 max-w-2xl mx-auto text-lg text-gray-600">
+            <div class="mt-2 w-24 h-1 bg-[#BF3131] mx-auto rounded-full" data-aos="fade-up" data-aos-delay="100"></div>
+            <p class="mt-4 max-w-2xl mx-auto text-lg text-gray-600" data-aos="fade-up" data-aos-delay="150">
                 Tiga langkah mudah untuk membuat kenangan berharga
             </p>
         </div>
@@ -18,25 +16,25 @@
         <!-- Steps -->
         <div class="grid md:grid-cols-3 gap-8 relative">
             <!-- Connecting dotted line for desktop -->
-            <div
-                class="hidden md:block absolute top-32 left-0 right-0 h-1 border-t-4 border-dashed border-[#F16767] z-10">
-            </div>
+            <div class="hidden md:block absolute top-32 left-0 right-0 h-1 border-t-4 border-dashed border-[#F16767] z-10"
+                data-aos="fade-in" data-aos-delay="300"></div>
 
             <!-- Step 1 -->
-            <div
-                class="bg-white rounded-xl shadow-lg p-6 relative z-20 transform transition duration-300 hover:scale-105">
-                <div
-                    class="w-16 h-16 bg-[#BF3131] rounded-full flex items-center justify-center mx-auto -mt-12 shadow-md border-4 border-white">
+            <div class="bg-white rounded-xl shadow-lg p-6 relative z-20 transform transition duration-300 hover:scale-105"
+                data-aos="fade-up" data-aos-delay="200">
+                <div class="w-16 h-16 bg-[#BF3131] rounded-full flex items-center justify-center mx-auto -mt-12 shadow-md border-4 border-white"
+                    data-aos="zoom-in" data-aos-delay="250">
                     <span class="text-white text-2xl font-bold">1</span>
                 </div>
                 <div class="text-center mt-4">
-                    <h3 class="text-xl font-bold text-gray-900">Pilih Frame</h3>
-                    <div class="mt-2 w-12 h-1 bg-[#F16767] mx-auto rounded-full"></div>
-                    <p class="mt-3 text-gray-600">
+                    <h3 class="text-xl font-bold text-gray-900" data-aos="fade-up" data-aos-delay="300">Pilih Frame</h3>
+                    <div class="mt-2 w-12 h-1 bg-[#F16767] mx-auto rounded-full" data-aos="fade-up"
+                        data-aos-delay="350"></div>
+                    <p class="mt-3 text-gray-600" data-aos="fade-up" data-aos-delay="400">
                         Pilih dari berbagai pilihan frame foto lucu dan menarik yang cocok dengan momen spesial Anda
                     </p>
                 </div>
-                <div class="mt-6 flex justify-center">
+                <div class="mt-6 flex justify-center" data-aos="zoom-in" data-aos-delay="450">
                     <div
                         class="w-32 h-32 bg-[#FEF3E2] rounded-lg border-2 border-[#BF3131] overflow-hidden relative p-2">
                         <div
@@ -52,20 +50,21 @@
             </div>
 
             <!-- Step 2 -->
-            <div
-                class="bg-white rounded-xl shadow-lg p-6 relative z-20 transform transition duration-300 hover:scale-105">
-                <div
-                    class="w-16 h-16 bg-[#BF3131] rounded-full flex items-center justify-center mx-auto -mt-12 shadow-md border-4 border-white">
+            <div class="bg-white rounded-xl shadow-lg p-6 relative z-20 transform transition duration-300 hover:scale-105"
+                data-aos="fade-up" data-aos-delay="300">
+                <div class="w-16 h-16 bg-[#BF3131] rounded-full flex items-center justify-center mx-auto -mt-12 shadow-md border-4 border-white"
+                    data-aos="zoom-in" data-aos-delay="350">
                     <span class="text-white text-2xl font-bold">2</span>
                 </div>
                 <div class="text-center mt-4">
-                    <h3 class="text-xl font-bold text-gray-900">Ambil Foto</h3>
-                    <div class="mt-2 w-12 h-1 bg-[#F16767] mx-auto rounded-full"></div>
-                    <p class="mt-3 text-gray-600">
+                    <h3 class="text-xl font-bold text-gray-900" data-aos="fade-up" data-aos-delay="400">Ambil Foto</h3>
+                    <div class="mt-2 w-12 h-1 bg-[#F16767] mx-auto rounded-full" data-aos="fade-up"
+                        data-aos-delay="450"></div>
+                    <p class="mt-3 text-gray-600" data-aos="fade-up" data-aos-delay="500">
                         Tunjukkan ekspresi terbaik Anda! Gunakan timer atau klik langsung untuk mengambil foto
                     </p>
                 </div>
-                <div class="mt-6 flex justify-center">
+                <div class="mt-6 flex justify-center" data-aos="zoom-in" data-aos-delay="550">
                     <div class="w-32 h-32 rounded-lg border-2 border-[#BF3131] overflow-hidden relative bg-gray-100">
                         <div class="absolute inset-0 flex items-center justify-center">
                             <svg class="w-16 h-16 text-[#BF3131]" xmlns="http://www.w3.org/2000/svg" fill="none"
@@ -82,20 +81,21 @@
             </div>
 
             <!-- Step 3 -->
-            <div
-                class="bg-white rounded-xl shadow-lg p-6 relative z-20 transform transition duration-300 hover:scale-105">
-                <div
-                    class="w-16 h-16 bg-[#BF3131] rounded-full flex items-center justify-center mx-auto -mt-12 shadow-md border-4 border-white">
+            <div class="bg-white rounded-xl shadow-lg p-6 relative z-20 transform transition duration-300 hover:scale-105"
+                data-aos="fade-up" data-aos-delay="400">
+                <div class="w-16 h-16 bg-[#BF3131] rounded-full flex items-center justify-center mx-auto -mt-12 shadow-md border-4 border-white"
+                    data-aos="zoom-in" data-aos-delay="450">
                     <span class="text-white text-2xl font-bold">3</span>
                 </div>
                 <div class="text-center mt-4">
-                    <h3 class="text-xl font-bold text-gray-900">Bagikan</h3>
-                    <div class="mt-2 w-12 h-1 bg-[#F16767] mx-auto rounded-full"></div>
-                    <p class="mt-3 text-gray-600">
+                    <h3 class="text-xl font-bold text-gray-900" data-aos="fade-up" data-aos-delay="500">Bagikan</h3>
+                    <div class="mt-2 w-12 h-1 bg-[#F16767] mx-auto rounded-full" data-aos="fade-up"
+                        data-aos-delay="550"></div>
+                    <p class="mt-3 text-gray-600" data-aos="fade-up" data-aos-delay="600">
                         Simpan foto atau bagikan secara langsung ke media sosial dengan teman dan keluarga
                     </p>
                 </div>
-                <div class="mt-6 flex justify-center">
+                <div class="mt-6 flex justify-center" data-aos="zoom-in" data-aos-delay="650">
                     <div class="w-32 h-32 bg-white rounded-lg border-2 border-[#BF3131] p-3 relative">
                         <div class="w-full h-full bg-[url('/api/placeholder/110/110')] bg-center bg-cover rounded">
                         </div>
@@ -123,8 +123,6 @@
                 </div>
             </div>
         </div>
-
-
     </div>
 </div>
 

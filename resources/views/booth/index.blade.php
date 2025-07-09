@@ -37,7 +37,7 @@
             <div class="w-full md:w-auto">
                 <div class="relative mx-auto" style="width: min(90vw, 660px); max-width: 660px; aspect-ratio: 4/3;">
                     <video id="video" autoplay
-                        class="w-full h-full bg-gray-200 rounded-xl shadow-md scale-x-[-1] object-cover"></video>
+                        class="w-full h-full bg-gray-200 rounded-xl shadow-md object-cover"></video>
 
 
                     <div id="countdown-overlay"
@@ -966,6 +966,17 @@
             transition: all 0.3s ease;
         }
 
+        #video {
+            width: 100%;
+            height: 100%;
+            background: gray-200;
+            rounded-xl;
+            shadow-md;
+            object-cover;
+            transform: scaleX(-1);
+            /* Remove scale-x-[-1] */
+        }
+
         @media (max-width: 768px) {
             #video {
                 width: 100%;
@@ -1370,7 +1381,7 @@
         let selectedRating = 0;
         let selectedEmoji = '';
 
-        let isMirrored = true;
+        let isMirrored = false;
         let selectedCountdown = 3;
         const countdownOptions = [3, 5, 0]; // Available countdown options
         let currentCountdownIndex = 0; // Track current countdown option
@@ -1782,85 +1793,151 @@
                 console.log('Existing stream stopped');
             }
 
-            // Set video constraints
+            // Detect iOS
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+                (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+            // Set video constraints with improved compatibility for iOS
             const constraints = {
                 video: {
                     width: {
-                        ideal: 1280
+                        ideal: isIOS ? 1280 : 1920 // Lower resolution for iOS
                     },
                     height: {
-                        ideal: 720
+                        ideal: isIOS ? 720 : 1080
                     },
-                    aspectRatio: {
+                    aspectRatio: isIOS ? {
+                        exact: 4 / 3
+                    } : {
                         ideal: 4 / 3
-                    },
-                    facingMode: facingMode
-                }
+                    }, // Strict ratio for iOS
+                    facingMode: facingMode,
+                    frameRate: {
+                        ideal: isIOS ? 24 : 30, // Lower frame rate for iOS
+                        max: isIOS ? 30 : 60
+                    }
+                },
+                audio: false
             };
+
+            // Additional iOS-specific constraints
+            if (isIOS) {
+                constraints.video = {
+                    ...constraints.video,
+                    // These options help with iOS camera selection
+                    deviceId: undefined,
+                    exact: undefined,
+                    // Force specific modes for iOS
+                    advanced: [{
+                        facingMode: facingMode === 'user' ? 'user' : {
+                            exact: 'environment'
+                        }
+                    }]
+                };
+            }
 
             navigator.mediaDevices.getUserMedia(constraints)
                 .then(stream => {
                     currentStream = stream;
                     video.srcObject = stream;
+
+                    // iOS-specific video handling
+                    if (isIOS) {
+                        video.setAttribute('playsinline', 'true');
+                        video.setAttribute('webkit-playsinline', 'true');
+                    }
+
+                    video.play().catch(err => {
+                        console.error('Video play failed:', err);
+                        // iOS fallback - try again with simpler constraints
+                        if (isIOS) {
+                            console.log('Trying fallback constraints for iOS');
+                            initializeWebcamWithFallbackConstraints(facingMode);
+                        }
+                    });
+
                     currentFacingMode = facingMode;
                     console.log(`Webcam initialized with facingMode: ${facingMode}`);
 
-                    // Check flash support for rear camera
-                    const flashToggle = document.getElementById('floatingFlashToggle');
-                    if (facingMode === 'environment' && flashToggle) {
-                        const videoTrack = stream.getVideoTracks()[0];
-                        if (videoTrack && typeof videoTrack.getCapabilities === 'function') {
-                            try {
-                                const capabilities = videoTrack.getCapabilities();
-                                // Check if getCapabilities returns a Promise
-                                if (capabilities instanceof Promise) {
-                                    capabilities.then(caps => {
-                                        if (caps.torch) {
-                                            flashToggle.style.display = 'flex';
-                                            console.log('Native flash supported');
-                                        } else {
-                                            flashToggle.style.display = 'flex'; // Fallback to white overlay
-                                            console.log('Native flash not supported, using white overlay');
-                                        }
-                                    }).catch(err => {
-                                        console.error('Error checking flash capabilities:', err);
-                                        flashToggle.style.display = 'flex'; // Fallback to white overlay
-                                    });
-                                } else {
-                                    // Synchronous getCapabilities
-                                    if (capabilities.torch) {
-                                        flashToggle.style.display = 'flex';
-                                        console.log('Native flash supported (synchronous)');
-                                    } else {
-                                        flashToggle.style.display = 'flex'; // Fallback to white overlay
-                                        console.log('Native flash not supported, using white overlay (synchronous)');
-                                    }
-                                }
-                            } catch (err) {
-                                console.error('Error accessing getCapabilities:', err);
-                                flashToggle.style.display = 'flex'; // Fallback to white overlay
-                            }
-                        } else {
-                            console.log('getCapabilities not supported or no video track, using white overlay');
-                            flashToggle.style.display = 'flex'; // Fallback to white overlay
-                        }
-                    } else {
-                        updateFlashToggleVisibility();
-                    }
+                    // Remove scale-x-[-1] from CSS and handle mirroring via canvas
+                    video.style.transform = 'none';
+                    updateMirrorEffect();
 
+                    updateFlashToggleVisibility();
                     updateFloatingCameraToggleButton();
                 })
                 .catch(err => {
                     console.error(`Error accessing webcam with facingMode ${facingMode}:`, err);
-                    if (facingMode === 'environment') {
+
+                    // iOS-specific error handling
+                    if (isIOS && err.name === 'OverconstrainedError') {
+                        console.log('Trying fallback constraints for iOS OverconstrainedError');
+                        initializeWebcamWithFallbackConstraints(facingMode);
+                    } else if (facingMode === 'environment' && err.name !== 'OverconstrainedError') {
                         console.log('Falling back to front camera...');
                         initializeWebcam('user');
                     } else {
-                        alert(
-                            'Failed to access webcam. Please ensure your camera is connected and permissions are granted.'
-                        );
+                        alert('Failed to access webcam. Please ensure camera permissions are granted and retry.');
+                        setTimeout(() => initializeWebcam('user', {
+                            width: {
+                                min: 640
+                            },
+                            height: {
+                                min: 480
+                            }
+                        }), 2000);
                     }
                 });
+        }
+
+        // New function for iOS fallback constraints
+        function initializeWebcamWithFallbackConstraints(facingMode) {
+            const fallbackConstraints = {
+                video: {
+                    facingMode: facingMode,
+                    width: {
+                        min: 640,
+                        ideal: 1280
+                    },
+                    height: {
+                        min: 480,
+                        ideal: 720
+                    }
+                },
+                audio: false
+            };
+
+            navigator.mediaDevices.getUserMedia(fallbackConstraints)
+                .then(stream => {
+                    currentStream = stream;
+                    video.srcObject = stream;
+                    video.setAttribute('playsinline', 'true');
+                    video.setAttribute('webkit-playsinline', 'true');
+                    video.play()
+                        .then(() => {
+                            console.log('iOS fallback camera working');
+                            currentFacingMode = facingMode;
+                            updateMirrorEffect();
+                            updateFlashToggleVisibility();
+                            updateFloatingCameraToggleButton();
+                        })
+                        .catch(err => {
+                            console.error('iOS fallback video play failed:', err);
+                            alert('Could not start camera on this device. Please try another browser.');
+                        });
+                })
+                .catch(err => {
+                    console.error('iOS fallback camera failed:', err);
+                    alert('Camera access not available. Please check permissions and try again.');
+                });
+        }
+
+        function updateMirrorEffect() {
+            if (isMirrored && video) {
+                video.style.transform = 'scaleX(-1)';
+            } else if (video) {
+                video.style.transform = 'none';
+            }
         }
 
         function setupFilterChange() {
@@ -1981,29 +2058,19 @@
                 ctx.scale(-1, 1);
             }
             ctx.filter = getComputedStyle(video).filter;
-
-            // Apply slight brightness increase if flash is enabled
             if (isFlashEnabled) {
                 ctx.filter = `${ctx.filter} brightness(1.2)`;
             }
-
-            ctx.drawImage(
-                video,
-                sourceX, sourceY, sourceWidth, sourceHeight,
-                0, 0, canvas.width, canvas.height
-            );
+            ctx.drawImage(video, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, canvas.width, canvas.height);
             ctx.restore();
 
             const dataUrl = canvas.toDataURL('image/png', 0.9);
-
             const success = setPhotoToSlot(dataUrl, currentPhotoIndex);
             if (!success) {
                 console.error('Failed to set photo to slot', currentPhotoIndex);
             } else {
                 console.log('Photo successfully captured and set to slot', currentPhotoIndex);
-                // Update retake button state
                 updateRetakeButtonsState();
-                // Check if all photos are taken
                 checkAllPhotosTaken();
             }
 
@@ -3069,7 +3136,7 @@
             if (mirrorToggle) {
                 mirrorToggle.addEventListener('click', () => {
                     isMirrored = !isMirrored;
-                    video.style.transform = isMirrored ? 'scaleX(-1)' : 'scaleX(1)';
+                    updateMirrorEffect();
                     mirrorToggle.title = `Toggle Mirror: ${isMirrored ? 'On' : 'Off'}`;
                     mirrorToggle.classList.toggle('active', isMirrored);
                 });

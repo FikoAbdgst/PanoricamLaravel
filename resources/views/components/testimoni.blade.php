@@ -405,7 +405,7 @@
     <div class="hero-bg min-h-screen">
 
         <!-- Header -->
-        <div class="text-center header-section bg-[#FEF3E2] py-20 relative">
+        <div class="text-center header-section bg-[#FEF3E2] py-20 relative" data-aos="fade-up">
             <div class="floating-elements">
                 <i class="floating-star fas fa-star" style="top: 20%; left: 10%; animation-delay: 0s;"></i>
                 <i class="floating-star fas fa-heart" style="top: 30%; right: 15%; animation-delay: 2s;"></i>
@@ -413,15 +413,15 @@
                 <i class="floating-star fas fa-smile" style="top: 60%; right: 20%; animation-delay: 6s;"></i>
             </div>
 
-            <h1 class="text-6xl font-extrabold text-gray-900 mb-8 tracking-tight">
+            <h1 class="text-6xl font-extrabold text-gray-900 mb-8 tracking-tight" data-aos="fade-up">
                 Apa Kata Mereka?
             </h1>
-            <p class="text-gray-600 text-xl max-w-4xl mx-auto px-6 leading-relaxed">
+            <p class="text-gray-600 text-xl max-w-4xl mx-auto px-6 leading-relaxed" data-aos="fade-up">
                 Kepuasan kamu adalah tujuan utama kami. Lihat cerita seru dari pengguna yang sudah mencoba PhotoBooth
                 ini
                 dan punya pengalaman seru yang nggak terlupakan!
             </p>
-            <div class="mt-8">
+            <div class="mt-8" data-aos="fade-up">
                 <div
                     class="inline-flex items-center space-x-2 bg-white rounded-full px-6 py-3 shadow-lg border-2 border-[#BF3131]">
                     <i class="fas fa-users text-[#BF3131]"></i>
@@ -432,17 +432,18 @@
         </div>
 
         <!-- Testimoni Marquee -->
-        <div class="marquee-container relative bg-[#FEF3E2]">
+        <div class="marquee-container relative bg-[#FEF3E2]" data-aos="fade-up">
             <div id="marqueeContent" class="marquee-content">
                 <!-- Loading state -->
-                <div class="flex justify-center items-center w-full">
+                <div class="flex justify-center items-center w-full" data-aos="fade-up">
                     <div class="loading-spinner"></div>
                     <p class="ml-4 text-[#BF3131] font-semibold">Memuat testimoni...</p>
                 </div>
             </div>
         </div>
 
-        <div class="relative bg-gradient-to-br bg-[#FEF3E2] overflow-hidden">
+        <!-- Testimoni Section -->
+        <div class="relative bg-gradient-to-br bg-[#FEF3E2] overflow-hidden" data-aos="fade-up">
             <!-- Background decorative elements -->
             <div class="absolute inset-0 overflow-hidden">
                 <div
@@ -463,18 +464,24 @@
                 <div class="max-w-6xl mx-auto px-6">
                     <!-- Main Slogan -->
                     <div class="mb-16">
-                        <div class="inline-flex items-center justify-center mb-6">
-                            <div class="h-px bg-gradient-to-r from-transparent via-[#BF3131] to-transparent w-32"></div>
-                            <div class="mx-4 bg-white border-2 border-[#BF3131] rounded-full px-4 py-2">
+                        <div class="inline-flex items-center justify-center mb-6" data-aos="flip-up"
+                            data-aos-duration="800" data-aos-delay="100">
+                            <div class="h-px bg-gradient-to-r from-transparent via-[#BF3131] to-transparent w-32"
+                                data-aos="slide-right" data-aos-delay="200"></div>
+                            <div class="mx-4 bg-white border-2 border-[#BF3131] rounded-full px-4 py-2"
+                                data-aos="rotate-in" data-aos-duration="800" data-aos-delay="300">
                                 <i class="fas fa-camera text-[#BF3131] text-lg"></i>
                             </div>
-                            <div class="h-px bg-gradient-to-l from-transparent via-[#BF3131] to-transparent w-32"></div>
+                            <div class="h-px bg-gradient-to-l from-transparent via-[#BF3131] to-transparent w-32"
+                                data-aos="slide-left" data-aos-delay="400"></div>
                         </div>
 
-                        <p class="text-2xl font-semibold text-gray-700 mb-2">
+                        <p class="text-2xl font-semibold text-gray-700 mb-2" data-aos="slide-up" data-aos-duration="800"
+                            data-aos-delay="500">
                             "Setiap detik adalah kenangan, setiap foto adalah cerita"
                         </p>
-                        <p class="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
+                        <p class="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed" data-aos="slide-up"
+                            data-aos-duration="800" data-aos-delay="700">
                             Photobooth terdepan yang menghadirkan teknologi canggih dengan sentuhan kreativitas untuk
                             menciptakan momen tak terlupakan
                         </p>
@@ -621,16 +628,16 @@
                         
                         <!-- Frame info -->
                         ${testimoni.frame ? `
-                                                                <div class="frame-info-badge" onclick="handleFrameClickSimple(${testimoni.frame.id})">
-                                                                    <div class="flex items-center justify-center space-x-2">
-                                                                        <i class="fas fa-image frame-icon text-[#BF3131] transition-colors duration-300"></i>
-                                                                        <span class="text-sm font-semibold frame-text text-gray-700 transition-colors duration-300">
-                                                                            Frame: ${testimoni.frame.name}
-                                                                        </span>
-                                                                        <i class="fas fa-check-circle frame-check text-green-500 text-sm transition-colors duration-300"></i>
-                                                                    </div>
-                                                                </div>
-                                                            ` : ''}
+                                                                                    <div class="frame-info-badge" onclick="handleFrameClickSimple(${testimoni.frame.id})">
+                                                                                        <div class="flex items-center justify-center space-x-2">
+                                                                                            <i class="fas fa-image frame-icon text-[#BF3131] transition-colors duration-300"></i>
+                                                                                            <span class="text-sm font-semibold frame-text text-gray-700 transition-colors duration-300">
+                                                                                                Frame: ${testimoni.frame.name}
+                                                                                            </span>
+                                                                                            <i class="fas fa-check-circle frame-check text-green-500 text-sm transition-colors duration-300"></i>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                ` : ''}
                     </div>
                 </div>
             `;
@@ -867,6 +874,3 @@
             }
         }, 2000);
     </script>
-</body>
-
-</html>

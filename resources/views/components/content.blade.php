@@ -26,9 +26,26 @@
         background-color: #000;
         transform: scaleX(-1);
         /* Mirror the video preview */
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        /* Pastikan video ditampilkan sebagai block */
+        -webkit-transform: scaleX(-1);
+        /* Tambahkan vendor prefix untuk Safari */
+        -webkit-backface-visibility: hidden;
+        /* Perbaiki rendering di iOS */
+        position: absolute;
+        /* Pastikan video mengisi container */
+        top: 0;
+        left: 0;
     }
 
-    `;
+    #previewVideo[hidden],
+    #mobilePreviewVideo[hidden] {
+        display: none !important;
+        /* Sembunyikan video jika gagal */
+    }
 
     #previewFrameContainer {
         height: 100%;
@@ -499,7 +516,7 @@
 
 <div class="py-16 bg-[#FEF3E2] content_section">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-16">
+        <div class="text-center mb-16" data-aos="fade-up">
             <h2 class="text-3xl font-bold text-gray-900 inline-block relative">
                 <span class="bg-clip-text text-transparent bg-[#BF3131]">Frame Unggulan</span>
                 <div class="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-1/2 h-1 bg-[#BF3131] rounded-full">
@@ -510,9 +527,10 @@
         </div>
 
         @if ($topFrames->count() > 0)
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3  gap-8 mb-16">
-                @foreach ($topFrames as $frame)
-                    <div class="frame-card group relative" data-frame-id="{{ $frame->id }}">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 mb-16">
+                @foreach ($topFrames as $index => $frame)
+                    <div class="frame-card group relative" data-frame-id="{{ $frame->id }}" data-aos="fade-up"
+                        data-aos-delay="{{ $index * 100 }}">
                         <div class="badge {{ $frame->isFree() ? 'badge-free' : 'badge-premium' }}">
                             @if ($frame->isFree())
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none"
@@ -588,14 +606,15 @@
                 </div>
             </div>
         @else
-            <div class="text-center py-12 bg-gradient-to-r from-red-50 to-red-50 rounded-2xl shadow-inner mb-16">
+            <div class="text-center py-12 bg-gradient-to-r from-red-50 to-red-50 rounded-2xl shadow-inner mb-16"
+                data-aos="fade-up">
                 <div class="inline-block text-7xl mb-6 animate-pulse">🖼️</div>
                 <p class="text-xl text-gray-600 font-light">Belum ada frame unggulan saat ini.</p>
                 <p class="mt-3 text-gray-500">Coba lagi nanti atau jelajahi kategori lainnya.</p>
             </div>
         @endif
 
-        <div class="mt-16 text-center">
+        <div class="mt-16 text-center" data-aos="fade-up" data-aos-delay="100">
             <a href="{{ route('frametemp') }}"
                 class="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-white bg-[#BF3131] hover:bg-[#F16767] transition duration-300 shadow-md hover:shadow-lg">
                 Mulai Mencoba
@@ -622,7 +641,7 @@
         <div class="flex flex-row gap-6 justify-center items-center">
             <div class="w-3/5">
                 <div class="relative bg-white rounded-lg overflow-hidden" style="aspect-ratio: 4/3;">
-                    <video id="previewVideo" autoplay muted class="w-full h-full object-cover"></video>
+                    <video id="previewVideo" autoplay muted playsinline class="w-full h-full object-cover"></video>
                     <div id="previewWatermark" class="hidden">
                         <div class="watermark-content">
                             <img src="{{ asset('logo.png') }}" alt="Logo" class="h-10">
@@ -640,7 +659,8 @@
             </div>
 
             <div class="relative" style="width: 172px; height: 450px;">
-                <div id="previewFrameContainer" class="w-full h-full relative bg-transparent shadow-md overflow-hidden">
+                <div id="previewFrameContainer"
+                    class="w-full h-full relative bg-transparent shadow-md overflow-hidden">
                     <div id="previewFrameImage" class="absolute inset-0 flex items-center justify-center bg-gray-100">
                         <p class="text-gray-400 text-center p-4">Frame akan muncul di sini</p>
                     </div>
@@ -662,7 +682,16 @@
         <div class="p-4 flex flex-col gap-6">
             <div class="w-full">
                 <div class="relative bg-white rounded-lg overflow-hidden" style="aspect-ratio: 4/3;">
-                    <video id="mobilePreviewVideo" autoplay muted class="w-full h-full object-cover"></video>
+                    <video id="mobilePreviewVideo" autoplay muted playsinline
+                        class="w-full h-full object-cover"></video>
+                    <button id="mobileToggleCameraButton"
+                        class="absolute top-4 right-4 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all duration-300 backdrop-blur-sm">
+                        <svg id="mobileCameraIcon" class="w-6 h-6" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                    </button>
                     <div id="mobilePreviewWatermark" class="hidden">
                         <div class="watermark-content">
                             <img src="{{ asset('logo.png') }}" alt="Logo" class="h-10">
@@ -694,54 +723,122 @@
     </div>
 </div>
 
-</div>
-
-<div
-    class="relative bg-white rounded-t-xl shadow-xl w-full md:hidden mobile-modal-container max-h-[90vh] overflow-y-auto">
-    <div class="sticky top-0 z-10 bg-white rounded-t-xl border-b border-gray-200">
-        <div class="w-12 h-1.5 bg-gray-300 rounded-full mx-auto my-3"></div>
-        <h2 class="text-xl font-semibold px-4 pb-3 text-center">Frame Preview</h2>
-        <button
-            class="modal-close absolute top-3 right-4 text-2xl text-gray-500 hover:text-black cursor-pointer">×</button>
-    </div>
-
-    <div class="p-4 flex flex-col gap-6">
-        <div class="w-full">
-            <div class="relative bg-white rounded-lg overflow-hidden" style="aspect-ratio: 4/3;">
-                <video id="mobilePreviewVideo" autoplay muted class="w-full h-full object-cover"></video>
-                <div id="mobilePreviewWatermark" class="hidden">
-                    <div class="watermark-content">
-                        <img src="{{ asset('logo.png') }}" alt="Logo" class="h-10">
-                    </div>
-                </div>
-                <div id="mobilePreviewCountdownOverlay"
-                    class="absolute inset-0 flex items-center justify-center text-6xl font-bold text-white/90">
-                </div>
-            </div>
-
-            <button id="mobilePreviewCaptureButton"
-                class="mt-4 w-full py-3 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-medium transition-colors">
-                📷 Start Session
-            </button>
-        </div>
-
-        <div class="w-full flex justify-center items-center pb-4">
-            <div class="relative"
-                style="width: 172px; height: 450px;>
-                <div id="mobilePreviewFrameContainer"
-                class="w-full h-full relative bg-transparent shadow-md overflow-hidden">
-                <div id="mobilePreviewFrameImage"
-                    class="absolute inset-0 flex items-center justify-center bg-gray-100">
-                    <p class="text-gray-400 text-center p-4">Frame akan muncul di sini</p>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-</div>
-</div>
 
 <script>
+    let currentFacingMode = 'user';
+    let isTogglingCamera = false;
+
+    function toggleMobileCamera() {
+        if (isTogglingCamera) return;
+
+        isTogglingCamera = true;
+        const toggleButton = document.getElementById('mobileToggleCameraButton');
+        const cameraIcon = document.getElementById('mobileCameraIcon');
+        const mobileVideo = document.getElementById('mobilePreviewVideo');
+
+        toggleButton.disabled = true;
+        cameraIcon.style.opacity = '0.5';
+
+        // Stop existing stream
+        if (window.stream) {
+            window.stream.getTracks().forEach(track => track.stop());
+            window.stream = null;
+            mobileVideo.srcObject = null;
+        }
+
+        currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
+
+        const constraints = {
+            video: {
+                width: {
+                    ideal: 1280
+                },
+                height: {
+                    ideal: 720
+                },
+                aspectRatio: 4 / 3,
+                facingMode: {
+                    exact: currentFacingMode
+                }
+            }
+        };
+
+        navigator.mediaDevices.getUserMedia(constraints)
+            .then(stream => {
+                window.stream = stream;
+                mobileVideo.srcObject = stream;
+
+                mobileVideo.onloadedmetadata = function() {
+                    mobileVideo.play().catch(err => {
+                        console.error('Error playing mobile video after toggle:', err);
+                        handleCameraError(mobileVideo, document.getElementById(
+                            'mobilePreviewCaptureButton'));
+                    });
+                    if (currentFacingMode === 'user') {
+                        mobileVideo.classList.add('scale-x-[-1]');
+                    } else {
+                        mobileVideo.classList.remove('scale-x-[-1]');
+                    }
+
+                    toggleButton.disabled = false;
+                    cameraIcon.style.opacity = '1';
+                    isTogglingCamera = false;
+                    console.log(`Camera switched to: ${currentFacingMode}`);
+                };
+            })
+            .catch(err => {
+                console.error('Error switching camera:', err);
+
+                // Fallback to less strict constraints
+                const fallbackConstraints = {
+                    video: {
+                        width: {
+                            ideal: 1280
+                        },
+                        height: {
+                            ideal: 720
+                        },
+                        aspectRatio: 4 / 3,
+                        facingMode: currentFacingMode
+                    }
+                };
+
+                navigator.mediaDevices.getUserMedia(fallbackConstraints)
+                    .then(stream => {
+                        window.stream = stream;
+                        mobileVideo.srcObject = stream;
+
+                        mobileVideo.onloadedmetadata = function() {
+                            mobileVideo.play().catch(err => {
+                                console.error('Error playing mobile video after fallback:', err);
+                                handleCameraError(mobileVideo, document.getElementById(
+                                    'mobilePreviewCaptureButton'));
+                            });
+                            if (currentFacingMode === 'user') {
+                                mobileVideo.classList.add('scale-x-[-1]');
+                            } else {
+                                mobileVideo.classList.remove('scale-x-[-1]');
+                            }
+
+                            toggleButton.disabled = false;
+                            cameraIcon.style.opacity = '1';
+                            isTogglingCamera = false;
+                            console.log(`Fallback camera switched to: ${currentFacingMode}`);
+                        };
+                    })
+                    .catch(fallbackErr => {
+                        console.error('Fallback camera switch failed:', fallbackErr);
+                        toastr.error(
+                            'Tidak dapat mengganti kamera. Pastikan perangkat Anda mendukung kamera yang dipilih.'
+                        );
+                        currentFacingMode = currentFacingMode === 'user' ? 'environment' :
+                            'user'; // Revert facing mode
+                        toggleButton.disabled = false;
+                        cameraIcon.style.opacity = '1';
+                        isTogglingCamera = false;
+                    });
+            });
+    }
     document.addEventListener('DOMContentLoaded', function() {
         console.log('DOM loaded, initializing frame cards...');
         setupFrameCards();
@@ -972,35 +1069,64 @@
 
         // Perbaikan: Inisialisasi kamera untuk kedua video element
         if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-            navigator.mediaDevices.getUserMedia({
-                    video: {
-                        width: {
-                            ideal: 640
-                        },
-                        height: {
-                            ideal: 480
-                        },
-                        aspectRatio: 4 / 3
-                    }
-                })
+            const isMobile = window.innerWidth <= 768;
+            const videoConstraints = {
+                video: {
+                    width: {
+                        ideal: 640
+                    },
+                    height: {
+                        ideal: 480
+                    },
+                    aspectRatio: 4 / 3,
+                    facingMode: isMobile ? {
+                        ideal: currentFacingMode
+                    } : 'user'
+                }
+            };
+
+            navigator.mediaDevices.getUserMedia(videoConstraints)
                 .then(stream => {
-                    if (video) {
-                        video.srcObject = stream;
-                        video.onloadedmetadata = () => video.play();
-                    }
-                    if (mobileVideo) {
-                        mobileVideo.srcObject = stream;
-                        mobileVideo.onloadedmetadata = () => mobileVideo.play();
-                    }
                     window.stream = stream;
-                    console.log('Webcam stream initialized for both desktop and mobile');
+                    video.srcObject = stream;
+                    mobileVideo.srcObject = stream;
+
+                    video.onloadedmetadata = function() {
+                        video.play().catch(err => {
+                            console.error('Error playing video:', err);
+                            handleCameraError(video, captureButton);
+                        });
+                    };
+
+                    mobileVideo.onloadedmetadata = function() {
+                        mobileVideo.play().catch(err => {
+                            console.error('Error playing mobile video:', err);
+                            handleCameraError(mobileVideo, mobileCaptureButton);
+                        });
+                        if (isMobile && currentFacingMode === 'user') {
+                            mobileVideo.classList.add('scale-x-[-1]');
+                        } else {
+                            mobileVideo.classList.remove('scale-x-[-1]');
+                        }
+                    };
+
+                    console.log('Webcam stream initialized with constraints:', videoConstraints);
                 })
                 .catch(err => {
-                    console.error("Error accessing webcam: ", err);
-                    if (video && captureButton) handleCameraError(video, captureButton);
-                    if (mobileVideo && mobileCaptureButton) handleCameraError(mobileVideo, mobileCaptureButton);
+                    console.error('Error accessing webcam:', err);
+                    handleCameraError(video, captureButton);
+                    handleCameraError(mobileVideo, mobileCaptureButton);
+                    toastr.error('Gagal mengakses kamera. Pastikan izin kamera diaktifkan dan coba lagi.');
                 });
         }
+
+        // Add event listener for the toggle button
+        const mobileToggleButton = document.getElementById('mobileToggleCameraButton');
+        if (mobileToggleButton) {
+            mobileToggleButton.removeEventListener('click', toggleMobileCamera);
+            mobileToggleButton.addEventListener('click', toggleMobileCamera);
+        }
+
 
         // Event listeners
         const modalCloseButtons = modal.querySelectorAll('.modal-close');
@@ -1133,6 +1259,19 @@
 
         window.photoSlots = [];
         window.mobilePhotoSlots = [];
+
+        currentFacingMode = 'user';
+        isTogglingCamera = false;
+
+        const toggleButton = document.getElementById('mobileToggleCameraButton');
+        const cameraIcon = document.getElementById('mobileCameraIcon');
+        if (toggleButton) {
+            toggleButton.disabled = false;
+            toggleButton.removeEventListener('click', toggleMobileCamera);
+        }
+        if (cameraIcon) {
+            cameraIcon.style.opacity = '1';
+        }
 
         if (previewFrameImage) {
             const slots = previewFrameImage.querySelectorAll('.photo-slot');
@@ -1388,10 +1527,20 @@
         canvas.height = video.videoHeight;
         const ctx = canvas.getContext('2d');
 
-        ctx.translate(canvas.width, 0);
-        ctx.scale(-1, 1);
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        if (isMobile && currentFacingMode === 'user') {
+            ctx.translate(canvas.width, 0);
+            ctx.scale(-1, 1);
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+        } else if (!isMobile) {
+            ctx.translate(canvas.width, 0);
+            ctx.scale(-1, 1);
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+        } else {
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        }
+
 
         const addWatermark = () => {
             return new Promise((resolve) => {
@@ -1469,6 +1618,7 @@
                 countdownOverlay.textContent = '';
             }, 200);
         });
+
     }
 
     function fetchFrameDetails(frameId) {
@@ -1518,17 +1668,26 @@
     }
 
     function handleCameraError(video, captureButton) {
-        video.style.display = 'none';
-        const errorMessage = document.createElement('div');
-        errorMessage.className = 'flex flex-col items-center justify-center w-full h-full text-red-500';
-        errorMessage.innerHTML = `
-            <svg class="w-12 h-12 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-            </svg>
-            <p>Gagal mengakses kamera. Silakan periksa izin kamera atau coba browser lain.</p>
-        `;
-        video.parentElement.appendChild(errorMessage);
-        captureButton.disabled = true;
-        captureButton.textContent = 'Kamera Tidak Tersedia';
+        if (video) {
+            video.style.display = 'none';
+            const parent = video.parentElement;
+            let errorMessage = parent.querySelector('.camera-error');
+            if (!errorMessage) {
+                errorMessage = document.createElement('div');
+                errorMessage.className =
+                    'camera-error flex flex-col items-center justify-center w-full h-full text-red-500 text-center p-4';
+                errorMessage.innerHTML = `
+                <svg class="w-12 h-12 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                </svg>
+                <p>Gagal mengakses kamera. Silakan periksa izin kamera di pengaturan browser atau coba perangkat lain.</p>
+            `;
+                parent.appendChild(errorMessage);
+            }
+        }
+        if (captureButton) {
+            captureButton.disabled = true;
+            captureButton.textContent = 'Kamera Tidak Tersedia';
+        }
     }
 </script>

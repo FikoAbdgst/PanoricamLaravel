@@ -54,7 +54,51 @@
             opacity: 0;
         }
 
-        /* Please Wait Modal Styles */
+        /* Tambahkan di bagian style Anda */
+        #qrisModal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #qrisModal.show {
+            display: flex;
+        }
+
+        #qrisModalContent {
+            position: relative;
+            background: white;
+            border-radius: 1rem;
+            max-width: 90%;
+            max-height: 90vh;
+            padding: 1rem;
+        }
+
+        #qrisModalImg {
+            max-width: 100%;
+            max-height: 80vh;
+            display: block;
+            margin: 0 auto;
+        }
+
+
+
+        #qrisContainer {
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        #qrisContainer:hover {
+            transform: scale(1.02);
+        }
+
         /* Please Wait Modal Styles */
         #pleaseWaitModal {
             display: none;
@@ -1211,7 +1255,7 @@
                 </button>
             </div>
 
-            <div class=" relative" style="width: 172px; height: 450px;">
+            <div class=" relative" style="width: 172px; height: 500px;">
                 <div id="previewFrameContainer"
                     class="w-full h-full relative bg-transparent shadow-md overflow-hidden">
                     <div id="previewFrameImage" class="absolute inset-0 flex items-center justify-center bg-gray-100">
@@ -1386,20 +1430,14 @@
                             <div class="flex flex-col items-center">
                                 <h5
                                     class="font-bold text-gray-800 text-center flex mb-2 justify-center items-center text-xl">
-                                    QRIS</h5>
-                                <div
-                                    class="w-48 h-48 bg-white rounded-xl border-2 border-dashed border-[#BF3131]/30 flex items-center justify-center mb-3">
-                                    <div class="text-center">
-                                        <svg class="w-12 h-12 text-[#BF3131] mx-auto mb-2" fill="currentColor"
-                                            viewBox="0 0 20 20">
-                                            <path fill-rule="evenodd"
-                                                d="M3 4a1 1 0 011-1h3a1 1 0 011 1v3a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm2 2V5h1v1H5zM3 13a1 1 0 011-1h3a1 1 0 011 1v3a1 1 0 01-1 1H4a1 1 0 01-1-1v-3zm2 2v-1h1v1H5zM13 3a1 1 0 00-1 1v3a1 1 0 001 1h3a1 1 0 001-1V4a1 1 0 00-1-1h-3zm1 2v1h1V5h-1z"
-                                                clip-rule="evenodd"></path>
-                                        </svg>
-                                        <span class="text-[#BF3131] text-sm font-medium">QR Code QRIS</span>
-                                    </div>
+                                    QRIS
+                                </h5>
+                                <div id="qrisContainer"
+                                    class="w-48 h-48 bg-white rounded-xl border-2 border-dashed border-[#BF3131]/30 flex items-center justify-center mb-3 cursor-pointer">
+                                    <img src="{{ asset('qris.jpg') }}" alt="QRIS"
+                                        class="w-full h-full object-contain">
                                 </div>
-                                <p class="text-sm text-gray-600 text-center mb-2">Scan QR Code untuk pembayaran</p>
+                                <p class="text-sm text-gray-600 text-center mb-2">Klik QR untuk memperbesar</p>
                                 <div class="w-full p-2 bg-blue-50 border border-blue-200 rounded-lg">
                                     <p class="text-xs text-blue-800 text-center">
                                         <strong>Instruksi:</strong> Scan QR Code dengan aplikasi pembayaran digital,
@@ -1500,6 +1538,11 @@
                 Tutup
             </button>
         </div>
+    </div>
+</div>
+<div id="qrisModal">
+    <div id="qrisModalContent">
+        <img id="qrisModalImg" src="{{ asset('qris.jpg') }}" alt="QRIS">
     </div>
 </div>
 <script>
@@ -1612,7 +1655,6 @@
         }
     }
 
-    // Close Payment Modal
     function closePaymentModal() {
         const modal = document.getElementById('paymentModal');
         const modalBackdrop = modal.querySelector('.modal-backdrop');
@@ -1627,6 +1669,9 @@
             document.getElementById('paymentForm').reset();
             document.body.classList.remove('modal-open');
             localStorage.removeItem('pendingPremiumFrame');
+
+            // Panggil fungsi reset dropdown
+            resetPaymentDropdown();
         }, 300);
     }
 
@@ -2123,6 +2168,7 @@
         const modal = document.getElementById('previewCameraModal');
         if (!modal) {
             console.error('Modal element not found!');
+            toastr.error('Modal tidak ditemukan. Silakan coba lagi.');
             return;
         }
 
@@ -2198,7 +2244,7 @@
                         <svg class="w-12 h-12 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
                         </svg>
-                        <p class="text-center text-sm">Failed to load frame template.</p>
+                        <p class="text-center text-sm">Gagal memuat template frame.</p>
                     </div>
                 `;
                     previewFrameImage.innerHTML = errorContent;
@@ -2208,51 +2254,72 @@
                 });
         }
 
-        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-            const isMobile = window.innerWidth <= 768;
-            const videoConstraints = {
-                width: {
-                    ideal: 640
-                },
-                height: {
-                    ideal: 480
-                },
-                aspectRatio: 4 / 3
-            };
-
-            if (isMobile) {
-                videoConstraints.facingMode = {
-                    ideal: currentFacingMode
-                };
+        // Check camera permissions before accessing
+        checkCameraPermissions().then(hasPermission => {
+            if (!hasPermission) {
+                handleCameraError(video, captureButton);
+                handleCameraError(mobileVideo, mobileCaptureButton);
+                toastr.error('Izin kamera ditolak. Silakan aktifkan izin kamera di pengaturan perangkat.');
+                return;
             }
 
-            navigator.mediaDevices.getUserMedia({
-                    video: videoConstraints
-                })
-                .then(stream => {
-                    video.srcObject = stream;
-                    mobileVideo.srcObject = stream;
-                    window.stream = stream;
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                const isMobile = window.innerWidth <= 768;
+                const videoConstraints = {
+                    video: {
+                        width: {
+                            ideal: 1280
+                        },
+                        height: {
+                            ideal: 720
+                        },
+                        aspectRatio: 4 / 3,
+                        facingMode: isMobile ? {
+                            ideal: currentFacingMode
+                        } : 'user'
+                    }
+                };
 
-                    video.onloadedmetadata = function() {
-                        video.play();
-                    };
-                    mobileVideo.onloadedmetadata = function() {
-                        mobileVideo.play();
-                        if (currentFacingMode === 'user') {
-                            mobileVideo.classList.add('scale-x-[-1]');
-                        } else {
-                            mobileVideo.classList.remove('scale-x-[-1]');
-                        }
-                    };
-                    console.log('Webcam stream initialized');
-                })
-                .catch(err => {
-                    console.error("Error accessing webcam: ", err);
-                    handleCameraError(video, captureButton);
-                    handleCameraError(mobileVideo, mobileCaptureButton);
-                });
-        }
+                navigator.mediaDevices.getUserMedia(videoConstraints)
+                    .then(stream => {
+                        window.stream = stream;
+                        video.srcObject = stream;
+                        mobileVideo.srcObject = stream;
+
+                        video.onloadedmetadata = function() {
+                            video.play().catch(err => {
+                                console.error('Error playing video:', err);
+                                handleCameraError(video, captureButton);
+                            });
+                        };
+
+                        mobileVideo.onloadedmetadata = function() {
+                            mobileVideo.play().catch(err => {
+                                console.error('Error playing mobile video:', err);
+                                handleCameraError(mobileVideo, mobileCaptureButton);
+                            });
+                            if (isMobile && currentFacingMode === 'user') {
+                                mobileVideo.classList.add('scale-x-[-1]');
+                            } else {
+                                mobileVideo.classList.remove('scale-x-[-1]');
+                            }
+                        };
+
+                        console.log('Webcam stream initialized with constraints:', videoConstraints);
+                    })
+                    .catch(err => {
+                        console.error('Error accessing webcam:', err);
+                        handleCameraError(video, captureButton);
+                        handleCameraError(mobileVideo, mobileCaptureButton);
+                        toastr.error(
+                            'Gagal mengakses kamera. Pastikan izin kamera diaktifkan dan coba lagi.');
+                    });
+            } else {
+                handleCameraError(video, captureButton);
+                handleCameraError(mobileVideo, mobileCaptureButton);
+                toastr.error('Browser Anda tidak mendukung akses kamera.');
+            }
+        });
 
         const modalCloseButtons = modal.querySelectorAll('.modal-close');
         modalCloseButtons.forEach(btn => {
@@ -2273,6 +2340,41 @@
         mobileCaptureButton.addEventListener('click', () => startPhotoSession(true));
 
         enableDragToClose(mobileModalContainer);
+    }
+
+    function handleCameraError(video, captureButton) {
+        video.style.display = 'none';
+        const errorMessage = document.createElement('div');
+        errorMessage.className = 'flex flex-col items-center justify-center w-full h-full text-red-500';
+        errorMessage.innerHTML = `
+        <svg class="w-12 h-12 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+        </svg>
+        <p class="text-center text-sm">Gagal mengakses kamera. Silakan periksa izin kamera atau coba browser lain.</p>
+    `;
+        video.parentElement.appendChild(errorMessage);
+        if (captureButton) {
+            captureButton.disabled = true;
+            captureButton.textContent = 'Kamera Tidak Tersedia';
+        }
+    }
+
+    function checkCameraPermissions() {
+        if (!navigator.permissions || !navigator.permissions.query) {
+            // Permissions API not supported, assume permission is granted for older browsers
+            return Promise.resolve(true);
+        }
+
+        return navigator.permissions.query({
+                name: 'camera'
+            })
+            .then(permissionStatus => {
+                return permissionStatus.state === 'granted';
+            })
+            .catch(err => {
+                console.error('Error checking camera permissions:', err);
+                return false;
+            });
     }
 
     function handleModalBackdropClick(e) {
@@ -2377,12 +2479,12 @@
 
         modalBackdrop.classList.remove('show');
 
+        // Stop all video tracks
         if (window.stream) {
-            const tracks = window.stream.getTracks();
-            tracks.forEach(track => track.stop());
+            window.stream.getTracks().forEach(track => track.stop());
+            window.stream = null;
             if (video.srcObject) video.srcObject = null;
             if (mobileVideo.srcObject) mobileVideo.srcObject = null;
-            window.stream = null;
         }
 
         const captureButton = document.getElementById('previewCaptureButton');
@@ -2406,7 +2508,7 @@
             }
         }, 300);
 
-        console.log('Modal closed and state reset');
+        console.log('Modal closed and camera stream stopped');
     }
 
     function resetModalState() {
@@ -3236,9 +3338,11 @@
         toggleButton.disabled = true;
         cameraIcon.style.opacity = '0.5';
 
+        // Stop existing stream
         if (window.stream) {
-            const tracks = window.stream.getTracks();
-            tracks.forEach(track => track.stop());
+            window.stream.getTracks().forEach(track => track.stop());
+            window.stream = null;
+            mobileVideo.srcObject = null;
         }
 
         currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
@@ -3246,10 +3350,10 @@
         const constraints = {
             video: {
                 width: {
-                    ideal: 640
+                    ideal: 1280
                 },
                 height: {
-                    ideal: 480
+                    ideal: 720
                 },
                 aspectRatio: 4 / 3,
                 facingMode: {
@@ -3260,11 +3364,15 @@
 
         navigator.mediaDevices.getUserMedia(constraints)
             .then(stream => {
-                mobileVideo.srcObject = stream;
                 window.stream = stream;
+                mobileVideo.srcObject = stream;
 
                 mobileVideo.onloadedmetadata = function() {
-                    mobileVideo.play();
+                    mobileVideo.play().catch(err => {
+                        console.error('Error playing mobile video after toggle:', err);
+                        handleCameraError(mobileVideo, document.getElementById(
+                            'mobilePreviewCaptureButton'));
+                    });
                     if (currentFacingMode === 'user') {
                         mobileVideo.classList.add('scale-x-[-1]');
                     } else {
@@ -3274,20 +3382,20 @@
                     toggleButton.disabled = false;
                     cameraIcon.style.opacity = '1';
                     isTogglingCamera = false;
-
                     console.log(`Camera switched to: ${currentFacingMode}`);
                 };
             })
             .catch(err => {
-                console.error("Error switching camera: ", err);
+                console.error('Error switching camera:', err);
 
+                // Fallback to less strict constraints
                 const fallbackConstraints = {
                     video: {
                         width: {
-                            ideal: 640
+                            ideal: 1280
                         },
                         height: {
-                            ideal: 480
+                            ideal: 720
                         },
                         aspectRatio: 4 / 3,
                         facingMode: currentFacingMode
@@ -3296,11 +3404,15 @@
 
                 navigator.mediaDevices.getUserMedia(fallbackConstraints)
                     .then(stream => {
-                        mobileVideo.srcObject = stream;
                         window.stream = stream;
+                        mobileVideo.srcObject = stream;
 
                         mobileVideo.onloadedmetadata = function() {
-                            mobileVideo.play();
+                            mobileVideo.play().catch(err => {
+                                console.error('Error playing mobile video after fallback:', err);
+                                handleCameraError(mobileVideo, document.getElementById(
+                                    'mobilePreviewCaptureButton'));
+                            });
                             if (currentFacingMode === 'user') {
                                 mobileVideo.classList.add('scale-x-[-1]');
                             } else {
@@ -3310,14 +3422,16 @@
                             toggleButton.disabled = false;
                             cameraIcon.style.opacity = '1';
                             isTogglingCamera = false;
+                            console.log(`Fallback camera switched to: ${currentFacingMode}`);
                         };
                     })
                     .catch(fallbackErr => {
-                        console.error("Fallback camera switch failed: ", fallbackErr);
-                        currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
-                        alert(
-                            'Tidak dapat mengganti kamera. Pastikan perangkat Anda memiliki kamera depan dan belakang.'
+                        console.error('Fallback camera switch failed:', fallbackErr);
+                        toastr.error(
+                            'Tidak dapat mengganti kamera. Pastikan perangkat Anda mendukung kamera yang dipilih.'
                         );
+                        currentFacingMode = currentFacingMode === 'user' ? 'environment' :
+                            'user'; // Revert facing mode
                         toggleButton.disabled = false;
                         cameraIcon.style.opacity = '1';
                         isTogglingCamera = false;
@@ -3342,6 +3456,23 @@
         }
     }
 
+    function resetPaymentDropdown() {
+        const paymentMethod = document.getElementById('paymentMethod');
+        const paymentDetailsContainer = document.getElementById('paymentDetailsContainer');
+        const bankTransferDetails = document.getElementById('bankTransferDetails');
+        const qrisDetails = document.getElementById('qrisDetails');
+
+        // Reset dropdown ke nilai default
+        paymentMethod.value = '';
+
+        // Sembunyikan container detail pembayaran
+        paymentDetailsContainer.classList.add('hidden');
+
+        // Sembunyikan semua metode pembayaran
+        bankTransferDetails.style.display = 'none';
+        qrisDetails.style.display = 'none';
+    }
+
     // Handle backdrop click for accept and reject modals
     document.getElementById('acceptModal').addEventListener('click', function(e) {
         if (e.target.classList.contains('modal-backdrop')) {
@@ -3352,6 +3483,36 @@
     document.getElementById('rejectModal').addEventListener('click', function(e) {
         if (e.target.classList.contains('modal-backdrop')) {
             closeRejectModal(); // Close reject modal on backdrop click
+        }
+    });
+    // Tambahkan di bagian script Anda
+    document.addEventListener('DOMContentLoaded', function() {
+        const qrisContainer = document.getElementById('qrisContainer');
+        const qrisModal = document.getElementById('qrisModal');
+        const qrisModalImg = document.getElementById('qrisModalImg');
+        const closeQrisModal = document.getElementById('closeQrisModal');
+
+        if (qrisContainer) {
+            qrisContainer.addEventListener('click', function() {
+                qrisModal.classList.add('show');
+                document.body.classList.add('modal-open');
+            });
+        }
+
+        if (closeQrisModal) {
+            closeQrisModal.addEventListener('click', function() {
+                qrisModal.classList.remove('show');
+                document.body.classList.remove('modal-open');
+            });
+        }
+
+        if (qrisModal) {
+            qrisModal.addEventListener('click', function(e) {
+                if (e.target === qrisModal) {
+                    qrisModal.classList.remove('show');
+                    document.body.classList.remove('modal-open');
+                }
+            });
         }
     });
 </script>
