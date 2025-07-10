@@ -17,7 +17,7 @@ class PaymentController extends Controller
             $request->validate([
                 'frame_id' => 'required|exists:frames,id',
                 'customer_name' => 'required|string|max:255',
-                'whatsapp_number' => 'nullable|string|max:20', // Changed to nullable
+                'whatsapp_number' => 'nullable|numeric', // Changed to nullable
                 'payment_method' => 'required|in:bank_transfer,qris',
                 'payment_proof' => 'required|image|mimes:jpeg,png,jpg|max:2048'
             ]);

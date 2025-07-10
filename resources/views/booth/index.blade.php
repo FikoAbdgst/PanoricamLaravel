@@ -352,9 +352,9 @@
         class="fixed z-50 left-0 top-0 w-full h-full bg-black bg-opacity-70 overflow-auto justify-center items-center hidden">
         <div id="sessionEndModalContent"
             class="mx-auto w-11/12 max-w-[450px] rounded-3xl shadow-xl p-6 sm:p-8 relative flex flex-col items-center bg-[#FEF3E2]">
-            <button
-                class="session-end-modal-close absolute top-4 right-4 text-2xl font-bold text-gray-500 bg-transparent border-none cursor-pointer hover:text-gray-800 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[#BF3131] rounded-full w-8 h-8 flex items-center justify-center">×</button>
-            <div class="w-16 h-16 mb-4 rounded-full bg-[#BF3131] flex items-center justify-center">
+
+            <div
+                class="session-end-modal-close w-16 h-16 mb-4 rounded-full bg-[#BF3131] flex items-center justify-center">
                 <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -1827,6 +1827,9 @@
         // Update DOMContentLoaded listener
         document.addEventListener('DOMContentLoaded', function() {
             initializeBoothPageWithSingleSession();
+            setTimeout(() => {
+                showWelcomeModal();
+            }, 500);
 
             const frameIsPaidElement = document.getElementById('frameIsPaid');
 
@@ -2860,23 +2863,19 @@
             });
         }
 
-        // Fungsi untuk mengupdate status pembayaran menjadi "downloaded"
         function updatePaymentStatusToDownloaded() {
             try {
-                // Cek dan update localStorage
                 const pendingPaymentLS = localStorage.getItem('pendingPayment');
                 if (pendingPaymentLS) {
                     const paymentDataLS = JSON.parse(pendingPaymentLS);
                     paymentDataLS.status = 'downloaded';
-                    paymentDataLS.downloadedAt = Date.now(); // Tambahkan timestamp download
+                    paymentDataLS.downloadedAt = Date.now();
                     localStorage.setItem('pendingPayment', JSON.stringify(paymentDataLS));
                     console.log('LocalStorage status updated to downloaded:', paymentDataLS);
+
+                    // Setelah update status, sembunyikan tutor slide
+                    checkDownloadedStatus();
                 }
-
-
-                // Opsional: Kirim notifikasi ke server bahwa foto telah didownload
-                notifyServerPhotoDownloaded();
-
             } catch (error) {
                 console.error('Error updating payment status to downloaded:', error);
             }
@@ -3950,13 +3949,13 @@
                     document.querySelector('.exit-modal-close').addEventListener('click',
                         closeExitConfirmationModal);
 
-                    exitModal.addEventListener('click', (e) => {
-                        if (e.target === exitModal) {
-                            closeExitConfirmationModal();
-                        }
-                    }, {
-                        once: true
-                    });
+                    // exitModal.addEventListener('click', (e) => {
+                    //     if (e.target === exitModal) {
+                    //         closeExitConfirmationModal();
+                    //     }
+                    // }, {
+                    //     once: true
+                    // });
 
                     // Fokus pada tombol Batal untuk aksesibilitas
                     document.querySelector('#cancelExitButton').focus();
@@ -4227,15 +4226,7 @@
                     }, 400); // Delay for animation
                 });
 
-                document.querySelector('.session-end-modal-close').addEventListener('click', closeSessionEndModal);
 
-                sessionEndModal.addEventListener('click', (e) => {
-                    if (e.target === sessionEndModal) {
-                        closeSessionEndModal();
-                    }
-                }, {
-                    once: true
-                });
 
                 // Focus on confirm button for accessibility
                 document.querySelector('#confirmSessionEndButton').focus();
@@ -4247,17 +4238,7 @@
             }
         }
 
-        function closeSessionEndModal() {
-            const sessionEndModal = document.getElementById('sessionEndModal');
-            const sessionEndModalContent = document.getElementById('sessionEndModalContent');
-            if (sessionEndModal && sessionEndModalContent) {
-                sessionEndModalContent.classList.add('modal-closing');
-                setTimeout(() => {
-                    sessionEndModal.style.display = 'none';
-                    sessionEndModalContent.classList.remove('modal-closing');
-                }, 300);
-            }
-        }
+
 
         // Fungsi untuk validasi lanjutan berdasarkan IP atau device (opsional)
         function validateDeviceAccess(paymentData) {
@@ -4408,6 +4389,12 @@
         });
 
         function showWelcomeModal() {
+            // Cek status downloaded terlebih dahulu
+            if (checkDownloadedStatus()) {
+                console.log('Welcome modal skipped because photo already downloaded');
+                return;
+            }
+
             const welcomeModal = document.getElementById('welcomeModal');
             if (welcomeModal) {
                 welcomeModal.style.display = 'flex';
@@ -4661,6 +4648,32 @@
                 field.classList.add('border-green-500', 'bg-green-50');
                 field.classList.remove('border-red-500', 'bg-red-50');
                 return true;
+            }
+        }
+
+        function checkDownloadedStatus() {
+            try {
+                const pendingPayment = localStorage.getItem('pendingPayment');
+                if (pendingPayment) {
+                    const paymentData = JSON.parse(pendingPayment);
+                    return paymentData.status === 'downloaded';
+                }
+                return false;
+            } catch (error) {
+                console.error('Error checking downloaded status:', error);
+                return false;
+            }
+        }
+
+        function closeSessionEndModal() {
+            const sessionEndModal = document.getElementById('sessionEndModal');
+            const sessionEndModalContent = document.getElementById('sessionEndModalContent');
+            if (sessionEndModal && sessionEndModalContent) {
+                sessionEndModalContent.classList.add('modal-closing');
+                setTimeout(() => {
+                    sessionEndModal.style.display = 'none';
+                    sessionEndModalContent.classList.remove('modal-closing');
+                }, 300);
             }
         }
     </script>

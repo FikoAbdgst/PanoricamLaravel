@@ -1510,7 +1510,7 @@
                             </svg>
                             Nomor WhatsApp <span class="text-gray-400 text-xs">(Opsional)</span>
                         </label>
-                        <input type="tel" name="whatsapp_number"
+                        <input type="number" name="whatsapp_number"
                             class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#BF3131]/50 focus:border-[#BF3131] transition duration-300"
                             placeholder="Contoh: 081234567890">
                         <p class="text-xs text-gray-500 mt-1 flex items-center">
@@ -1681,6 +1681,26 @@
 <div id="qrisModal">
     <div id="qrisModalContent">
         <img id="qrisModalImg" src="{{ asset('qris.jpg') }}" alt="QRIS">
+    </div>
+</div>
+<div id="pleaseWaitModal" class="fixed inset-0 hidden z-50 flex items-center justify-center">
+    <div class="modal-content bg-white rounded-2xl p-6 w-full max-w-md mx-4">
+        <div class="text-center">
+            <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-500 mx-auto mb-4"></div>
+            <h3 class="text-xl font-bold text-gray-800 mb-2">Menunggu Konfirmasi</h3>
+            <p class="text-gray-600 mb-4">Pembayaran Anda (Order ID: <span id="waitingOrderId"></span>) sedang
+                diproses. Silakan tunggu konfirmasi dari admin.</p>
+
+            <!-- Tambahkan pesan hubungi admin jika menunggu lama -->
+            <div id="contactAdminMessage" class="hidden mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <p class="text-sm text-yellow-800">
+                    Jika sudah menunggu lama dan belum diterima, silakan hubungi admin melalui WhatsApp:
+                    <a href="https://wa.me/+62882001330851" class="font-semibold text-blue-600 hover:text-blue-800">
+                        0882-0013-30851
+                    </a>
+                </p>
+            </div>
+        </div>
     </div>
 </div>
 <script>
@@ -1903,23 +1923,20 @@
 
 
     function showPleaseWaitModal(orderId) {
-        const modal = document.createElement('div');
-        modal.id = 'pleaseWaitModal';
-        modal.className = 'fixed inset-0 flex items-center justify-center z-50';
-        modal.innerHTML = `
-        <div class="modal-content bg-white rounded-2xl p-6 w-full max-w-md mx-4">
-            <div class="text-center">
-                <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-500 mx-auto mb-4"></div>
-                <h3 class="text-xl font-bold text-gray-800 mb-2">Menunggu Konfirmasi</h3>
-                <p class="text-gray-600">Pembayaran Anda (Order ID: ${orderId}) sedang diproses. Silakan tunggu konfirmasi dari admin.</p>
-            </div>
-        </div>
-    `;
-        document.body.appendChild(modal);
+        const modal = document.getElementById('pleaseWaitModal');
+        const orderIdSpan = document.getElementById('waitingOrderId');
+        const contactAdminDiv = document.getElementById('contactAdminMessage');
 
-        // Show the modal
+        orderIdSpan.textContent = orderId;
+        contactAdminDiv.classList.add('hidden'); // Sembunyikan awal
+
+        document.body.appendChild(modal);
+        modal.classList.remove('hidden');
         modal.classList.add('show');
-        document.body.classList.add('modal-open'); // Prevent body scroll
+        document.body.classList.add('modal-open');
+
+        // Tampilkan pesan hubungi admin setelah 30 menit
+        contactAdminDiv.classList.remove('hidden');
     }
 
     function closePleaseWaitModal() {
