@@ -172,18 +172,7 @@
                         <div class="px-4 py-3 sm:px-5 sm:py-4 bg-gray-50 border-t border-gray-100">
                             <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-2">
                                 <div class="flex gap-2 flex-1">
-                                    <a href="{{ route('admin.frames.show', $frame) }}"
-                                        class="flex-1 text-center bg-green-100 hover:bg-green-200 text-green-700 font-medium py-2 px-2 sm:px-3 rounded-lg text-xs sm:text-sm transition-colors duration-200 flex items-center justify-center gap-1">
-                                        <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z">
-                                            </path>
-                                        </svg>
-                                        <span class="hidden sm:inline">Detail</span>
-                                    </a>
+
                                     <a href="{{ route('admin.frames.edit', $frame) }}"
                                         class="flex-1 text-center bg-blue-100 hover:bg-blue-200 text-blue-700 font-medium py-2 px-2 sm:px-3 rounded-lg text-xs sm:text-sm transition-colors duration-200 flex items-center justify-center gap-1">
                                         <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor"

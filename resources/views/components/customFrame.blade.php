@@ -1,22 +1,26 @@
-<!-- Custom Frame Section -->
 <div class="py-16 bg-[#FEF3E2] font-['Poppins'] relative overflow-hidden">
     <!-- Decorative background elements -->
-    <div class="absolute top-0 left-0 w-32 h-32 bg-[#F16767] opacity-10 rounded-full -translate-x-16 -translate-y-16">
+    <div class="absolute top-0 left-0 w-32 h-32 bg-[#F16767] opacity-10 rounded-full -translate-x-16 -translate-y-16"
+        data-aos="fade-right" data-aos-duration="1000">
     </div>
-    <div class="absolute bottom-0 right-0 w-40 h-40 bg-[#BF3131] opacity-10 rounded-full translate-x-20 translate-y-20">
+    <div class="absolute bottom-0 right-0 w-40 h-40 bg-[#BF3131] opacity-10 rounded-full translate-x-20 translate-y-20"
+        data-aos="fade-left" data-aos-duration="1000" data-aos-delay="200">
     </div>
-    <div class="absolute top-1/2 left-10 w-6 h-6 bg-[#F16767] opacity-30 rounded-full float-animation"></div>
+    <div class="absolute top-1/2 left-10 w-6 h-6 bg-[#F16767] opacity-30 rounded-full float-animation" data-aos="zoom-in"
+        data-aos-duration="800" data-aos-delay="400"></div>
     <div class="absolute top-1/4 right-20 w-4 h-4 bg-[#BF3131] opacity-40 rounded-full float-animation"
-        style="animation-delay: 1s;"></div>
+        style="animation-delay: 1s;" data-aos="zoom-in" data-aos-duration="800" data-aos-delay="600"></div>
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <!-- Section Header -->
-        <div class="text-center mb-12">
+        <div class="text-center mb-12" data-aos="fade-up" data-aos-duration="800">
             <h2 class="text-3xl font-bold text-gray-900 sm:text-4xl mb-4">
                 Butuh Frame Khusus?
             </h2>
-            <div class="w-24 h-1 bg-[#BF3131] mx-auto rounded-full mb-4"></div>
-            <p class="max-w-2xl mx-auto text-lg text-gray-600">
+            <div class="w-24 h-1 bg-[#BF3131] mx-auto rounded-full mb-4" data-aos="scale-x-0" data-aos-duration="600"
+                data-aos-delay="200"></div>
+            <p class="max-w-2xl mx-auto text-lg text-gray-600" data-aos="fade-up" data-aos-duration="800"
+                data-aos-delay="300">
                 Kami bisa membuatkan frame custom sesuai tema acara atau keinginan Anda
             </p>
         </div>
@@ -24,12 +28,14 @@
         <!-- Main Content -->
         <div class="grid lg:grid-cols-2 gap-12 items-center">
             <!-- Left Side - Features -->
-            <div class="space-y-8">
+            <div class="space-y-8" data-aos="fade-right" data-aos-duration="1000" data-aos-delay="400">
                 <div class="space-y-6">
                     <!-- Feature 1 -->
-                    <div class="flex items-start space-x-4">
+                    <div class="flex items-start space-x-4" data-aos="fade-up" data-aos-duration="800"
+                        data-aos-delay="500">
                         <div class="flex-shrink-0">
-                            <div class="w-12 h-12 bg-[#BF3131] rounded-full flex items-center justify-center shadow-lg">
+                            <div class="w-12 h-12 bg-[#BF3131] rounded-full flex items-center justify-center shadow-lg"
+                                data-aos="zoom-in" data-aos-duration="600" data-aos-delay="600">
                                 <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor"
                                     viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -45,9 +51,11 @@
                     </div>
 
                     <!-- Feature 2 -->
-                    <div class="flex items-start space-x-4">
+                    <div class="flex items-start space-x-4" data-aos="fade-up" data-aos-duration="800"
+                        data-aos-delay="700">
                         <div class="flex-shrink-0">
-                            <div class="w-12 h-12 bg-[#F16767] rounded-full flex items-center justify-center shadow-lg">
+                            <div class="w-12 h-12 bg-[#F16767] rounded-full flex items-center justify-center shadow-lg"
+                                data-aos="zoom-in" data-aos-duration="600" data-aos-delay="800">
                                 <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor"
                                     viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -57,15 +65,16 @@
                         </div>
                         <div>
                             <h3 class="text-xl font-semibold text-gray-900 mb-2">Proses Cepat</h3>
-                            <p class="text-gray-600">Konsultasi melalui WhatsApp dan frame siap dalam 1-2 hari kerja
-                            </p>
+                            <p class="text-gray-600">Konsultasi melalui WhatsApp dan frame siap dalam 1-2 hari kerja</p>
                         </div>
                     </div>
 
                     <!-- Feature 3 -->
-                    <div class="flex items-start space-x-4">
+                    <div class="flex items-start space-x-4" data-aos="fade-up" data-aos-duration="800"
+                        data-aos-delay="900">
                         <div class="flex-shrink-0">
-                            <div class="w-12 h-12 bg-[#BF3131] rounded-full flex items-center justify-center shadow-lg">
+                            <div class="w-12 h-12 bg-[#BF3131] rounded-full flex items-center justify-center shadow-lg"
+                                data-aos="zoom-in" data-aos-duration="600" data-aos-delay="1000">
                                 <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor"
                                     viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -83,15 +92,18 @@
             </div>
 
             <!-- Right Side - WhatsApp CTA -->
-            <div class="relative">
+            <div class="relative" data-aos="fade-left" data-aos-duration="1000" data-aos-delay="400">
                 <!-- Background decoration -->
-                <div class="absolute inset-0 gradient-bg rounded-3xl transform rotate-3 opacity-10"></div>
+                <div class="absolute inset-0 gradient-bg rounded-3xl transform rotate-3 opacity-10" data-aos="rotate-in"
+                    data-aos-duration="1200" data-aos-delay="600"></div>
 
                 <!-- Main Card -->
-                <div class="relative bg-white rounded-2xl p-8 custom-shadow">
+                <div class="relative bg-white rounded-2xl p-8 custom-shadow" data-aos="zoom-in" data-aos-duration="800"
+                    data-aos-delay="800">
                     <div class="text-center">
                         <!-- WhatsApp Icon with pulse effect -->
-                        <div class="relative inline-block mb-6">
+                        <div class="relative inline-block mb-6" data-aos="bounce" data-aos-duration="1000"
+                            data-aos-delay="1000">
                             <div class="absolute inset-0 bg-green-400 rounded-full pulse-ring opacity-25"></div>
                             <div
                                 class="relative w-20 h-20 bg-green-500 rounded-full flex items-center justify-center shadow-lg">
@@ -102,16 +114,19 @@
                             </div>
                         </div>
 
-                        <h3 class="text-2xl font-bold text-gray-900 mb-4">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-4" data-aos="fade-up" data-aos-duration="600"
+                            data-aos-delay="1200">
                             Konsultasi Gratis
                         </h3>
-                        <p class="text-gray-600 mb-6">
+                        <p class="text-gray-600 mb-6" data-aos="fade-up" data-aos-duration="600"
+                            data-aos-delay="1300">
                             Ceritakan konsep frame impian Anda dan kami akan membuatkannya dengan sempurna
                         </p>
 
                         <!-- WhatsApp Button -->
                         <a href="https://wa.me/62882001330851?text=Halo,%20saya%20ingin%20konsultasi%20untuk%20custom%20frame%20photo%20booth"
-                            class="inline-flex items-center px-8 py-4 gradient-bg text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 group">
+                            class="inline-flex items-center px-8 py-4 gradient-bg text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 group"
+                            data-aos="fade-up" data-aos-duration="600" data-aos-delay="1400">
                             <svg class="w-5 h-5 mr-3 group-hover:animate-bounce" fill="currentColor"
                                 viewBox="0 0 24 24">
                                 <path
@@ -121,7 +136,8 @@
                         </a>
 
                         <!-- Additional Info -->
-                        <div class="mt-6 flex items-center justify-center space-x-4 text-sm text-gray-500">
+                        <div class="mt-6 flex items-center justify-center space-x-4 text-sm text-gray-500"
+                            data-aos="fade-up" data-aos-duration="600" data-aos-delay="1500">
                             <div class="flex items-center">
                                 <div class="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
                                 Respon cepat
@@ -138,15 +154,16 @@
 
         <!-- Bottom Examples -->
         <div class="mt-16">
-            <div class="text-center mb-8">
+            <div class="text-center mb-8" data-aos="fade-up" data-aos-duration="800" data-aos-delay="200">
                 <h3 class="text-2xl font-semibold text-gray-900 mb-2">Contoh Frame Custom</h3>
                 <p class="text-gray-600">Beberapa desain yang pernah kami buat</p>
             </div>
 
+            <!-- Sample frames grid -->
             @if ($customFrames->count() > 0)
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
                     @foreach ($customFrames as $frame)
-                        <div class="group">
+                        <div class="group" data-aos="flip-left" data-aos-duration="800" data-aos-delay="300">
                             <div
                                 class="bg-white rounded-lg p-4 shadow-md hover:shadow-lg transition-shadow duration-300">
                                 <div
@@ -173,7 +190,6 @@
         </div>
     </div>
 </div>
-
 <style>
     body {
         font-family: 'Poppins', sans-serif;
@@ -222,16 +238,94 @@
             transform: translateY(-10px);
         }
     }
+
+    /* AOS Custom Styles */
+    [data-aos] {
+        transition-property: transform, opacity;
+        transition-timing-function: ease-in-out;
+        will-change: transform, opacity;
+    }
+
+    [data-aos^="fade"][data-aos^="fade"],
+    [data-aos^="zoom"][data-aos^="zoom"] {
+        transform-origin: center center;
+    }
+
+    [data-aos^="slide"][data-aos^="slide"] {
+        transform-origin: top center;
+    }
+
+    /* Custom AOS animation for scale-x */
+    [data-aos="scale-x-0"] {
+        transform: scaleX(0);
+    }
+
+    [data-aos="scale-x-0"].aos-animate {
+        transform: scaleX(1);
+    }
+
+    /* Custom AOS animation for rotate-in */
+    [data-aos="rotate-in"] {
+        opacity: 0;
+        transform: rotate(-45deg) scale(0.5);
+    }
+
+    [data-aos="rotate-in"].aos-animate {
+        opacity: 1;
+        transform: rotate(3deg) scale(1);
+    }
 </style>
 
 <script>
-    // Add smooth scrolling and interactive effects
+    // Initialize AOS
+    document.addEventListener('DOMContentLoaded', function() {
+        AOS.init({
+            duration: 800,
+            easing: 'ease-in-out',
+            once: true,
+            mirror: false,
+            offset: 50,
+            delay: 0
+        });
+    });
+
+    // Smooth scrolling for anchor links
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function(e) {
             e.preventDefault();
-            document.querySelector(this.getAttribute('href')).scrollIntoView({
-                behavior: 'smooth'
-            });
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth'
+                });
+            }
         });
     });
+
+    // Add scroll-triggered animations
+    function handleScrollAnimations() {
+        const scrollPosition = window.scrollY;
+        const windowHeight = window.innerHeight;
+
+        // Parallax effect for background elements
+        const bgElements = document.querySelectorAll('.absolute[data-aos]');
+        bgElements.forEach(element => {
+            const speed = 0.5;
+            const yPos = -(scrollPosition * speed);
+            element.style.transform = `translateY(${yPos}px)`;
+        });
+    }
+
+    // Throttled scroll event
+    let ticking = false;
+
+    function requestTick() {
+        if (!ticking) {
+            requestAnimationFrame(handleScrollAnimations);
+            ticking = true;
+            setTimeout(() => ticking = false, 16);
+        }
+    }
+
+    window.addEventListener('scroll', requestTick);
 </script>

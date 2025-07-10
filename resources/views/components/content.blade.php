@@ -658,7 +658,7 @@
                 </button>
             </div>
 
-            <div class="relative" style="width: 172px; height: 450px;">
+            <div class="relative" style="width: 190px; height: 500px;">
                 <div id="previewFrameContainer"
                     class="w-full h-full relative bg-transparent shadow-md overflow-hidden">
                     <div id="previewFrameImage" class="absolute inset-0 flex items-center justify-center bg-gray-100">
@@ -709,7 +709,7 @@
             </div>
 
             <div class="w-full flex justify-center items-center pb-4">
-                <div class="relative" style="width: 172px; height: 450px;">
+                <div class="relative" style="width: 190px; height: 500px;">
                     <div id="mobilePreviewFrameContainer"
                         class="w-full h-full relative bg-transparent shadow-md overflow-hidden">
                         <div id="mobilePreviewFrameImage"

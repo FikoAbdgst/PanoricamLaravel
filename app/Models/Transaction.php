@@ -12,7 +12,9 @@ class Transaction extends Model
     protected $fillable = [
         'order_id',
         'frame_id',
-        'email',
+        'customer_name',
+        'whatsapp_number',
+        'payment_method',
         'amount',
         'payment_proof',
         'status',
@@ -31,5 +33,25 @@ class Transaction extends Model
     public function getFormattedAmountAttribute()
     {
         return 'Rp ' . number_format($this->amount, 0, ',', '.');
+    }
+
+    public function getFormattedWhatsappAttribute()
+    {
+        // Handle NULL values
+        if (empty($this->whatsapp_number)) {
+            return null;
+        }
+
+        // Format WhatsApp number for display
+        $number = preg_replace('/[^0-9]/', '', $this->whatsapp_number);
+        if (substr($number, 0, 1) == '0') {
+            $number = '62' . substr($number, 1);
+        }
+        return $number;
+    }
+
+    public function hasWhatsapp()
+    {
+        return !empty($this->whatsapp_number);
     }
 }

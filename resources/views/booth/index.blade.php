@@ -421,6 +421,81 @@
     <input type="hidden" id="frameIsPaid" value="{{ $frame->isFree() ? 'false' : 'true' }}">
 
     <style>
+        .custom-alert {
+            animation: slideInDown 0.4s ease-out;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        @keyframes slideInDown {
+            from {
+                transform: translateX(-50%) translateY(-100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .in-modal-notification {
+            animation: slideInDown 0.3s ease-out;
+        }
+
+        .animate-pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: .5;
+            }
+        }
+
+        .animate-bounce {
+            animation: bounce 1s infinite;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            20%,
+            53%,
+            80%,
+            100% {
+                transform: translate3d(0, 0, 0);
+            }
+
+            40%,
+            43% {
+                transform: translate3d(0, -30px, 0);
+            }
+
+            70% {
+                transform: translate3d(0, -15px, 0);
+            }
+
+            90% {
+                transform: translate3d(0, -4px, 0);
+            }
+        }
+
+        /* Enhanced modal backdrop to ensure alerts are visible */
+        .testimoni-modal {
+            z-index: 50;
+        }
+
+        .custom-alert {
+            z-index: 70 !important;
+        }
+
         .welcome-modal {
             animation: modalFadeIn 0.4s ease-out;
             width: 80%;
@@ -1816,6 +1891,7 @@
                         ideal: isIOS ? 24 : 30, // Lower frame rate for iOS
                         max: isIOS ? 30 : 60
                     }
+                    // Hapus zoom constraint dari sini karena bisa menyebabkan error
                 },
                 audio: false
             };
@@ -1845,6 +1921,45 @@
                     if (isIOS) {
                         video.setAttribute('playsinline', 'true');
                         video.setAttribute('webkit-playsinline', 'true');
+                    }
+
+                    // Setelah stream berhasil, coba set zoom level secara manual
+                    const videoTrack = stream.getVideoTracks()[0];
+                    if (videoTrack && videoTrack.getCapabilities) {
+                        try {
+                            const capabilities = videoTrack.getCapabilities();
+                            console.log('Camera capabilities:', capabilities);
+
+                            if (capabilities.zoom && capabilities.zoom.min <= 0.5 && capabilities.zoom.max >= 0.5) {
+                                videoTrack.applyConstraints({
+                                    zoom: 0.5
+                                }).then(() => {
+                                    console.log('Zoom level set to 0.5x');
+                                }).catch(err => {
+                                    console.log('Could not set zoom level:', err);
+                                });
+                            } else {
+                                console.log('Zoom 0.5x not supported by this camera');
+                                // Coba dengan zoom yang didukung
+                                if (capabilities.zoom) {
+                                    const minZoom = capabilities.zoom.min;
+                                    const maxZoom = capabilities.zoom.max;
+                                    const targetZoom = Math.max(minZoom, Math.min(0.5, maxZoom));
+
+                                    videoTrack.applyConstraints({
+                                        zoom: targetZoom
+                                    }).then(() => {
+                                        console.log(`Zoom level set to ${targetZoom}x (closest to 0.5x)`);
+                                    }).catch(err => {
+                                        console.log('Could not set any zoom level:', err);
+                                    });
+                                }
+                            }
+                        } catch (err) {
+                            console.log('Error getting camera capabilities:', err);
+                        }
+                    } else {
+                        console.log('Camera zoom not supported on this device');
                     }
 
                     video.play().catch(err => {
@@ -1890,7 +2005,7 @@
                 });
         }
 
-        // New function for iOS fallback constraints
+        // Modified fallback function with zoom
         function initializeWebcamWithFallbackConstraints(facingMode) {
             const fallbackConstraints = {
                 video: {
@@ -1903,6 +2018,7 @@
                         min: 480,
                         ideal: 720
                     }
+                    // Hapus zoom dari fallback constraints
                 },
                 audio: false
             };
@@ -1913,6 +2029,28 @@
                     video.srcObject = stream;
                     video.setAttribute('playsinline', 'true');
                     video.setAttribute('webkit-playsinline', 'true');
+
+                    // Set zoom level untuk fallback juga dengan penanganan error yang lebih baik
+                    const videoTrack = stream.getVideoTracks()[0];
+                    if (videoTrack && videoTrack.getCapabilities) {
+                        try {
+                            const capabilities = videoTrack.getCapabilities();
+                            if (capabilities.zoom && capabilities.zoom.min <= 0.5 && capabilities.zoom.max >= 0.5) {
+                                videoTrack.applyConstraints({
+                                    zoom: 0.5
+                                }).then(() => {
+                                    console.log('Fallback: Zoom level set to 0.5x');
+                                }).catch(err => {
+                                    console.log('Fallback: Could not set zoom level:', err);
+                                });
+                            } else {
+                                console.log('Fallback: Zoom 0.5x not supported');
+                            }
+                        } catch (err) {
+                            console.log('Fallback: Error with zoom capabilities:', err);
+                        }
+                    }
+
                     video.play()
                         .then(() => {
                             console.log('iOS fallback camera working');
@@ -2698,7 +2836,6 @@
                     logging: false
                 }).then(canvas => {
                     const imageData = canvas.toDataURL('image/png', 1.0);
-                    savePhotos(imageData);
                     updateModal(imageData);
                 }).catch(error => {
                     console.error('Initial preview generation error:', error.message, error.stack);
@@ -2711,7 +2848,6 @@
                                 allowTaint: true
                             }).then(canvas => {
                                 const imageData = canvas.toDataURL('image/png', 1.0);
-                                savePhotos(imageData);
                                 updateModal(imageData);
                             }).catch(fallbackError => {
                                 console.error('Fallback preview generation failed:',
@@ -2798,45 +2934,7 @@
         }
 
 
-        function savePhotos(finalImage) {
-            const tokenElement = document.querySelector('meta[name="csrf-token"]');
-            if (!tokenElement) {
-                console.error('CSRF token not found');
-                return;
-            }
 
-            const token = tokenElement.getAttribute('content');
-
-            fetch('/savePhoto', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': token
-                    },
-                    body: JSON.stringify({
-                        photos: getAllPhotoData(),
-                        frame_id: frameId,
-                        final_image: finalImage
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        console.log('Photo saved successfully');
-                        if (data.download_url) {
-                            photoStripImage = data.download_url;
-                        }
-                        console.log('Frame used count:', data.frame_info.used);
-                    } else {
-                        console.error('Error saving photos:', data.message);
-                        alert('Failed to save photos');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Failed to save photos');
-                });
-        }
 
         function processUploadedPhoto(file, slotIndex) {
             console.log('Processing uploaded photo:', file ? file.name : 'none', 'Slot:', slotIndex);
@@ -3300,56 +3398,71 @@
             if (testimoniModal) {
                 testimoniModal.style.display = 'flex';
                 hasShownTestimoniModal = true;
+
+                // Welcome message outside modal
+                setTimeout(() => {
+                    showCustomAlert('Silakan berikan rating dan testimoni Anda! 😊', 'info', 3000);
+                }, 800);
             }
         }
 
         function closeTestimoniModal() {
             if (testimoniModal) {
                 testimoniModal.style.display = 'none';
+                // Remove any existing alerts
+                const alerts = document.querySelectorAll('.custom-alert');
+                alerts.forEach(alert => alert.remove());
             }
         }
 
         function submitTestimoniData() {
+            // Validasi rating
             if (selectedRating === 0) {
-                alert('Mohon berikan rating terlebih dahulu! ⭐');
+                showCustomAlert('Mohon berikan rating terlebih dahulu! ⭐', 'warning');
+                starRating.classList.add('animate-pulse');
+                setTimeout(() => starRating.classList.remove('animate-pulse'), 2000);
                 return;
             }
 
-            const name = testimoniName ? testimoniName.value.trim() : '';
-            if (!name || name.length < 2) {
-                alert('Mohon masukkan nama Anda (minimal 2 karakter)! 👤');
+            // Validasi nama
+            const name = testimoniName.value.trim();
+            if (name.length < 2) {
+                showCustomAlert('Mohon masukkan nama Anda (minimal 2 karakter)! 👤', 'error');
                 testimoniName.focus();
                 return;
             }
 
-            const message = testimoniMessage ? testimoniMessage.value.trim() : '';
-            if (!message || message.length < 10) {
-                alert('Mohon tuliskan testimoni Anda (minimal 10 karakter)! 💬');
+            // Validasi pesan
+            const message = testimoniMessage.value.trim();
+            if (message.length < 10) {
+                showCustomAlert('Mohon tuliskan testimoni Anda (minimal 10 karakter)! 💬', 'error');
                 testimoniMessage.focus();
                 return;
             }
 
+            // Validasi emoji
             if (!selectedEmoji) {
-                alert('Mohon pilih emoji yang sesuai dengan pengalaman Anda! 😊');
+                showCustomAlert('Mohon pilih emoji yang sesuai dengan pengalaman Anda! 😊', 'warning');
+                emojiSelector.classList.add('animate-pulse');
+                setTimeout(() => emojiSelector.classList.remove('animate-pulse'), 2000);
                 return;
             }
 
-            const tokenElement = document.querySelector('meta[name="csrf-token"]');
-            if (!tokenElement) {
-                console.error('CSRF token not found');
-                alert('Terjadi kesalahan sistem. Silakan refresh halaman.');
+            // Dapatkan CSRF token
+            const token = document.querySelector('meta[name="csrf-token"]')?.content;
+            if (!token) {
+                showCustomAlert('Terjadi kesalahan sistem. Silakan refresh halaman.', 'error');
                 return;
             }
 
-            const token = tokenElement.getAttribute('content');
+            // Tampilkan loading
             const submitButton = document.getElementById('submitTestimoni');
+            const originalButtonText = submitButton.innerHTML;
+            submitButton.disabled = true;
+            submitButton.innerHTML =
+                '<span class="inline-flex items-center"><svg class="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Mengirim...</span>';
 
-            if (submitButton) {
-                submitButton.disabled = true;
-                submitButton.textContent = 'Mengirim...';
-                submitButton.classList.add('opacity-50');
-            }
-
+            // Kirim data
             fetch('/submitTestimoni', {
                     method: 'POST',
                     headers: {
@@ -3372,23 +3485,25 @@
                 })
                 .then(data => {
                     if (data.success) {
-                        alert('Terima kasih atas testimoni Anda! 🙏✨');
+                        showCustomAlert('Terima kasih atas testimoni Anda! 🙏✨', 'success', 5000);
                         closeTestimoniModal();
                         resetTestimoniForm();
+
+                        // Tampilkan alert terima kasih tambahan
+                        setTimeout(() => {
+                            showCustomAlert('Kami sangat menghargai masukan Anda! 😊', 'success', 3000);
+                        }, 1500);
                     } else {
-                        alert(data.message || 'Gagal mengirim testimoni. Silakan coba lagi.');
+                        showCustomAlert(data.message || 'Gagal mengirim testimoni. Silakan coba lagi.', 'error');
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('Terjadi kesalahan saat mengirim testimoni. Silakan coba lagi. 🔄');
+                    showCustomAlert('Terjadi kesalahan saat mengirim testimoni. Silakan coba lagi. 🔄', 'error');
                 })
                 .finally(() => {
-                    if (submitButton) {
-                        submitButton.disabled = false;
-                        submitButton.textContent = 'Kirim Testimoni';
-                        submitButton.classList.remove('opacity-50');
-                    }
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = originalButtonText;
                 });
         }
 
@@ -3400,14 +3515,15 @@
             const messageInput = document.getElementById('testimoniMessage');
             const messageCounter = document.getElementById('messageCounter');
 
+            // Reset form fields with visual feedback
             if (nameInput) {
                 nameInput.value = '';
-                nameInput.classList.remove('error-input', 'valid-input');
+                nameInput.classList.remove('border-red-500', 'bg-red-50', 'border-green-500', 'bg-green-50');
             }
 
             if (messageInput) {
                 messageInput.value = '';
-                messageInput.classList.remove('error-input', 'valid-input');
+                messageInput.classList.remove('border-red-500', 'bg-red-50', 'border-green-500', 'bg-green-50');
             }
 
             if (messageCounter) {
@@ -3415,14 +3531,49 @@
                 messageCounter.style.color = '#6b7280';
             }
 
+            // Reset stars
             const stars = starRating?.querySelectorAll('.star');
             if (stars) {
                 stars.forEach(star => star.classList.remove('active'));
             }
 
+            // Reset emojis
             const emojis = emojiSelector?.querySelectorAll('.emoji-option');
             if (emojis) {
                 emojis.forEach(emoji => emoji.classList.remove('selected'));
+            }
+        }
+
+        // Enhanced real-time validation
+        function setupRealTimeValidation() {
+            const nameInput = document.getElementById('testimoniName');
+            const messageInput = document.getElementById('testimoniMessage');
+            const messageCounter = document.getElementById('messageCounter');
+
+            if (nameInput) {
+                nameInput.addEventListener('input', function() {
+                    validateField(this, 2, 'Nama');
+                });
+            }
+
+            if (messageInput) {
+                messageInput.addEventListener('input', function() {
+                    validateField(this, 10, 'Testimoni');
+
+                    // Update counter
+                    if (messageCounter) {
+                        const count = this.value.length;
+                        messageCounter.textContent = `${count}/500`;
+
+                        if (count < 10) {
+                            messageCounter.style.color = '#ef4444';
+                        } else if (count > 450) {
+                            messageCounter.style.color = '#f59e0b';
+                        } else {
+                            messageCounter.style.color = '#10b981';
+                        }
+                    }
+                });
             }
         }
 
@@ -3432,7 +3583,11 @@
             }
 
             if (skipTestimoni) {
-                skipTestimoni.addEventListener('click', closeTestimoniModal);
+                skipTestimoni.addEventListener('click', () => {
+                    showCustomAlert('Testimoni dilewati. Terima kasih sudah menggunakan photo booth! 👋', 'info',
+                        3000);
+                    closeTestimoniModal();
+                });
             }
 
             if (submitTestimoni) {
@@ -4302,6 +4457,67 @@
             }
         }
 
+        function getCurrentPaymentStatus() {
+            try {
+                const pendingPaymentLS = localStorage.getItem('pendingPayment');
+                const paymentData = JSON.parse(pendingPaymentLS || '{}');
+                return paymentData.status || null;
+            } catch (error) {
+                console.error('Error getting payment status:', error);
+                return null;
+            }
+        }
+
+        function notifyServerPhotoDownloaded() {
+            try {
+                const tokenElement = document.querySelector('meta[name="csrf-token"]');
+                if (!tokenElement) {
+                    console.error('CSRF token not found');
+                    return;
+                }
+
+                const token = tokenElement.getAttribute('content');
+                const frameId = document.getElementById('frameId').value;
+                const orderId = new URLSearchParams(window.location.search).get('order_id');
+
+                if (!frameId || !orderId) {
+                    console.error('Missing frame_id or order_id');
+                    return;
+                }
+
+                fetch('/notify-download', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': token
+                        },
+                        body: JSON.stringify({
+                            frame_id: frameId,
+                            order_id: orderId,
+                            status: 'downloaded'
+                        })
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            console.log('Server notified of download');
+                        } else {
+                            console.error('Server notification failed:', data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error notifying server:', error);
+                    });
+            } catch (error) {
+                console.error('Error in notifyServerPhotoDownloaded:', error);
+            }
+        }
+
         // Setup event listeners untuk modal langkah-langkah
         function setupWelcomeModalListeners() {
             const welcomeModal = document.getElementById('welcomeModal');
@@ -4342,6 +4558,109 @@
                         closeWelcomeModal();
                     }
                 });
+            }
+        }
+
+        function showCustomAlert(message, type = 'info', duration = 4000) {
+            // Remove existing alerts
+            const existingAlerts = document.querySelectorAll('.custom-alert');
+            existingAlerts.forEach(alert => alert.remove());
+
+            // Create alert element
+            const alertDiv = document.createElement('div');
+            alertDiv.className =
+                `custom-alert fixed top-4 left-1/2 transform -translate-x-1/2 z-[70] px-6 py-4 rounded-xl shadow-2xl max-w-md w-[90%] transition-all duration-300 ease-in-out`;
+
+            // Set alert styles based on type with more vibrant colors
+            switch (type) {
+                case 'success':
+                    alertDiv.className +=
+                        ' bg-gradient-to-r from-green-500 to-green-600 text-white border-l-4 border-green-700';
+                    break;
+                case 'error':
+                    alertDiv.className += ' bg-gradient-to-r from-red-500 to-red-600 text-white border-l-4 border-red-700';
+                    break;
+                case 'warning':
+                    alertDiv.className +=
+                        ' bg-gradient-to-r from-yellow-500 to-yellow-600 text-white border-l-4 border-yellow-700';
+                    break;
+                default:
+                    alertDiv.className +=
+                        ' bg-gradient-to-r from-blue-500 to-blue-600 text-white border-l-4 border-blue-700';
+            }
+
+            // Alert content with better styling
+            alertDiv.innerHTML = `
+        <div class="flex items-center justify-between">
+            <div class="flex items-center">
+                <span class="text-2xl mr-3 animate-bounce">${getAlertIcon(type)}</span>
+                <span class="font-semibold text-sm">${message}</span>
+            </div>
+        </div>
+    `;
+
+            // Add to page - ensure it's outside modal
+            document.body.appendChild(alertDiv);
+
+            // Initial state for animation
+            alertDiv.style.transform = 'translateX(-50%) translateY(-100%)';
+            alertDiv.style.opacity = '0';
+
+            // Animate in
+            setTimeout(() => {
+                alertDiv.style.transform = 'translateX(-50%) translateY(0)';
+                alertDiv.style.opacity = '1';
+            }, 100);
+
+            // Auto remove after duration
+            setTimeout(() => {
+                if (alertDiv.parentElement) {
+                    alertDiv.style.transform = 'translateX(-50%) translateY(-100%)';
+                    alertDiv.style.opacity = '0';
+                    setTimeout(() => alertDiv.remove(), 300);
+                }
+            }, duration);
+        }
+
+        function getAlertIcon(type) {
+            switch (type) {
+                case 'success':
+                    return '✅';
+                case 'error':
+                    return '❌';
+                case 'warning':
+                    return '⚠️';
+                default:
+                    return 'ℹ️';
+            }
+        }
+
+        // Simplified validation alerts - all outside modal
+        function showValidationAlert(message, type = 'error', focusElement = null) {
+            showCustomAlert(message, type, 4000);
+
+            // Focus on problematic element if provided
+            if (focusElement) {
+                setTimeout(() => {
+                    focusElement.focus();
+                    focusElement.classList.add('animate-pulse');
+                    setTimeout(() => focusElement.classList.remove('animate-pulse'), 2000);
+                }, 500);
+            }
+        }
+
+        // Enhanced form validation with visual feedback
+        function validateField(field, minLength, fieldName) {
+            const value = field.value.trim();
+
+            if (!value || value.length < minLength) {
+                field.classList.add('border-red-500', 'bg-red-50');
+                field.classList.remove('border-green-500', 'bg-green-50');
+                return false;
+            } else {
+                field.classList.add('border-green-500', 'bg-green-50');
+                field.classList.remove('border-red-500', 'bg-red-50');
+                return true;
             }
         }
     </script>

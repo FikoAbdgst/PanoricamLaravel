@@ -16,7 +16,9 @@ class PaymentController extends Controller
         try {
             $request->validate([
                 'frame_id' => 'required|exists:frames,id',
-                'email' => 'nullable|email',
+                'customer_name' => 'required|string|max:255',
+                'whatsapp_number' => 'nullable|string|max:20', // Changed to nullable
+                'payment_method' => 'required|in:bank_transfer,qris',
                 'payment_proof' => 'required|image|mimes:jpeg,png,jpg|max:2048'
             ]);
 
@@ -37,22 +39,23 @@ class PaymentController extends Controller
             $transaction = Transaction::create([
                 'order_id' => $orderId,
                 'frame_id' => $frame->id,
-                'email' => $request->email,
+                'customer_name' => $request->customer_name,
+                'whatsapp_number' => $request->whatsapp_number, // Will be null if not provided
+                'payment_method' => $request->payment_method,
                 'amount' => $frame->price,
                 'payment_proof' => $paymentProofPath,
                 'status' => 'pending'
             ]);
 
-            // Send email if provided
-            if ($request->email) {
-                // Implement email sending logic here
-                // Mail::send(...);
-            }
+            // Get payment method name for response
+            $paymentMethodName = $request->payment_method == 'bank_transfer' ? 'E-Wallet' : 'QRIS';
 
             return response()->json([
                 'success' => true,
-                'message' => 'Pembayaran berhasil disubmit. Menunggu konfirmasi admin.',
-                'order_id' => $orderId
+                'message' => 'Pembayaran berhasil disubmit melalui ' . $paymentMethodName . '. Menunggu konfirmasi admin.',
+                'order_id' => $orderId,
+                'payment_method' => $paymentMethodName,
+                'customer_name' => $request->customer_name
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
