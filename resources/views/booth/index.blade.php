@@ -534,10 +534,9 @@
         #recropImage {
             max-width: 100%;
             max-height: 100%;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+            display: block;
+            /* Pertahankan efek mirror jika ada */
+            transform: none !important;
         }
 
         #recropControls {
@@ -2393,9 +2392,31 @@
             const outputWidth = 800;
             const outputHeight = outputWidth / targetAspectRatio;
 
+            // Canvas untuk foto hasil crop
             canvas.width = outputWidth;
             canvas.height = outputHeight;
 
+            // Canvas untuk foto asli (dengan efek mirror dan filter)
+            const originalCanvas = document.createElement('canvas');
+            originalCanvas.width = video.videoWidth;
+            originalCanvas.height = video.videoHeight;
+            const originalCtx = originalCanvas.getContext('2d');
+
+            // Terapkan mirror dan filter ke foto asli
+            if (isMirrored) {
+                originalCtx.translate(originalCanvas.width, 0);
+                originalCtx.scale(-1, 1);
+            }
+            originalCtx.filter = getComputedStyle(video).filter;
+            if (isFlashEnabled) {
+                originalCtx.filter = `${originalCtx.filter} brightness(1.2)`;
+            }
+            originalCtx.drawImage(video, 0, 0);
+
+            // Simpan foto asli dengan efek
+            originalCapturedPhotos[currentPhotoIndex] = originalCanvas.toDataURL('image/png');
+
+            // Proses untuk foto hasil crop
             ctx.save();
             if (isMirrored) {
                 ctx.translate(canvas.width, 0);
@@ -2407,15 +2428,6 @@
             }
             ctx.drawImage(video, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, canvas.width, canvas.height);
             ctx.restore();
-
-            // Simpan foto asli dari kamera sebelum di-crop
-            const originalCanvas = document.createElement('canvas');
-            originalCanvas.width = video.videoWidth;
-            originalCanvas.height = video.videoHeight;
-            const originalCtx = originalCanvas.getContext('2d');
-            originalCtx.drawImage(video, 0, 0);
-            const originalDataUrl = originalCanvas.toDataURL('image/png');
-            originalCapturedPhotos[currentPhotoIndex] = originalDataUrl;
 
             const dataUrl = canvas.toDataURL('image/png', 0.9);
             const success = setPhotoToSlot(dataUrl, currentPhotoIndex);
@@ -5015,7 +5027,7 @@
 
             recropModal.style.display = 'flex';
 
-            // Prioritaskan foto asli dari kamera, lalu dari upload, terakhir dari slot
+            // Gunakan foto asli dengan efek yang sudah diterapkan
             recropImage.src = originalCapturedPhotos[index] || originalPhotos[index] || photoSlots[index].src;
 
             recropImage.onload = function() {
@@ -5027,12 +5039,16 @@
                 const slotRect = photoSlot.getBoundingClientRect();
                 const targetAspectRatio = slotRect.width / slotRect.height;
 
+                // Buat cropper dengan orientasi yang sesuai
                 cropper = new Cropper(recropImage, {
                     aspectRatio: targetAspectRatio,
                     viewMode: 1,
                     autoCropArea: 0.8,
                     responsive: true,
-                    guides: false
+                    guides: false,
+                    // Pertahankan orientasi asli (tidak perlu mirror lagi karena sudah diterapkan)
+                    scalable: false,
+                    zoomable: false
                 });
             };
 
