@@ -9,10 +9,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
         integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
+
 
 <body class="m-0 font-['Poppins'] bg-[#FEF3E2] flex flex-col items-center relative min-h-screen">
     <a href="{{ route('frametemp') }}"
@@ -416,11 +419,156 @@
             </div>
         </div>
     </div>
+    <div id="recropModal"
+        class="hidden fixed z-[100] inset-0 bg-black bg-opacity-70 flex justify-center items-center">
+        <div id="recropModalContent" class="bg-white rounded-lg p-6 w-full max-w-md">
+            <h3 class="text-xl font-bold mb-4">Recrop Your Photo</h3>
+            <div id="recropImageContainer" class="w-full h-64 mb-4 bg-gray-100">
+                <img id="recropImage" src="" alt="Photo to recrop" class="max-w-full max-h-full">
+            </div>
+            <div id="recropControls" class="space-y-4">
 
+                <div class="flex justify-end space-x-2">
+                    <button id="recropCancelBtn" class="px-4 py-2 bg-gray-500 text-white rounded">Cancel</button>
+                    <button id="recropConfirmBtn" class="px-4 py-2 bg-blue-500 text-white rounded">Crop & Use
+                        Photo</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Tambahkan ini di bagian modal lainnya -->
+    <div id="cropModal" class="hidden fixed z-[100] inset-0 bg-black bg-opacity-70 flex justify-center items-center">
+        <div class="bg-white rounded-lg p-6 w-full max-w-2xl">
+            <h3 class="text-xl font-bold mb-4">Crop Your Photo</h3>
+            <div class="w-full h-96 mb-4 bg-gray-100">
+                <img id="cropImage" src="" alt="Photo to crop" class="max-w-full max-h-full">
+            </div>
+            <div class="flex justify-end space-x-2">
+                <button id="cropCancelBtn" class="px-4 py-2 bg-gray-500 text-white rounded">Cancel</button>
+                <button id="cropConfirmBtn" class="px-4 py-2 bg-blue-500 text-white rounded">Crop & Use Photo</button>
+            </div>
+        </div>
+    </div>
     <input type="hidden" id="frameId" value="{{ $frame->id }}">
     <input type="hidden" id="frameIsPaid" value="{{ $frame->isFree() ? 'false' : 'true' }}">
 
     <style>
+        .recrop-button {
+            position: absolute;
+            top: 45px;
+            right: 30px;
+            background-color: transparent;
+            color: white;
+            border: none;
+            padding: 8px;
+            border-radius: 50%;
+            font-size: 40px;
+            cursor: pointer;
+            z-index: 30;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transform: scale(0.8);
+            transition: all 0.3s ease;
+            pointer-events: none;
+        }
+
+        [data-has-photo="true"] .recrop-button {
+            display: flex !important;
+            opacity: 1 !important;
+            pointer-events: auto !important;
+        }
+
+        [data-has-photo="true"]:hover .recrop-button {
+            opacity: 1;
+            visibility: visible;
+            transform: scale(1);
+            pointer-events: auto;
+        }
+
+        [data-has-photo="false"] .recrop-button {
+            display: none !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+
+        /* Modal untuk recrop */
+        #recropModal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            /* Pastikan lebih tinggi dari elemen lain */
+            display: none;
+            /* Awalnya tersembunyi */
+            justify-content: center;
+            align-items: center;
+        }
+
+        #recropModalContent {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        #recropImageContainer {
+            width: 100%;
+            height: 300px;
+            margin: 15px 0;
+            position: relative;
+            overflow: hidden;
+            background-color: #f0f0f0;
+        }
+
+        #recropImage {
+            max-width: 100%;
+            max-height: 100%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        #recropControls {
+            margin: 15px 0;
+        }
+
+        #recropRatioSelect {
+            padding: 8px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            width: 100%;
+        }
+
+        .recrop-btn {
+            padding: 8px 15px;
+            margin: 0 5px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+        }
+
+        #recropCancelBtn {
+            background-color: #BF3131;
+            color: white;
+        }
+
+        #recropConfirmBtn {
+            background-color: #4CAF50;
+            color: white;
+        }
+
         .custom-alert {
             animation: slideInDown 0.4s ease-out;
             backdrop-filter: blur(10px);
@@ -1394,10 +1542,47 @@
         #flash-overlay.active {
             opacity: 1;
         }
+
+        #cropModal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #cropModal>div {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        #cropImage {
+            max-width: 100%;
+            max-height: 400px;
+            display: block;
+            margin: 0 auto;
+        }
     </style>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script>
+        let cropper = null;
+        let currentRecropIndex = null;
+        let originalImageData = null;
+        let originalPhotos = {}; // Untuk menyimpan foto asli sebelum di-crop
+        let currentCroppedImages = {}; // Untuk menyimpan foto yang sudah di-crop
+        let originalCapturedPhotos = {}; // Untuk menyimpan foto asli dari kamera sebelum di-crop
+        let cropSlotIndex = null;
         let photoSlots = document.querySelectorAll('#photo1, #photo2, #photo3');
         let video = document.getElementById('video');
         let captureButton = document.getElementById('captureButton');
@@ -1831,6 +2016,24 @@
                 showWelcomeModal();
             }, 500);
 
+            if (typeof Cropper === 'undefined') {
+                const cropperScript = document.createElement('script');
+                cropperScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js';
+                cropperScript.onload = function() {
+                    const cropperCSS = document.createElement('link');
+                    cropperCSS.rel = 'stylesheet';
+                    cropperCSS.href = 'https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css';
+                    document.head.appendChild(cropperCSS);
+
+                    setupRecropButtons();
+                    setupRecropEventListeners();
+                };
+                document.head.appendChild(cropperScript);
+            } else {
+                setupRecropButtons();
+                setupRecropEventListeners();
+            }
+
             const frameIsPaidElement = document.getElementById('frameIsPaid');
 
             if (!frameIsPaidElement) {
@@ -2205,6 +2408,15 @@
             ctx.drawImage(video, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, canvas.width, canvas.height);
             ctx.restore();
 
+            // Simpan foto asli dari kamera sebelum di-crop
+            const originalCanvas = document.createElement('canvas');
+            originalCanvas.width = video.videoWidth;
+            originalCanvas.height = video.videoHeight;
+            const originalCtx = originalCanvas.getContext('2d');
+            originalCtx.drawImage(video, 0, 0);
+            const originalDataUrl = originalCanvas.toDataURL('image/png');
+            originalCapturedPhotos[currentPhotoIndex] = originalDataUrl;
+
             const dataUrl = canvas.toDataURL('image/png', 0.9);
             const success = setPhotoToSlot(dataUrl, currentPhotoIndex);
             if (!success) {
@@ -2384,6 +2596,10 @@
                 slot.removeAttribute('data-loaded');
                 slot.style.display = 'block';
                 slot.style.zIndex = '1';
+
+                // Hapus foto asli dan hasil crop
+                delete originalPhotos[index];
+                delete currentCroppedImages[index];
 
                 // Tampilkan kembali overlay
                 const overlay = document.querySelector(`.photo-overlay[data-slot="${index}"]`);
@@ -2602,6 +2818,9 @@
 
             photoSlots.forEach((photo, index) => {
                 clearPhotoSlot(index);
+                delete originalPhotos[index];
+                delete originalCapturedPhotos[index];
+                delete currentCroppedImages[index];
             });
 
             if (timerDisplay) timerDisplay.textContent = "";
@@ -2618,6 +2837,41 @@
             if (modal) modal.style.display = 'none';
 
             console.log('All photos reset');
+        }
+
+        function clearPhotoSlot(index) {
+            if (index < 0 || index >= photoSlots.length) return;
+
+            const slot = photoSlots[index];
+            if (slot) {
+                slot.src = '';
+                slot.removeAttribute('data-loaded');
+                slot.style.display = 'block';
+                slot.style.zIndex = '1';
+
+                // Hapus semua versi foto
+                delete originalPhotos[index];
+                delete originalCapturedPhotos[index];
+                delete currentCroppedImages[index];
+
+                // Tampilkan kembali overlay
+                const overlay = document.querySelector(`.photo-overlay[data-slot="${index}"]`);
+                if (overlay) {
+                    overlay.classList.remove('hidden');
+                }
+
+                // Update parent container
+                const container = slot.closest('[data-photo-index]');
+                if (container) {
+                    container.setAttribute('data-has-photo', 'false');
+                }
+
+                // Update retake button state
+                updateRetakeButtonsState();
+
+                // Update capture button after photo is cleared
+                updateCaptureButton();
+            }
         }
 
         function getAllPhotoData() {
@@ -2949,62 +3203,7 @@
 
             const reader = new FileReader();
             reader.onload = function(e) {
-                const img = new Image();
-                img.onload = function() {
-                    const photoSlot = photoSlots[slotIndex];
-                    if (!photoSlot) {
-                        console.error('Photo slot not found');
-                        return;
-                    }
-
-                    const slotRect = photoSlot.getBoundingClientRect();
-                    const targetAspectRatio = slotRect.width / slotRect.height;
-                    const imageAspectRatio = img.width / img.height;
-
-                    let sourceWidth = img.width;
-                    let sourceHeight = img.height;
-                    let sourceX = 0;
-                    let sourceY = 0;
-
-                    if (imageAspectRatio > targetAspectRatio) {
-                        sourceWidth = img.height * targetAspectRatio;
-                        sourceX = (img.width - sourceWidth) / 2;
-                    } else {
-                        sourceHeight = img.width / targetAspectRatio;
-                        sourceY = (img.height - sourceHeight) / 2;
-                    }
-
-                    const outputWidth = 800;
-                    const outputHeight = outputWidth / targetAspectRatio;
-
-                    const uploadCanvas = document.createElement('canvas');
-                    const uploadCtx = uploadCanvas.getContext('2d');
-                    uploadCanvas.width = outputWidth;
-                    uploadCanvas.height = outputHeight;
-
-                    uploadCtx.filter = filterSelect ? filterSelect.value : 'none';
-                    uploadCtx.drawImage(
-                        img,
-                        sourceX, sourceY, sourceWidth, sourceHeight,
-                        0, 0, uploadCanvas.width, uploadCanvas.height
-                    );
-
-                    const dataUrl = uploadCanvas.toDataURL('image/png', 0.9);
-
-                    // Use setPhotoToSlot which will automatically update capture button
-                    const success = setPhotoToSlot(dataUrl, slotIndex);
-                    if (success) {
-                        console.log('Uploaded photo successfully set to slot', slotIndex);
-                        // setPhotoToSlot already calls updateCaptureButton via its onload handler
-                    } else {
-                        console.error('Failed to set uploaded photo to slot', slotIndex);
-                    }
-                };
-                img.onerror = function() {
-                    console.error('Failed to load uploaded image');
-                    alert('Failed to load the uploaded image. Please try again.');
-                };
-                img.src = e.target.result;
+                showCropModal(e.target.result, slotIndex);
             };
             reader.onerror = function() {
                 console.error('Failed to read uploaded file');
@@ -3013,29 +3212,141 @@
             reader.readAsDataURL(file);
         }
 
+        function showCropModal(imageData, slotIndex) {
+            cropSlotIndex = slotIndex;
+            const cropModal = document.getElementById('cropModal');
+            const cropImage = document.getElementById('cropImage');
+
+            // Simpan foto asli jika belum ada
+            if (!originalPhotos[slotIndex]) {
+                originalPhotos[slotIndex] = imageData;
+            }
+
+            cropModal.style.display = 'flex';
+
+            // Gunakan foto asli untuk recrop
+            cropImage.src = originalPhotos[slotIndex];
+
+            cropImage.onload = function() {
+                if (cropper) {
+                    cropper.destroy();
+                }
+
+                const photoSlot = photoSlots[slotIndex];
+                const slotRect = photoSlot.getBoundingClientRect();
+                const targetAspectRatio = slotRect.width / slotRect.height;
+
+                cropper = new Cropper(cropImage, {
+                    aspectRatio: targetAspectRatio,
+                    viewMode: 1,
+                    autoCropArea: 0.8,
+                    responsive: true,
+                    guides: false
+                });
+            };
+
+            cropImage.onerror = function() {
+                console.error('Failed to load image for cropping');
+                closeCropModal();
+            };
+        }
+
+        function confirmCrop() {
+            if (!cropper || cropSlotIndex === null) {
+                console.error('Cropper not initialized or no index selected');
+                return;
+            }
+
+            try {
+                const canvas = cropper.getCroppedCanvas({
+                    width: 800,
+                    height: 600,
+                    minWidth: 256,
+                    minHeight: 256,
+                    maxWidth: 1200,
+                    maxHeight: 1200,
+                    fillColor: '#fff',
+                    imageSmoothingEnabled: true,
+                    imageSmoothingQuality: 'high',
+                });
+
+                if (!canvas) {
+                    throw new Error('Failed to get cropped canvas');
+                }
+
+                const dataUrl = canvas.toDataURL('image/png', 0.9);
+
+                // Simpan hasil crop
+                currentCroppedImages[cropSlotIndex] = dataUrl;
+
+                // Update photo slot dengan hasil crop
+                const success = setPhotoToSlot(dataUrl, cropSlotIndex);
+                if (success) {
+                    console.log('Cropped photo successfully set to slot', cropSlotIndex);
+                } else {
+                    console.error('Failed to set cropped photo to slot', cropSlotIndex);
+                }
+
+                closeCropModal();
+            } catch (error) {
+                console.error('Error in confirmCrop:', error);
+                alert('Failed to crop image. Please try again.');
+            }
+        }
+
+        function closeCropModal() {
+            const cropModal = document.getElementById('cropModal');
+            if (cropModal) {
+                cropModal.style.display = 'none';
+            }
+
+            if (cropper) {
+                cropper.destroy();
+                cropper = null;
+            }
+
+            cropSlotIndex = null;
+        }
+
+        function setupCropEventListeners() {
+            const cropModal = document.getElementById('cropModal');
+            if (!cropModal) return;
+
+            document.getElementById('cropCancelBtn').addEventListener('click', closeCropModal);
+            document.getElementById('cropConfirmBtn').addEventListener('click', confirmCrop);
+
+            cropModal.addEventListener('click', function(e) {
+                if (e.target === cropModal) {
+                    closeCropModal();
+                }
+            });
+        }
+
         function updateRetakeButtonsState() {
-            retakeButtons = document.querySelectorAll('.retake-button');
+            const retakeButtons = document.querySelectorAll('.retake-button');
+            const recropButtons = document.querySelectorAll('.recrop-button');
             photoSlots = document.querySelectorAll('#photo1, #photo2, #photo3');
 
-            retakeButtons.forEach((button, index) => {
-                if (index >= photoSlots.length) return;
-
-                const slot = photoSlots[index];
+            photoSlots.forEach((slot, index) => {
                 const hasPhoto = !isPhotoSlotEmpty(slot);
 
-                // Update data attributes
-                button.setAttribute('data-has-photo', hasPhoto ? 'true' : 'false');
+                // Update retake buttons
+                if (retakeButtons[index]) {
+                    retakeButtons[index].setAttribute('data-has-photo', hasPhoto ? 'true' : 'false');
+                }
+
+                // Update recrop buttons
+                if (recropButtons[index]) {
+                    recropButtons[index].setAttribute('data-has-photo', hasPhoto ? 'true' : 'false');
+                }
 
                 // Update parent container
                 const container = slot.closest('[data-photo-index]');
                 if (container) {
                     container.setAttribute('data-has-photo', hasPhoto ? 'true' : 'false');
                 }
-                // Button akan hidden/shown via CSS hover, tidak perlu JavaScript
-                button.style.display = 'flex';
             });
 
-            // Update capture button and check if all photos taken
             updateCaptureButton();
             checkAllPhotosTaken();
         }
@@ -3193,6 +3504,9 @@
                 setupResetButtonListener();
                 setupWelcomeModalListeners(); // Tambahkan ini
                 showWelcomeModal(); // Tambahkan ini
+                setupRecropButtons();
+                setupRecropEventListeners();
+                setupCropEventListeners();
 
                 if (captureButton) {
                     captureButton.innerHTML = `
@@ -4674,6 +4988,151 @@
                     sessionEndModal.style.display = 'none';
                     sessionEndModalContent.classList.remove('modal-closing');
                 }, 300);
+            }
+        }
+
+        function setupRecropButtons() {
+            document.addEventListener('click', function(e) {
+                const recropBtn = e.target.closest('.recrop-button');
+                if (recropBtn) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    const index = parseInt(recropBtn.getAttribute('data-index'));
+                    const hasPhoto = recropBtn.getAttribute('data-has-photo') === 'true';
+
+                    if (hasPhoto && !capturing) {
+                        showRecropModal(index);
+                    }
+                }
+            });
+        }
+
+        function showRecropModal(index) {
+            currentRecropIndex = index;
+            const recropModal = document.getElementById('recropModal');
+            const recropImage = document.getElementById('recropImage');
+
+            recropModal.style.display = 'flex';
+
+            // Prioritaskan foto asli dari kamera, lalu dari upload, terakhir dari slot
+            recropImage.src = originalCapturedPhotos[index] || originalPhotos[index] || photoSlots[index].src;
+
+            recropImage.onload = function() {
+                if (cropper) {
+                    cropper.destroy();
+                }
+
+                const photoSlot = photoSlots[index];
+                const slotRect = photoSlot.getBoundingClientRect();
+                const targetAspectRatio = slotRect.width / slotRect.height;
+
+                cropper = new Cropper(recropImage, {
+                    aspectRatio: targetAspectRatio,
+                    viewMode: 1,
+                    autoCropArea: 0.8,
+                    responsive: true,
+                    guides: false
+                });
+            };
+
+            recropImage.onerror = function() {
+                console.error('Failed to load image for cropping');
+                closeRecropModal();
+            };
+        }
+
+        function confirmRecrop() {
+            if (!cropper || currentRecropIndex === null) {
+                console.error('Cropper not initialized or no index selected');
+                return;
+            }
+
+            try {
+                const canvas = cropper.getCroppedCanvas({
+                    width: 480,
+                    height: 308,
+                    minWidth: 256,
+                    minHeight: 256,
+                    maxWidth: 800,
+                    maxHeight: 800,
+                    fillColor: '#fff',
+                    imageSmoothingEnabled: true,
+                    imageSmoothingQuality: 'high',
+                });
+
+                if (!canvas) {
+                    throw new Error('Failed to get cropped canvas');
+                }
+
+                const dataUrl = canvas.toDataURL('image/png', 0.9);
+
+                // Simpan gambar yang sudah di-crop
+                currentCroppedImages[currentRecropIndex] = dataUrl;
+
+                // Update photo slot
+                setPhotoToSlot(dataUrl, currentRecropIndex);
+
+                closeRecropModal();
+            } catch (error) {
+                console.error('Error in confirmRecrop:', error);
+                alert('Failed to crop image. Please try again.');
+            }
+        }
+
+        function closeRecropModal() {
+            const recropModal = document.getElementById('recropModal');
+            if (recropModal) {
+                recropModal.style.display = 'none';
+            }
+
+            if (cropper) {
+                cropper.destroy();
+                cropper = null;
+            }
+        }
+
+        function setupRecropEventListeners() {
+            const recropModal = document.getElementById('recropModal');
+            if (!recropModal) return;
+
+            // Hapus event listener lama jika ada
+            document.getElementById('recropCancelBtn')?.removeEventListener('click', closeRecropModal);
+            document.getElementById('recropConfirmBtn')?.removeEventListener('click', confirmRecrop);
+
+            // Tambahkan event listener baru
+            document.getElementById('recropCancelBtn').addEventListener('click', closeRecropModal);
+            document.getElementById('recropConfirmBtn').addEventListener('click', confirmRecrop);
+
+            recropModal.addEventListener('click', function(e) {
+                if (e.target === recropModal) {
+                    closeRecropModal();
+                }
+            });
+
+            const ratioSelect = document.getElementById('recropRatioSelect');
+            if (ratioSelect) {
+                ratioSelect.addEventListener('change', function() {
+                    if (cropper) {
+                        const ratio = this.value.split(':');
+                        cropper.setAspectRatio(ratio[0] / ratio[1]);
+                    }
+                });
+            }
+        }
+
+        // Inisialisasi saat DOM siap
+        document.addEventListener('DOMContentLoaded', function() {
+            setupRecropButtons();
+            setupRecropEventListeners();
+        });
+
+        function resetCrop(index) {
+            delete currentCroppedImages[index];
+            // Jika ingin langsung memperbarui tampilan:
+            const photoSlot = photoSlots[index];
+            if (photoSlot) {
+                photoSlot.src = originalImageData;
             }
         }
     </script>

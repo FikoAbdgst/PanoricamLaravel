@@ -36,6 +36,10 @@ class FrameTempController extends Controller
             $selectedCategory = null;
         }
 
+        if ($request->has('free') && $request->free == 'true') {
+            $query->where('price', 0);
+        }
+
         $sortRating = $request->query('sort_rating');
         $sortPopular = $request->query('sort_popular');
 

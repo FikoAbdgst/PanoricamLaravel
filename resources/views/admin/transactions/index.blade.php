@@ -315,16 +315,6 @@
                                         class="flex-1 bg-blue-100 hover:bg-blue-200 text-blue-700 font-medium py-2 px-3 rounded-lg text-sm transition-colors">
                                         Detail
                                     </button>
-                                    @if ($transaction->status == 'pending')
-                                        <button onclick="approveTransaction({{ $transaction->id }})"
-                                            class="bg-green-100 hover:bg-green-200 text-green-700 px-3 py-2 rounded-lg text-sm font-medium">
-                                            ✅
-                                        </button>
-                                        <button onclick="rejectTransaction({{ $transaction->id }})"
-                                            class="bg-red-100 hover:bg-red-200 text-red-700 px-3 py-2 rounded-lg text-sm font-medium">
-                                            ❌
-                                        </button>
-                                    @endif
                                 </div>
                             </div>
                         </div>

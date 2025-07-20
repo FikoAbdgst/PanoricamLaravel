@@ -628,16 +628,16 @@
                         
                         <!-- Frame info -->
                         ${testimoni.frame ? `
-                                                                                    <div class="frame-info-badge" onclick="handleFrameClickSimple(${testimoni.frame.id})">
-                                                                                        <div class="flex items-center justify-center space-x-2">
-                                                                                            <i class="fas fa-image frame-icon text-[#BF3131] transition-colors duration-300"></i>
-                                                                                            <span class="text-sm font-semibold frame-text text-gray-700 transition-colors duration-300">
-                                                                                                Frame: ${testimoni.frame.name}
-                                                                                            </span>
-                                                                                            <i class="fas fa-check-circle frame-check text-green-500 text-sm transition-colors duration-300"></i>
-                                                                                        </div>
-                                                                                    </div>
-                                                                                ` : ''}
+                                                                                            <div class="frame-info-badge" onclick="handleFrameClickSimple(${testimoni.frame.id})">
+                                                                                                <div class="flex items-center justify-center space-x-2">
+                                                                                                    <i class="fas fa-image frame-icon text-[#BF3131] transition-colors duration-300"></i>
+                                                                                                    <span class="text-sm font-semibold frame-text text-gray-700 transition-colors duration-300">
+                                                                                                        Frame: ${testimoni.frame.name}
+                                                                                                    </span>
+                                                                                                    <i class="fas fa-check-circle frame-check text-green-500 text-sm transition-colors duration-300"></i>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        ` : ''}
                     </div>
                 </div>
             `;
@@ -718,7 +718,7 @@
                     framePrice = testimoni.frame.price;
                     // Prepend base URL to image_path, or use placeholder if image_path is missing
                     frameImageUrl = testimoni.frame.image_path ?
-                        `http://127.0.0.1:8000/storage/${testimoni.frame.image_path}` :
+                        `http://app.panoricam.fun/storage/${testimoni.frame.image_path}` :
                         'https://via.placeholder.com/60x60/BF3131/FFFFFF?text=Frame';
                 } else {
                     // Jika tidak ketemu di testimoni, ambil dari modal display
@@ -735,6 +735,7 @@
                 // Simpan data pembayaran ke localStorage
                 const paymentData = {
                     frame_id: currentFrameId,
+                    frame_name: testimoni ? testimoni.frame.name : 'Unknown Frame',
                     price: framePrice,
                     frame_image: frameImageUrl,
                     timestamp: Date.now()

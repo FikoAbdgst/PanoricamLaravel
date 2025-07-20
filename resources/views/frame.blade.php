@@ -99,6 +99,23 @@
             transition-delay: 200ms;
         }
 
+        .hidden-frames {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.5s ease, transform 0.5s ease;
+            transform: translateY(20px);
+        }
+
+        .hidden-frames.show {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        #showMoreBtn:hover {
+            transform: translateY(-2px);
+        }
+
         /* Add more delay classes as needed */
         #acceptModal,
         #rejectModal {
@@ -958,6 +975,44 @@
             }
 
         }
+
+        /* Tambahkan di bagian style */
+        .free-filter-btn,
+        .mobile-free-filter-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid #e5e7eb;
+            background-color: white;
+            color: #6b7280;
+        }
+
+        .free-filter-btn:hover,
+        .mobile-free-filter-btn:hover {
+            background-color: #fff5f5;
+            border-color: #fed7d7;
+            color: #BF3131;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(191, 49, 49, 0.15);
+        }
+
+        .free-filter-btn.active,
+        .mobile-free-filter-btn.active {
+            background-color: #BF3131;
+            border-color: #BF3131;
+            color: white;
+        }
+
+        .free-filter-btn.active svg,
+        .mobile-free-filter-btn.active svg {
+            color: white;
+        }
     </style>
     <div class="py-16 bg-[#FEF3E2] content_section pt-32">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -969,6 +1024,7 @@
                 </h2>
                 <p class="mt-4 text-gray-600 max-w-2xl mx-auto" data-aos="fade-up" data-aos-delay="200">Temukan koleksi
                     frame eksklusif untuk menciptakan kenangan yang tak terlupakan</p>
+                    
             </div>
 
             <!-- Category Selector Section -->
@@ -1082,6 +1138,14 @@
                     </div>
                 </div>
 
+                <a href="{{ route('frametemp', array_merge(request()->except(['free']), ['free' => request('free') ? '' : 'true'])) }}"
+                    class="mobile-free-filter-btn flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 border {{ request('free') ? 'active' : '' }}">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>Gratis</span>
+                </a>
                 <div
                     class="flex items-center justify-center gap-2 bg-gradient-to-r from-[#FEF3E2] to-red-50 px-4 py-3 rounded-lg border border-red-200">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-[#BF3131]" fill="none"
@@ -1153,6 +1217,18 @@
                             </svg>
                             <span>Default</span>
                         </a>
+                        <div class="w-px h-6 bg-gray-300"></div>
+                        <div class="flex items-center gap-1">
+                            <a href="{{ route('frametemp', array_merge(request()->except(['free']), ['free' => request('free') ? '' : 'true'])) }}"
+                                class="free-filter-btn flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium transition-all duration-300 border {{ request('free') ? 'active' : '' }}">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M5 13l4 4L19 7" />
+                                </svg>
+                                <span>Gratis</span>
+                            </a>
+                        </div>
                     </div>
                 </div>
 
@@ -1319,6 +1395,16 @@
                         <p class="mt-3 text-gray-500">Silakan pilih kategori lain atau kembali lagi nanti.</p>
                     </div>
                 @endif
+            </div>
+            <div class="mt-8 text-center">
+                <button id="showMoreBtn"
+                    class="px-6 py-3 bg-gradient-to-r from-[#BF3131] to-[#F16767] text-white rounded-full font-medium hover:from-[#F16767] hover:to-[#BF3131] transition-all duration-300 shadow-md hover:shadow-lg flex items-center justify-center mx-auto">
+                    <span>Show More</span>
+                    <svg id="showMoreIcon" class="w-5 h-5 ml-2 transform transition-transform duration-300"
+                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
             </div>
         </div>
     </div>
@@ -1704,6 +1790,58 @@
     </div>
 </div>
 <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const showMoreBtn = document.getElementById('showMoreBtn');
+        const showMoreIcon = document.getElementById('showMoreIcon');
+        const frameContainer = document.querySelector('.grid.grid-cols-1');
+
+        if (!frameContainer) return;
+
+        // Ambil semua frame
+        const allFrames = Array.from(frameContainer.querySelectorAll('.frame-card'));
+
+        // Jika jumlah frame kurang dari atau sama dengan 8, sembunyikan tombol
+        if (allFrames.length <= 8) {
+            showMoreBtn.style.display = 'none';
+            return;
+        }
+
+        // Sembunyikan frame setelah 8 pertama
+        allFrames.forEach((frame, index) => {
+            if (index >= 8) {
+                frame.classList.add('hidden-frames');
+            }
+        });
+
+        let isExpanded = false;
+
+        showMoreBtn.addEventListener('click', function() {
+            // Toggle state
+            isExpanded = !isExpanded;
+
+            // Update teks dan icon
+            if (isExpanded) {
+                showMoreBtn.querySelector('span').textContent = 'Show Less';
+                showMoreIcon.style.transform = 'rotate(180deg)';
+            } else {
+                showMoreBtn.querySelector('span').textContent = 'Show More';
+                showMoreIcon.style.transform = 'rotate(0deg)';
+            }
+
+            // Tampilkan/sembunyikan frame
+            allFrames.forEach((frame, index) => {
+                if (index >= 8) {
+                    if (isExpanded) {
+                        frame.classList.add('show');
+                    } else {
+                        frame.classList.remove('show');
+                    }
+                }
+            });
+
+
+        });
+    });
     // Update your AOS initialization
     AOS.init({
         duration: 800,
@@ -2235,6 +2373,7 @@
     }
     document.addEventListener('DOMContentLoaded', function() {
         clearDownloadedData();
+        initializeShowMoreButton();
 
         // Validasi dan redirect jika ada pembayaran yang sudah disetujui
         const redirected = validateAndRedirectIfApproved();
@@ -3274,6 +3413,7 @@
         });
 
         initializeToggleFilter();
+        initializeShowMoreButton();
         console.log('All listeners attached successfully');
     }
 
@@ -3324,6 +3464,7 @@
                             window.history.pushState({}, '', url);
                             window.scrollTo(0, scrollPosition);
                             attachAllListeners();
+                            initializeShowMoreButton();
                             if (typeof setupFrameCards === 'function') {
                                 setupFrameCards();
                             }
@@ -3686,6 +3827,63 @@
             });
         }
     });
+
+    function initializeShowMoreButton() {
+        const showMoreBtn = document.getElementById('showMoreBtn');
+        const showMoreIcon = document.getElementById('showMoreIcon');
+        const frameContainer = document.querySelector('.grid.grid-cols-1');
+
+        if (!frameContainer || !showMoreBtn) return;
+
+        // Ambil semua frame
+        const allFrames = Array.from(frameContainer.querySelectorAll('.frame-card'));
+
+        // Jika jumlah frame kurang dari atau sama dengan 8, sembunyikan tombol
+        if (allFrames.length <= 8) {
+            showMoreBtn.style.display = 'none';
+            return;
+        } else {
+            showMoreBtn.style.display = 'flex'; // Pastikan tombol terlihat
+        }
+
+        // Sembunyikan frame setelah 8 pertama
+        allFrames.forEach((frame, index) => {
+            if (index >= 8) {
+                frame.classList.add('hidden-frames');
+            }
+        });
+
+        let isExpanded = false;
+
+        // Hapus event listener lama jika ada
+        const newShowMoreBtn = showMoreBtn.cloneNode(true);
+        showMoreBtn.parentNode.replaceChild(newShowMoreBtn, showMoreBtn);
+
+        newShowMoreBtn.addEventListener('click', function() {
+            // Toggle state
+            isExpanded = !isExpanded;
+
+            // Update teks dan icon
+            if (isExpanded) {
+                newShowMoreBtn.querySelector('span').textContent = 'Show Less';
+                showMoreIcon.style.transform = 'rotate(180deg)';
+            } else {
+                newShowMoreBtn.querySelector('span').textContent = 'Show More';
+                showMoreIcon.style.transform = 'rotate(0deg)';
+            }
+
+            // Tampilkan/sembunyikan frame
+            allFrames.forEach((frame, index) => {
+                if (index >= 8) {
+                    if (isExpanded) {
+                        frame.classList.add('show');
+                    } else {
+                        frame.classList.remove('show');
+                    }
+                }
+            });
+        });
+    }
 </script>
 
 @endsection
