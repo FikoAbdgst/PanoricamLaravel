@@ -7,6 +7,8 @@
             <img id="photo1" src="" class="w-full h-full object-cover">
         </div>
         <button class="retake-button absolute top-1 right-1 text-lg" data-index="0" data-has-photo="false">⟲</button>
+        <button class="recrop-button absolute top-1 right-1 z-[60]"
+                data-index="0" data-has-photo="false" title="Recrop Photo">✂️</button>
     </div>
 
     <!-- Second Photo Slot -->
@@ -15,6 +17,8 @@
             <img id="photo2" src="" class="w-full h-full object-cover">
         </div>
         <button class="retake-button absolute top-1 right-1 text-lg" data-index="1" data-has-photo="false">⟲</button>
+        <button class="recrop-button absolute top-1 right-1 z-[60]"
+                data-index="1" data-has-photo="false" title="Recrop Photo">✂️</button>
     </div>
 
     <!-- Third Photo Slot -->
@@ -23,6 +27,8 @@
             <img id="photo3" src="" class="w-full h-full object-cover">
         </div>
         <button class="retake-button absolute top-1 right-1 text-lg" data-index="2" data-has-photo="false">⟲</button>
+        <button class="recrop-button absolute top-1 right-1 z-[60]"
+                data-index="2" data-has-photo="false" title="Recrop Photo">✂️</button>
     </div>
 
     <!-- Frame Footer -->

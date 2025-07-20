@@ -11,6 +11,8 @@
         <div class="photo-slot">
             <img id="photo1" src="" class="w-full h-full object-cover">
             <button class="retake-button absolute top-1 right-1 text-lg z-[50]" data-index="0" data-has-photo="false">⟲</button>
+            <button class="recrop-button absolute top-1 right-1 z-[60]"
+                data-index="0" data-has-photo="false" title="Recrop Photo">✂️</button>
         </div>
     </div>
 
@@ -20,13 +22,15 @@
             <img id="photo2" src="" class="w-full h-full object-cover">
             <button class="retake-button absolute top-1 right-1 text-lg z-[50]" data-index="1"
                 data-has-photo="false">⟲</button>
+            <button class="recrop-button absolute top-1 right-1 z-[60]"
+                data-index="1" data-has-photo="false" title="Recrop Photo">✂️</button>
         </div>
     </div>
 
-    <div class="absolute z-[40] top-[140px] left-[10px]">
+    <div class="absolute z-[40] top-[140px] left-[10px] pointer-events-none">
         <img src="{{ asset('blacklove/blacklove5.png') }}" alt="Logo" class="h-[40px] w-auto ">
     </div>
-    <div class="absolute z-[30] top-[120px] right-[7px]">
+    <div class="absolute z-[30] top-[120px] right-[7px] pointer-events-none">
         <img src="{{ asset('blacklove/blacklove2.png') }}" alt="Logo" class="h-[180px] w-auto ">
     </div>
 
@@ -36,6 +40,8 @@
             <img id="photo3" src="" class="w-full h-full object-cover">
             <button class="retake-button absolute top-1 right-1 text-lg z-[50]" data-index="2"
                 data-has-photo="false">⟲</button>
+            <button class="recrop-button absolute top-1 right-1 z-[60]"
+                data-index="2" data-has-photo="false" title="Recrop Photo">✂️</button>
         </div>
     </div>
 

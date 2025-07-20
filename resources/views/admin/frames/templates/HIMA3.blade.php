@@ -2,10 +2,10 @@
     <div class="absolute z-[20]  top-[-17px] left-[-13px]">
         <img src="{{ asset('pitab.png') }}" alt="Logo" class="h-[40px] w-auto scale-x-[-1]">
     </div>
-    <div class="z-[20] relative top-[-35px]">
+    <div class="z-[30] relative top-[-35px] pointer-events-none">
         <img src="{{ asset('ifd3.png') }}" alt="Logo" class="h-[85px] w-auto mx-auto">
     </div>
-    <div class="absolute z-[20] top-3 right-0">
+    <div class="absolute z-[30] top-3 right-0 pointer-events-none">
         <img src="{{ asset('pitab.png') }}" alt="Logo" class="h-[40px] w-auto ">
     </div>
     <!-- First Photo Slot -->
@@ -14,11 +14,13 @@
             <img id="photo1" src="" class="w-full h-full object-cover">
             <button class="retake-button absolute top-1 right-1 text-lg" data-index="0"
                 data-has-photo="false">⟲</button>
+            <button class="recrop-button absolute top-1 right-1 z-[60]"
+                data-index="0" data-has-photo="false" title="Recrop Photo">✂️</button>
         </div>
     </div>
 
 
-    <div class="absolute z-[20] top-[137px] left-[-5px]">
+    <div class="absolute z-[30] top-[137px] left-[-5px] pointer-events-none">
         <img src="{{ asset('pitab.png') }}" alt="Logo" class="h-[40px] w-auto scale-x-[-1]">
     </div>
 
@@ -28,10 +30,12 @@
             <img id="photo2" src="" class="w-full h-full object-cover">
             <button class="retake-button absolute top-1 right-1 text-lg" data-index="1"
                 data-has-photo="false">⟲</button>
+            <button class="recrop-button absolute top-1 right-1 z-[60]"
+                data-index="0" data-has-photo="false" title="Recrop Photo">✂️</button>
         </div>
     </div>
 
-    <div class="absolute z-[20] top-[260px] right-[-5px]">
+    <div class="absolute z-[30] top-[260px] right-[-5px] pointer-events-none">
         <img src="{{ asset('pitab.png') }}" alt="Logo" class="h-[40px] w-auto">
     </div>
 
@@ -41,11 +45,13 @@
             <img id="photo3" src="" class="w-full h-full object-cover">
             <button class="retake-button absolute top-1 right-1 text-lg" data-index="2"
                 data-has-photo="false">⟲</button>
+            <button class="recrop-button absolute top-1 right-1 z-[60]"
+                data-index="2" data-has-photo="false" title="Recrop Photo">✂️</button>
         </div>
     </div>
 
     <!-- Frame Footer -->
-    <div class="absolute bottom-[-3px] left-0 w-full text-center">
+    <div class="absolute bottom-[-3px] left-0 w-full text-center z-[30]">
         <img src="{{ asset('himanavy.png') }}" alt="Logo" class="h-[160px] w-auto mx-auto">
     </div>
 
