@@ -11,6 +11,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+    <!-- Tambahkan di head -->
+    <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.3/dist/heic2any.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
         integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
@@ -109,7 +111,7 @@
                         Upload Photo
                     </button>
 
-                    <input type="file" id="fileInput" accept="image/*" class="hidden">
+                    <input type="file" id="fileInput" accept="image/*,.heic,.heif" class="hidden">
                 </div>
             </div>
 
@@ -127,19 +129,19 @@
 
                     <!-- Watermark divs baru yang selalu di atas -->
                     @if (!$frame->isFree())
-                        <div class="watermark absolute top-[20px] left-[10px] w-[170px] h-[120px] z-30 pointer-events-none opacity-40"
+                        <div class="watermark absolute  top-[20px] left-[10px] w-[170px] h-[120px] z-20 pointer-events-none opacity-40"
                             data-slot="0">
                             <div class="flex items-center justify-center h-full  p-2 rounded-lg">
                                 <img src="{{ asset('logo.png') }}" alt="Watermark" class="h-24">
                             </div>
                         </div>
-                        <div class="watermark absolute top-[150px] left-[10px] w-[170px] h-[120px] z-30 pointer-events-none opacity-40"
+                        <div class="watermark absolute top-[150px] left-[10px] w-[170px] h-[120px] z-20 pointer-events-none opacity-40"
                             data-slot="1">
                             <div class="flex items-center justify-center h-full  p-2 rounded-lg">
                                 <img src="{{ asset('logo.png') }}" alt="Watermark" class="h-24">
                             </div>
                         </div>
-                        <div class="watermark absolute top-[280px] left-[10px] w-[170px] h-[120px] z-30 pointer-events-none opacity-40"
+                        <div class="watermark absolute top-[280px] left-[10px] w-[170px] h-[120px] z-20 pointer-events-none opacity-40"
                             data-slot="2">
                             <div class="flex items-center justify-center h-full  p-2 rounded-lg">
                                 <img src="{{ asset('logo.png') }}" alt="Watermark" class="h-24">
@@ -919,9 +921,8 @@
 
         .watermark {
             position: absolute;
-            z-index: 30;
-            /* Pastikan lebih tinggi dari foto (z-index: 25) */
-            pointer-events: none;
+            pointer-events: none !important;
+            z-index: 20;
             /* Agar watermark tidak mengganggu interaksi */
             opacity: 0.4;
             /* Sesuaikan opacity sesuai kebutuhan */
@@ -968,6 +969,14 @@
             transform: translateY(100%) !important;
             opacity: 0 !important;
             transition: transform 0.3s ease-out, opacity 0.3s ease-out !important;
+        }
+
+        .cropper-container {
+            z-index: 1000 !important;
+        }
+
+        .cropper-modal {
+            background-color: transparent !important;
         }
 
         @media (max-width: 768px) {
@@ -3200,34 +3209,50 @@
 
 
 
+        // Fungsi untuk memproses file upload (HEIC atau format lain)
+        async function processUploadedPhoto(file, slotIndex) {
+            console.log('Processing uploaded photo:', file.name, 'Type:', file.type);
 
-        function processUploadedPhoto(file, slotIndex) {
-            console.log('Processing uploaded photo:', file ? file.name : 'none', 'Slot:', slotIndex);
+            try {
+                let imageBlob = file;
 
-            if (!file) {
-                console.error('No file provided');
-                return;
+                // Deteksi jika file HEIC
+                if (file.type === 'image/heic' || file.name.toLowerCase().endsWith('.heic')) {
+                    showCustomAlert('Mengkonversi file HEIC, harap tunggu...', 'info', 2000);
+
+                    // Konversi HEIC ke JPEG
+                    imageBlob = await heic2any({
+                        blob: file,
+                        toType: 'image/jpeg',
+                        quality: 0.8 // Kualitas 0-1
+                    });
+
+                    // Jika hasil konversi adalah array (beberapa gambar), ambil yang pertama
+                    if (Array.isArray(imageBlob)) {
+                        imageBlob = imageBlob[0];
+                    }
+                }
+
+                // Lanjutkan proses seperti biasa
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    showCropModal(e.target.result, slotIndex);
+                };
+                reader.readAsDataURL(imageBlob);
+
+            } catch (error) {
+                console.error('Error processing HEIC file:', error);
+                showCustomAlert('Gagal memproses file HEIC. Silakan coba dengan format JPEG/PNG.', 'error');
             }
-            if (slotIndex === null || slotIndex < 0 || slotIndex >= photoSlots.length) {
-                console.error('Invalid slot index:', slotIndex);
-                return;
-            }
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                showCropModal(e.target.result, slotIndex);
-            };
-            reader.onerror = function() {
-                console.error('Failed to read uploaded file');
-                alert('Failed to read the uploaded file. Please try again.');
-            };
-            reader.readAsDataURL(file);
         }
 
         function showCropModal(imageData, slotIndex) {
             cropSlotIndex = slotIndex;
             const cropModal = document.getElementById('cropModal');
             const cropImage = document.getElementById('cropImage');
+            document.querySelectorAll('.watermark').forEach(wm => {
+                wm.style.display = 'none';
+            });
 
             // Simpan foto asli jika belum ada
             if (!originalPhotos[slotIndex]) {
@@ -3256,6 +3281,9 @@
                     guides: false
                 });
             };
+            document.querySelectorAll('.watermark').forEach(wm => {
+                wm.style.display = 'flex';
+            });
 
             cropImage.onerror = function() {
                 console.error('Failed to load image for cropping');
@@ -3390,11 +3418,13 @@
             }
 
             if (fileInput) {
-                fileInput.addEventListener('change', (e) => {
-                    console.log('File input change triggered:', e.target.files.length, Date.now());
+                fileInput.addEventListener('change', async (e) => {
+                    console.log('File input change triggered:', e.target.files.length);
                     if (e.target.files && e.target.files[0]) {
                         selectedFile = e.target.files[0];
                         console.log('File selected:', selectedFile.name);
+
+                        // Tampilkan modal upload
                         if (uploadModal) {
                             uploadModal.style.display = 'flex';
                         }
@@ -4668,18 +4698,15 @@
             const frameIsPaid = document.getElementById('frameIsPaid').value === 'true';
 
             if (frameIsPaid) {
-                console.log('Initializing validation for paid frame');
+                // Pastikan semua elemen crop/recrop di-enable
+                document.querySelectorAll('.recrop-button, .crop-button').forEach(btn => {
+                    btn.disabled = false;
+                });
 
-                // Jalankan validasi untuk frame berbayar
+                // Validasi pembayaran
                 if (!validateBoothAccess()) {
                     return false;
                 }
-
-                if (!validateSingleSession()) {
-                    return false;
-                }
-            } else {
-                console.log('Initializing free frame - no validation required');
             }
 
             return true;
@@ -5151,6 +5178,84 @@
                 photoSlot.src = originalImageData;
             }
         }
+        // Fungsi untuk menampilkan status konversi
+        function showHEICConversionStatus() {
+            const statusDiv = document.createElement('div');
+            statusDiv.id = 'heic-conversion-status';
+            statusDiv.className =
+                'fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-blue-500 text-white px-4 py-2 rounded-lg z-50';
+            statusDiv.innerHTML = 'Mengkonversi HEIC ke JPEG... <span class="ml-2 animate-spin">⏳</span>';
+            document.body.appendChild(statusDiv);
+        }
+
+        function hideHEICConversionStatus() {
+            const statusDiv = document.getElementById('heic-conversion-status');
+            if (statusDiv) {
+                statusDiv.remove();
+            }
+        }
+        // Fungsi utama untuk handle upload
+        async function handleFileUpload(file, slotIndex) {
+            try {
+                // Tampilkan indikator loading
+                showHEICConversionStatus();
+
+                // Proses file HEIC jika diperlukan
+                const processedFile = await processHEICFile(file);
+
+                // Lanjutkan ke crop modal
+                const reader = new FileReader();
+                reader.onload = (e) => showCropModal(e.target.result, slotIndex);
+                reader.readAsDataURL(processedFile);
+
+            } catch (error) {
+                console.error('Upload error:', error);
+                showCustomAlert('Gagal memproses file: ' + error.message, 'error');
+            } finally {
+                hideHEICConversionStatus();
+            }
+        }
+
+        // Fungsi khusus proses HEIC
+        async function processHEICFile(file) {
+            if (!isHEIC(file)) return file;
+
+            showCustomAlert('File HEIC terdeteksi, mengkonversi...', 'info');
+
+            try {
+                const result = await heic2any({
+                    blob: file,
+                    toType: 'image/jpeg',
+                    quality: 0.9
+                });
+
+                return Array.isArray(result) ? result[0] : result;
+            } catch (error) {
+                console.error('HEIC conversion failed:', error);
+                throw new Error('Konversi HEIC gagal, silakan coba format lain');
+            }
+        }
+
+        // Deteksi file HEIC
+        function isHEIC(file) {
+            return file.type === 'image/heic' ||
+                file.type === 'image/heif' ||
+                file.name.toLowerCase().endsWith('.heic') ||
+                file.name.toLowerCase().endsWith('.heif');
+        }
+
+        // Update event listener slot selection
+        slotSelectButtons.forEach(button => {
+            button.addEventListener('click', async function() {
+                selectedSlotIndex = parseInt(this.getAttribute('data-slot'));
+                if (selectedFile && selectedSlotIndex !== null) {
+                    await handleFileUpload(selectedFile, selectedSlotIndex);
+                    if (uploadModal) uploadModal.style.display = 'none';
+                    selectedFile = null;
+                    selectedSlotIndex = null;
+                }
+            });
+        });
     </script>
 </body>
 
