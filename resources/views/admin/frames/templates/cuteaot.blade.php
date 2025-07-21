@@ -1,5 +1,5 @@
 <div class="w-full h-full relative bg- overflow-hidden shadow-[0_0_20px_rgba(0,0,0,0.3)]">
-    <img src="{{ asset('AoT/bg-aot.png') }}" class="w-[190px] h-[500px]" />
+    <img src="{{ asset('AoT/bg/46.png') }}" class="w-[190px] h-[500px]" />
 
     <!-- First Photo Slot -->
     <div class="absolute top-[20px] left-[10px] w-[calc(100%-20px)] h-[120px]" data-photo-index="0">

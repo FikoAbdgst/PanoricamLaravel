@@ -1,5 +1,5 @@
 <div class="w-full h-full relative bg- overflow-hidden shadow-[0_0_20px_rgba(0,0,0,0.3)]">
-    <img src="{{ asset('demonslayer/bg-rengoku.jpeg') }}" 
+    <img src="{{ asset('bg/47gi.jpeg') }}" 
          class="w-[190px] h-[500px] opacity-80 z-10" />
     
     <!-- First Photo Slot -->
