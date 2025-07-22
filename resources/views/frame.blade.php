@@ -1024,7 +1024,7 @@
                 </h2>
                 <p class="mt-4 text-gray-600 max-w-2xl mx-auto" data-aos="fade-up" data-aos-delay="200">Temukan koleksi
                     frame eksklusif untuk menciptakan kenangan yang tak terlupakan</p>
-                    
+
             </div>
 
             <!-- Category Selector Section -->

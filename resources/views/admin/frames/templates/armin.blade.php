@@ -1,4 +1,4 @@
-<div class="w-full h-full relative bg- overflow-hidden shadow-[0_0_20px_rgba(0,0,0,0.3)]">
+<div class="w-full h-full relative bg-overflow-hidden shadow-[0_0_20px_rgba(0,0,0,0.3)]">
     <img src="{{ asset('AoT/bg-aot.png') }}" class="w-[190px] h-[500px]" />
 
     <!-- First Photo Slot -->
