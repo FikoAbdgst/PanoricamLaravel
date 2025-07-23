@@ -55,33 +55,40 @@
     </div>
 
     <div class="absolute z-[30] bottom-[405px] left-2 w-full text-center pointer-events-none">
-        <img src="{{ asset('oasis/oasis4.png') }}" alt="Nj2" style="transform: translateX(-30px) rotate(-20deg);"
-            class="h-[140px] w-auto">
+        <img src="{{ asset('oasis/oasis4.png') }}" alt="Nj2" style="transform: translateX(-40px) rotate(-20deg);"
+            class="h-[130px] w-auto">
+    </div>
+    <div class="absolute z-[10] bottom-[455px] left-2 w-full text-center pointer-events-none">
+        <img src="{{ asset('oasis/oasis9.png') }}" alt="Nj2" style="transform: translateX(140px) rotate(20deg);"
+            class="h-[40px] w-auto">
     </div>
 
     <div class="absolute z-[30] bottom-[310px] left-2 w-full text-center pointer-events-none">
         <img src="{{ asset('oasis/oasis7.png') }}" alt="Nj2" style="transform: translateX(120px) rotate(-20deg);"
             class="h-[90px] w-auto">
     </div>
+    <div class="absolute z-[10] bottom-[300px] left-2 w-full text-center pointer-events-none">
+        <img src="{{ asset('oasis/oasis8.png') }}" alt="Nj2" style="transform: translateX(-40px) rotate(20deg);"
+            class="h-[120px] w-auto">
+    </div>
 
 
-    <div class="absolute z-[40] bottom-[200px] left-2 w-full text-center pointer-events-none">
-        <img src="{{ asset('oasis/oasis5.png') }}" alt="Nj1" style="transform: translateX(-20px) rotate(0deg);"
+    <div class="absolute z-[30] bottom-[210px] left-2 w-full text-center pointer-events-none">
+        <img src="{{ asset('oasis/oasis5.png') }}" alt="Nj1" style="transform: translateX(-10px) rotate(0deg);"
             class="h-[30px] w-auto">
     </div>
-    <div class="absolute z-[30] bottom-[200px] left-2 w-full text-center pointer-events-none">
-        <img src="{{ asset('oasis/oasis6.png') }}" alt="Nj1" style="transform: translateX(-30px) rotate(30deg);"
-            class="h-[90px] w-auto">
+    <div class="absolute z-[10] bottom-[180px] left-2 w-full text-center pointer-events-none">
+        <img src="{{ asset('oasis/oasis10.png') }}" alt="Nj1" style="transform: translateX(150px) rotate(0deg);"
+            class="h-[80px] w-auto">
     </div>
 
-
-    <div class="absolute z-[30] bottom-[-20px] left-2 w-full text-center pointer-events-none">
+    <div class="absolute z-[30] bottom-[-30px] left-2 w-full text-center pointer-events-none">
         <img src="{{ asset('oasis/oasis1.png') }}" alt="Nj3" style="transform: translateX(-50px);"
             class="h-[180px]">
     </div>
-    <div class="absolute z-[30] bottom-[82px] left-2 w-full text-center pointer-events-none">
+    <div class="absolute z-[30] bottom-[85px] left-2 w-full text-center pointer-events-none">
         <img src="{{ asset('oasis/oasis3.png') }}" alt="Nj7" class="w-[120px]"
-            style="transform: translateX(110px) rotate(-20deg);">
+            style="transform: translateX(120px) rotate(-20deg);">
 
     </div>
     <div class="absolute z-[20] bottom-[-25px] left-2 w-full text-center pointer-events-none">
