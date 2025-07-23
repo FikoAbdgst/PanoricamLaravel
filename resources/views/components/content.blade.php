@@ -512,6 +512,29 @@
             background-position: -200% 0;
         }
     }
+
+    /* Alert styles */
+    #previewAlert,
+    #mobilePreviewAlert {
+        animation: slideInDown 0.5s ease-out;
+    }
+
+    @keyframes slideInDown {
+        from {
+            transform: translate(-50%, -20px);
+            opacity: 0;
+        }
+
+        to {
+            transform: translate(-50%, 0);
+            opacity: 1;
+        }
+    }
+
+    #previewAlert a,
+    #mobilePreviewAlert a {
+        transition: color 0.2s ease;
+    }
 </style>
 
 <div class="py-16 bg-[#FEF3E2] content_section">
@@ -631,6 +654,31 @@
 <div id="previewCameraModal" class="hidden fixed inset-0 z-50 flex items-center justify-center overflow-hidden">
     <div class="absolute inset-0 bg-black/50 backdrop-blur-sm modal-backdrop"></div>
 
+    <div id="previewAlert"
+        class="absolute top-4 left-1/2 hidden md:block transform -translate-x-1/2 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded-md shadow-lg z-20 w-11/12 max-w-lg"
+        role="alert">
+        <div class="flex items-center">
+            <div class="py-1">
+                <svg class="fill-current h-6 w-6 text-yellow-500 mr-4" xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20">
+                    <path
+                        d="M2.93 17.07A10 10 0 1 1 17.07 2.93 10 10 0 0 1 2.93 17.07zm12.73-1.41A8 8 0 1 0 4.34 4.34a8 8 0 0 0 11.32 11.32zM9 11V9h2v6H9v-4zm0-6h2v2H9V5z" />
+                </svg>
+            </div>
+            <div>
+                <p class="font-medium">Ini hanya preview!</p>
+                <p class="text-sm">Jika Anda ingin gunakan fitur lengkapnya silahkan klik ke halaman
+                    <a href="{{ route('frametemp') }}"
+                        class="font-semibold underline text-yellow-800 hover:text-yellow-900">frame</a>
+                    atau klik
+                    <a href="{{ route('frametemp') }}"
+                        class="font-semibold underline text-yellow-800 hover:text-yellow-900">disini</a>
+                </p>
+                </p>
+
+            </div>
+        </div>
+    </div>
     <div
         class="relative bg-white rounded-xl shadow-xl p-6 w-full max-w-4xl mx-4 hidden md:block animate-[modalFadeIn_0.3s]">
         <button
@@ -670,10 +718,30 @@
     </div>
 
     <!-- Mobile Modal - Perbaikan struktur -->
+    <div id="mobilePreviewAlert"
+        class="absolute z-[200] top-4 md:hidden left-1/2 transform -translate-x-1/2 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-3 rounded-md shadow-lg w-11/12"
+        role="alert">
+        <div class="flex items-center">
+            <div class="py-1">
+                <svg class="fill-current h-5 w-5 text-yellow-500 mr-3" xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20">
+                    <path
+                        d="M2.93 17.07A10 10 0 1 1 17.07 2.93 10 10 0 0 1 2.93 17.07zm12.73-1.41A8 8 0 1 0 4.34 4.34a8 8 0 0 0 11.32 11.32zM9 11V9h2v6H9v-4zm0-6h2v2H9V5z" />
+                </svg>
+            </div>
+            <div>
+                <p class="font-medium text-sm">Ini hanya preview!</p>
+                <p class="text-xs">Gunakan fitur lengkap
+                    <a href="{{ route('frametemp') }}"
+                        class="font-semibold underline text-yellow-800 hover:text-yellow-900">disini</a>
+                </p>
+            </div>
+        </div>
+    </div>
     <div
         class="relative bg-white rounded-t-xl shadow-xl w-full md:hidden mobile-modal-container max-h-[90vh] overflow-y-auto">
         <div class="sticky top-0 z-10 bg-white rounded-t-xl border-b border-gray-200">
-            <div class="w-12 h-1.5 bg-gray-300 rounded-full mx-auto my-3"></div>
+
             <h2 class="text-xl font-semibold px-4 pb-3 text-center">Frame Preview</h2>
             <button
                 class="modal-close absolute top-3 right-4 text-2xl text-gray-500 hover:text-black cursor-pointer">×</button>

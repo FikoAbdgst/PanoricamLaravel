@@ -1147,7 +1147,7 @@
                     <span>Gratis</span>
                 </a>
                 <div
-                    class="flex items-center justify-center gap-2 bg-gradient-to-r from-[#FEF3E2] to-red-50 px-4 py-3 rounded-lg border border-red-200">
+                    class="flex items-center justify-center gap-2 bg-gradient-to-r from-[#FEF3E2] to-red-50 px-4 py-3 mt-5 rounded-lg border border-red-200">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-[#BF3131]" fill="none"
                         viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
