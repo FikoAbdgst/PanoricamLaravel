@@ -66,11 +66,11 @@
         </div>
     </div>
 
-    <div class=" z-[50] relative bottom-[75px] left-[-4px] ">
+    <div class=" z-[50] relative bottom-[30px] left-[-4px] ">
         <img src="{{ asset('panoricam2.png') }}" alt="Logo" class="h-[15px] w-auto mx-auto ">
     </div>
-    <div class=" z-[40] relative bottom-[245px] left-[-5px] pointer-events-none ">
-        <img src="{{ asset('van/van6.png') }}" alt="Logo" class="h-[300px] w-auto mx-auto ">
+    <div class=" z-[40] relative bottom-[225px] left-[-5px] pointer-events-none ">
+        <img src="{{ asset('van/van6.png') }}" alt="Logo" class=" h-[250px] w-auto mx-auto ">
     </div>
 
 

@@ -23,11 +23,11 @@
         </div>
     </div>
 
-    <div class="absolute z-[30] top-[120px] right-[-115px]  pointer-events-none">
-        <img src="{{ asset('sunflow/sunflow4.png') }}" alt="Logo" class="h-[140px] w-auto ">
-    </div>
-    <div class="absolute z-[40] top-[215px] left-[-35px] scale-x-[-1] pointer-events-none">
+    <div class="absolute z-[30] top-[120px] right-[-25px]  pointer-events-none">
         <img src="{{ asset('sunflow/sunflow3.png') }}" alt="Logo" class="h-[90px] w-auto ">
+    </div>
+    <div class="absolute z-[40] top-[215px] left-[-10px] pointer-events-none">
+        <img src="{{ asset('sunflow/sunflow4.png') }}" alt="Logo" class="h-[140px] w-auto ">
     </div>
 
 
@@ -66,11 +66,8 @@
     <div class=" z-[50] relative bottom-[35px] left-[-4px] ">
         <img src="{{ asset('panoricam2.png') }}" alt="Logo" class="h-[15px] w-auto mx-auto ">
     </div>
-    <div class=" z-[50] relative bottom-[145px] right-[-90px] pointer-events-none ">
-        <img src="{{ asset('sunflow/sunflow6.png') }}" alt="Logo" class="h-[140px] w-auto mx-auto ">
-    </div>
-    <div class=" z-[40] relative bottom-[275px] left-[-65px] pointer-events-none ">
-        <img src="{{ asset('sunflow/sunflow5.png') }}" alt="Logo" class="h-[130px] w-auto mx-auto ">
+    <div class=" z-[40] relative bottom-[148px] left-[-2px] pointer-events-none ">
+        <img src="{{ asset('sunflow/sunflow5.png') }}" alt="Logo" class="h-[300px] w-auto mx-auto ">
     </div>
     
 

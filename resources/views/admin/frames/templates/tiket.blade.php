@@ -66,14 +66,14 @@
         </div>
     </div>
 
-    <div class=" z-[50] relative bottom-[35px] left-[7px] ">
+    <div class=" z-[50] relative bottom-[30px] left-[7px] ">
         <img src="{{ asset('panoricam2.png') }}" alt="Logo" class="h-[15px] w-auto mx-auto ">
     </div>
-    <div class="absolute z-[40] top-[375px] right-[30px]  pointer-events-none">
+    <div class="absolute z-[40] top-[395px] right-[40px]  pointer-events-none">
         <img src="{{ asset('tiket/tiket5.png') }}" alt="Logo" class="h-[100px] w-auto ">
     </div>
-    <div class="absolute z-[40] top-[305px] right-[-40px]  pointer-events-none">
-        <img src="{{ asset('tiket/tiket6.png') }}" alt="Logo" class="h-[130px] w-auto ">
+    <div class="absolute z-[40] top-[330px] right-[-66px]  pointer-events-none">
+        <img src="{{ asset('tiket/tiket6.png') }}" alt="Logo" class="h-[180px] w-auto ">
     </div>
     
 
