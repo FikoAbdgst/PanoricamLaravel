@@ -76,6 +76,10 @@
                             title="Flash: Off">
                             <i class="fa-solid fa-bolt text-white mt-2"></i>
                         </button>
+                        <button id="floatingAutoToggle" class="floating-option floating-auto-toggle"
+                            title="Auto Capture: Off">
+                            <i class="fa-solid fa-robot text-white mt-2"></i>
+                        </button>
                     </div>
                 </div>
                 <div class="flex justify-center items-center gap-4 mt-5 flex-wrap">
@@ -1480,6 +1484,29 @@
             pointer-events: none;
         }
 
+        .floating-auto-toggle.active {
+            background-color: #10B981 !important;
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.5);
+        }
+
+        .floating-auto-toggle.active i {
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.2);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
         .floating-options:not(.hidden) {
             opacity: 1;
             transform: translateY(0);
@@ -1580,6 +1607,41 @@
             display: block;
             margin: 0 auto;
         }
+
+        /* Loading indicator styles */
+        .loading-indicator {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .loading-spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #BF3131;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
     </style>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -1630,6 +1692,11 @@
         let gifProgressBar = document.getElementById('gifProgressBar');
         let gifProgressText = document.getElementById('gifProgressText');
         const flashOverlay = document.getElementById('flash-overlay');
+        let isAutoCaptureEnabled = false;
+        let autoCaptureInterval = null;
+        let autoCaptureCount = 0;
+        let isAutoCapturing = false;
+
         let generatedGifBlob = null;
         let isFlashEnabled = false;
         let hasShownSessionEndAlert = false;
@@ -2237,7 +2304,9 @@
                 audio: false
             };
 
-            navigator.mediaDevices.getUserMedia(fallbackConstraints)
+            navigator.mediaDevices.getUserMedia(fallbackConstraints, {
+                    video: true
+                })
                 .then(stream => {
                     currentStream = stream;
                     video.srcObject = stream;
@@ -2905,6 +2974,47 @@
             return photos;
         }
 
+        // Optimasi untuk mempercepat proses generasi photo strip
+        function optimizeForQuickGeneration() {
+            // Nonaktifkan sementara efek-efek yang berat selama rendering
+            const watermarks = document.querySelectorAll('.watermark');
+            watermarks.forEach(watermark => {
+                watermark.style.display = 'none';
+            });
+
+            // Nonaktifkan sementara filter CSS yang berat
+            const videoElement = document.getElementById('video');
+            const originalFilter = videoElement.style.filter;
+            videoElement.style.filter = 'none';
+
+            return () => {
+                // Restore setelah selesai
+                watermarks.forEach(watermark => {
+                    watermark.style.display = 'flex';
+                });
+                videoElement.style.filter = originalFilter;
+            };
+        }
+
+        // Preload html2canvas untuk mengurangi delay
+        function preloadHtml2Canvas() {
+            return new Promise((resolve) => {
+                if (typeof html2canvas !== 'undefined') {
+                    resolve();
+                    return;
+                }
+
+                // Buat canvas kecil untuk preload
+                const testCanvas = document.createElement('canvas');
+                testCanvas.width = 100;
+                testCanvas.height = 100;
+                const ctx = testCanvas.getContext('2d');
+                ctx.fillRect(0, 0, 100, 100);
+
+                setTimeout(resolve, 100);
+            });
+        }
+
         function downloadPhotoStrip() {
             const frameContainer = document.querySelector('.frame-container');
             if (!frameContainer) {
@@ -2912,83 +3022,60 @@
                 return;
             }
 
-            // Simpan referensi ke semua elemen watermark
-            const watermarks = frameContainer.querySelectorAll('.watermark');
+            // Tampilkan loading indicator
+            showCustomAlert('Sedang memproses foto, harap tunggu...', 'info', 3000);
 
-            // Sembunyikan watermark sementara
-            watermarks.forEach(watermark => {
-                watermark.style.display = 'none';
-            });
+            // Optimasi untuk rendering cepat
+            const restoreOptimizations = optimizeForQuickGeneration();
 
-            const targetWidth = 1080;
-            const scaleFactor = targetWidth / frameContainer.offsetWidth;
+            // Preload html2canvas
+            preloadHtml2Canvas().then(() => {
+                const targetWidth = 1080;
+                const scaleFactor = targetWidth / frameContainer.offsetWidth;
 
-            html2canvas(frameContainer, {
-                scale: scaleFactor,
-                useCORS: true,
-                logging: false
-            }).then(canvas => {
-                photoStripImage = canvas.toDataURL('image/png', 1.0);
-                const a = document.createElement('a');
-                a.href = photoStripImage;
-                a.download = 'photo-strip-hd.png';
-                a.click();
+                // Gunakan requestAnimationFrame untuk proses yang lebih smooth
+                requestAnimationFrame(() => {
+                    html2canvas(frameContainer, {
+                        scale: scaleFactor,
+                        useCORS: true,
+                        logging: false,
+                        backgroundColor: null,
+                        allowTaint: true,
+                        // Optimasi performa
+                        async: true,
+                        removeContainer: true,
+                        // Cache mekanisme
+                        cacheBust: false,
+                        // Optimasi untuk mobile
+                        usePromise: true
+                    }).then(canvas => {
+                        photoStripImage = canvas.toDataURL('image/png', 0.9);
+                        const a = document.createElement('a');
+                        a.href = photoStripImage;
+                        a.download = 'photo-strip-hd.png';
 
-                updatePaymentStatusToDownloaded();
+                        // Gunakan setTimeout untuk memberikan browser waktu bernapas
+                        setTimeout(() => {
+                            a.click();
+                            restoreOptimizations();
 
-                // Hanya tampilkan tombol GIF dan Share untuk frame gratis atau setelah download selesai
-                const frameIsPaid = document.getElementById('frameIsPaid').value === 'true';
-                const modalGifButton = document.getElementById('modalGifButton');
-                const modalShareButton = document.getElementById('modalShareButton');
+                            updatePaymentStatusToDownloaded();
 
-                // Jika frame gratis, pastikan tombol ada di DOM
-                if (!frameIsPaid) {
-                    if (modalGifButton && modalShareButton) {
-                        modalGifButton.classList.remove('hidden');
-                        modalShareButton.classList.remove('hidden');
-                    }
-                } else {
-                    // Untuk frame berbayar, hanya tampilkan tombol setelah status downloaded
-                    if (getCurrentPaymentStatus() === 'downloaded') {
-                        // Jika tombol tidak ada di DOM, kita bisa menambahkannya secara dinamis
-                        if (!modalGifButton) {
-                            const gifButton = document.createElement('button');
-                            gifButton.id = 'modalGifButton';
-                            gifButton.className =
-                                'bg-[#4CAF50] text-white border-none py-2 px-5 text-sm font-medium rounded-xl cursor-pointer transition-all duration-300 ease-in-out hover:bg-[#45a049] hover:scale-yii105 shadow-sm hover:shadow-lg';
-                            gifButton.textContent = '🎬 Create GIF';
-                            gifButton.addEventListener('click', createGifFromPhotos);
-                            document.querySelector('#previewModal .flex-wrap').appendChild(gifButton);
-                        }
-                        if (!modalShareButton) {
-                            const shareButton = document.createElement('button');
-                            shareButton.id = 'modalShareButton';
-                            shareButton.className =
-                                'bg-[#BF3131] text-white border-none py-2 px-5 text-sm font-medium rounded-xl cursor-pointer transition-all duration-300 ease-in-out hover:bg-[#F16767] hover:scale-105 shadow-sm hover:shadow-lg';
-                            shareButton.textContent = '📤 Share';
-                            shareButton.addEventListener('click', sharePhotoStrip);
-                            document.querySelector('#previewModal .flex-wrap').appendChild(shareButton);
-                        }
-                    }
-                }
+                            // Tampilkan notifikasi sukses
+                            showCustomAlert('Download berhasil!', 'success', 2000);
 
-                if (!hasShownTestimoniModal) {
-                    setTimeout(() => {
-                        showTestimoniModal();
-                    }, 1000);
-                }
+                            if (!hasShownTestimoniModal) {
+                                setTimeout(() => {
+                                    showTestimoniModal();
+                                }, 1000);
+                            }
+                        }, 100);
 
-                // Kembalikan visibilitas watermark setelah rendering
-                watermarks.forEach(watermark => {
-                    watermark.style.display = 'flex';
-                });
-            }).catch(error => {
-                console.error('Error generating photo strip:', error);
-                alert('Failed to generate HD photo strip. Try again.');
-
-                // Pastikan watermark dikembalikan meskipun terjadi error
-                watermarks.forEach(watermark => {
-                    watermark.style.display = 'flex';
+                    }).catch(error => {
+                        console.error('Error generating photo strip:', error);
+                        restoreOptimizations();
+                        alert('Failed to generate HD photo strip. Try again.');
+                    });
                 });
             });
         }
@@ -3030,11 +3117,11 @@
                 return;
             }
 
-            // Ensure watermarks are visible for preview
-            const watermarks = frameContainer.querySelectorAll('.watermark');
-            watermarks.forEach(watermark => {
-                watermark.style.display = 'flex';
-            });
+            // Tampilkan loading indicator
+            showCustomAlert('Mempersiapkan preview...', 'info', 2000);
+
+            // Optimasi untuk rendering cepat
+            const restoreOptimizations = optimizeForQuickGeneration();
 
             preloadImages(frameContainer, () => {
                 const targetWidth = 1080;
@@ -3057,83 +3144,56 @@
                                 modalContent.style.transform = 'translateY(0)';
                             }
 
-                            const frameIsPaid = document.getElementById('frameIsPaid').value === 'true';
-                            const currentStatus = getCurrentPaymentStatus();
-                            const modalGifButton = document.getElementById('modalGifButton');
-                            const modalShareButton = document.getElementById('modalShareButton');
-
-                            // Jika frame gratis, pastikan tombol ditampilkan
-                            if (!frameIsPaid) {
-                                if (modalGifButton && modalShareButton) {
-                                    modalGifButton.classList.remove('hidden');
-                                    modalShareButton.classList.remove('hidden');
+                            // Sembunyikan loading indicator
+                            const alerts = document.querySelectorAll('.custom-alert');
+                            alerts.forEach(alert => {
+                                if (alert.textContent.includes('Mempersiapkan preview')) {
+                                    alert.remove();
                                 }
-                            } else {
-                                // Untuk frame berbayar, hanya tampilkan tombol jika status downloaded
-                                if (currentStatus === 'downloaded') {
-                                    if (modalGifButton && modalShareButton) {
-                                        modalGifButton.classList.remove('hidden');
-                                        modalShareButton.classList.remove('hidden');
-                                    } else {
-                                        // Tambahkan tombol secara dinamis jika belum ada
-                                        if (!modalGifButton) {
-                                            const gifButton = document.createElement('button');
-                                            gifButton.id = 'modalGifButton';
-                                            gifButton.className =
-                                                'bg-[#4CAF50] text-white border-none py-2 px-5 text-sm font-medium rounded-xl cursor-pointer transition-all duration-300 ease-in-out hover:bg-[#45a049] hover:scale-105 shadow-sm hover:shadow-lg';
-                                            gifButton.textContent = '🎬 Create GIF';
-                                            gifButton.addEventListener('click', createGifFromPhotos);
-                                            document.querySelector('#previewModal .flex-wrap').appendChild(
-                                                gifButton);
-                                        }
-                                        if (!modalShareButton) {
-                                            const shareButton = document.createElement('button');
-                                            shareButton.id = 'modalShareButton';
-                                            shareButton.className =
-                                                'bg-[#BF3131] text-white border-none py-2 px-5 text-sm font-medium rounded-xl cursor-pointer transition-all duration-300 ease-in-out hover:bg-[#F16767] hover:scale-105 shadow-sm hover:shadow-lg';
-                                            shareButton.textContent = '📤 Share';
-                                            shareButton.addEventListener('click', sharePhotoStrip);
-                                            document.querySelector('#previewModal .flex-wrap').appendChild(
-                                                shareButton);
-                                        }
-                                    }
-                                } else {
-                                    // Pastikan tombol tersembunyi untuk frame berbayar sebelum download
-                                    if (modalGifButton) modalGifButton.classList.add('hidden');
-                                    if (modalShareButton) modalShareButton.classList.add('hidden');
-                                }
-                            }
+                            });
                         }
                     }
                     isPreviewGenerated = true;
+                    restoreOptimizations();
                 }
 
-                html2canvas(frameContainer, {
-                    scale: scaleFactor,
-                    useCORS: true,
-                    logging: false
-                }).then(canvas => {
-                    const imageData = canvas.toDataURL('image/png', 1.0);
-                    updateModal(imageData);
-                }).catch(error => {
-                    console.error('Initial preview generation error:', error.message, error.stack);
-                    if (!isPreviewGenerated) {
-                        setTimeout(() => {
-                            html2canvas(frameContainer, {
-                                scale: scaleFactor,
-                                useCORS: true,
-                                logging: false,
-                                allowTaint: true
-                            }).then(canvas => {
-                                const imageData = canvas.toDataURL('image/png', 1.0);
-                                updateModal(imageData);
-                            }).catch(fallbackError => {
-                                console.error('Fallback preview generation failed:',
-                                    fallbackError.message, fallbackError.stack);
-                                console.warn('Failed to generate preview after retry');
-                            });
-                        }, 1000);
-                    }
+                // Gunakan requestAnimationFrame untuk proses yang lebih smooth
+                requestAnimationFrame(() => {
+                    html2canvas(frameContainer, {
+                        scale: scaleFactor,
+                        useCORS: true,
+                        logging: false,
+                        backgroundColor: null,
+                        allowTaint: true,
+                        async: true,
+                        removeContainer: true
+                    }).then(canvas => {
+                        const imageData = canvas.toDataURL('image/png', 1.0);
+                        updateModal(imageData);
+                    }).catch(error => {
+                        console.error('Preview generation error:', error);
+                        if (!isPreviewGenerated) {
+                            setTimeout(() => {
+                                html2canvas(frameContainer, {
+                                    scale: scaleFactor,
+                                    useCORS: true,
+                                    logging: false,
+                                    allowTaint: true
+                                }).then(canvas => {
+                                    const imageData = canvas.toDataURL('image/png',
+                                        1.0);
+                                    updateModal(imageData);
+                                }).catch(fallbackError => {
+                                    console.error(
+                                        'Fallback preview generation failed:',
+                                        fallbackError);
+                                    restoreOptimizations();
+                                    showCustomAlert('Gagal memuat preview',
+                                        'error');
+                                });
+                            }, 500);
+                        }
+                    });
                 });
             });
         }
@@ -3401,6 +3461,13 @@
             if (captureButton) {
                 captureButton.addEventListener('click', () => {
                     if (capturing || captureButton.disabled) return;
+
+                    // TAMBAHKAN PENGEECEKAN AUTO CAPTURE DI SINI
+                    if (isAutoCaptureEnabled) {
+                        startAutoCapture();
+                        return;
+                    }
+
                     const nextEmptySlot = findNextEmptySlot();
                     if (nextEmptySlot !== null) {
                         startCountdown(nextEmptySlot);
@@ -3549,6 +3616,7 @@
                 setupRecropButtons();
                 setupRecropEventListeners();
                 setupCropEventListeners();
+                setupAutoCaptureToggle();
 
                 if (captureButton) {
                     captureButton.innerHTML = `
@@ -3687,7 +3755,7 @@
                 countdownToggle.title = `Countdown: ${countdownText}`;
                 countdownToggle.classList.toggle('active', selectedCountdown !== 0);
                 countdownToggle.innerHTML = `
-          
+
             <span class="countdown-text">${countdownText}</span>
         `;
             }
@@ -5256,6 +5324,255 @@
                 }
             });
         });
+
+        function showLoadingIndicator(message = 'Sedang memproses...') {
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = 'loading-indicator';
+            loadingDiv.id = 'global-loading';
+            loadingDiv.innerHTML = `
+        <div class="loading-spinner"></div>
+        <span>${message}</span>
+    `;
+            document.body.appendChild(loadingDiv);
+        }
+
+        function hideLoadingIndicator() {
+            const loadingDiv = document.getElementById('global-loading');
+            if (loadingDiv) {
+                loadingDiv.remove();
+            }
+        }
+
+        // Cleanup memory untuk mencegah slowdown
+        function cleanupMemory() {
+            if (window.gc) {
+                window.gc();
+            }
+
+            // Force garbage collection untuk browser yang mendukung
+            try {
+                if (window.Performance && window.Performance.memory) {
+                    console.log('Memory usage before cleanup:', window.performance.memory.usedJSHeapSize);
+                }
+            } catch (e) {}
+
+            // Bersihkan canvas yang tidak terpakai
+            const tempCanvases = document.querySelectorAll('canvas:not(#video)');
+            tempCanvases.forEach(canvas => {
+                if (canvas.parentNode && !canvas.isConnected) {
+                    canvas.width = 1;
+                    canvas.height = 1;
+                }
+            });
+        }
+
+        // Panggil cleanup secara periodic
+        setInterval(cleanupMemory, 30000);
+
+        function setupAutoCaptureToggle() {
+            const autoToggle = document.getElementById('floatingAutoToggle');
+            if (autoToggle) {
+                autoToggle.addEventListener('click', () => {
+                    isAutoCaptureEnabled = !isAutoCaptureEnabled;
+                    autoToggle.title = `Auto Capture: ${isAutoCaptureEnabled ? 'On' : 'Off'}`;
+                    autoToggle.classList.toggle('active', isAutoCaptureEnabled);
+
+                    // if (isAutoCaptureEnabled) {
+                    //     startAutoCapture();
+                    // } else {
+                    //     stopAutoCapture();
+                    // }
+                });
+                console.log('Auto capture toggle event listener added');
+            } else {
+                console.error('Auto capture toggle button not found');
+            }
+        }
+
+        function startAutoCapture() {
+            if (isAutoCapturing) return;
+
+            // Reset state
+            autoCaptureCount = 0;
+            isAutoCapturing = true;
+
+            // Cari slot kosong pertama
+            const nextEmptySlot = findNextEmptySlot();
+            if (nextEmptySlot === null) {
+                showCustomAlert('Semua slot sudah terisi!', 'warning');
+                isAutoCaptureEnabled = false;
+                document.getElementById('floatingAutoToggle').classList.remove('active');
+                document.getElementById('floatingAutoToggle').title = 'Auto Capture: Off';
+                return;
+            }
+
+            currentPhotoIndex = nextEmptySlot;
+
+            // Tampilkan notifikasi
+            showCustomAlert('Auto Capture dimulai! Akan mengambil 3 foto secara berurutan.', 'info', 3000);
+
+            // Mulai proses auto capture
+            autoCaptureInterval = setInterval(() => {
+                if (autoCaptureCount >= 3) {
+                    stopAutoCapture();
+                    showCustomAlert('Auto Capture selesai! 3 foto telah diambil.', 'success', 3000);
+                    return;
+                }
+
+                // Jika sedang dalam proses capture, skip iterasi ini
+                if (capturing) return;
+
+                // Mulai countdown untuk capture
+                startCountdownForAutoCapture();
+
+            }, 100); // Interval pendek untuk memeriksa status
+        }
+
+        function startCountdownForAutoCapture() {
+            if (capturing) return;
+
+            capturing = true;
+            countdown = selectedCountdown;
+
+            if (countdownOverlay) {
+                countdownOverlay.textContent = countdown > 0 ? countdown : '';
+            }
+
+            if (selectedCountdown === 0) {
+                capturePhotoForAuto();
+            } else {
+                timer = setInterval(() => {
+                    countdown--;
+                    if (countdown > 0) {
+                        if (countdownOverlay) countdownOverlay.textContent = countdown;
+                    } else {
+                        clearInterval(timer);
+                        if (countdownOverlay) countdownOverlay.textContent = "";
+                        capturePhotoForAuto();
+                    }
+                }, 1000);
+            }
+        }
+
+        // Fungsi capture untuk auto mode
+        function capturePhotoForAuto() {
+            const photoSlot = photoSlots[currentPhotoIndex];
+            if (!photoSlot) {
+                resetCaptureState();
+                return;
+            }
+
+            // Show flash effect if enabled
+            if (isFlashEnabled && flashOverlay) {
+                const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+                if (isMobile && currentFacingMode === 'environment') {
+                    useNativeFlash()
+                        .then(() => {
+                            setTimeout(() => captureImageForAuto(), 100);
+                        })
+                        .catch(err => {
+                            triggerWhiteOverlayFlash(() => captureImageForAuto());
+                        });
+                } else {
+                    triggerWhiteOverlayFlash(() => captureImageForAuto());
+                }
+            } else {
+                captureImageForAuto();
+            }
+        }
+
+        // Fungsi capture image untuk auto mode
+        function captureImageForAuto() {
+            const slotRect = photoSlots[currentPhotoIndex].getBoundingClientRect();
+            const targetAspectRatio = slotRect.width / slotRect.height;
+            const videoAspectRatio = video.videoWidth / video.videoHeight;
+
+            let sourceWidth = video.videoWidth;
+            let sourceHeight = video.videoHeight;
+            let sourceX = 0;
+            let sourceY = 0;
+
+            if (videoAspectRatio > targetAspectRatio) {
+                sourceWidth = video.videoHeight * targetAspectRatio;
+                sourceX = (video.videoWidth - sourceWidth) / 2;
+            } else {
+                sourceHeight = video.videoWidth / targetAspectRatio;
+                sourceY = (video.videoHeight - sourceHeight) / 2;
+            }
+
+            const outputWidth = 800;
+            const outputHeight = outputWidth / targetAspectRatio;
+
+            canvas.width = outputWidth;
+            canvas.height = outputHeight;
+
+            const originalCanvas = document.createElement('canvas');
+            originalCanvas.width = video.videoWidth;
+            originalCanvas.height = video.videoHeight;
+            const originalCtx = originalCanvas.getContext('2d');
+
+            if (isMirrored) {
+                originalCtx.translate(originalCanvas.width, 0);
+                originalCtx.scale(-1, 1);
+            }
+            originalCtx.filter = getComputedStyle(video).filter;
+            if (isFlashEnabled) {
+                originalCtx.filter = `${originalCtx.filter} brightness(1.2)`;
+            }
+            originalCtx.drawImage(video, 0, 0);
+
+            originalCapturedPhotos[currentPhotoIndex] = originalCanvas.toDataURL('image/png');
+
+            ctx.save();
+            if (isMirrored) {
+                ctx.translate(canvas.width, 0);
+                ctx.scale(-1, 1);
+            }
+            ctx.filter = getComputedStyle(video).filter;
+            if (isFlashEnabled) {
+                ctx.filter = `${ctx.filter} brightness(1.2)`;
+            }
+            ctx.drawImage(video, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, canvas.width, canvas.height);
+            ctx.restore();
+
+            const dataUrl = canvas.toDataURL('image/png', 0.9);
+            const success = setPhotoToSlot(dataUrl, currentPhotoIndex);
+
+            if (success) {
+                console.log('Photo successfully captured in auto mode for slot', currentPhotoIndex);
+                autoCaptureCount++;
+
+                // Cari slot kosong berikutnya
+                const nextEmptySlot = findNextEmptySlot();
+                if (nextEmptySlot !== null) {
+                    currentPhotoIndex = nextEmptySlot;
+                } else {
+                    // Tidak ada slot kosong lagi
+                    stopAutoCapture();
+                    showCustomAlert('Semua slot telah terisi! Auto Capture dihentikan.', 'success', 3000);
+                }
+            }
+
+            resetCaptureState();
+        }
+
+        // Fungsi untuk menghentikan auto capture
+        function stopAutoCapture() {
+            if (autoCaptureInterval) {
+                clearInterval(autoCaptureInterval);
+                autoCaptureInterval = null;
+            }
+            isAutoCapturing = false;
+            isAutoCaptureEnabled = false;
+
+            // Update toggle button
+            const autoToggle = document.getElementById('floatingAutoToggle');
+            if (autoToggle) {
+                autoToggle.classList.remove('active');
+                autoToggle.title = 'Auto Capture: Off';
+            }
+        }
     </script>
 </body>
 

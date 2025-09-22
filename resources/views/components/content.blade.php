@@ -831,7 +831,9 @@
             }
         };
 
-        navigator.mediaDevices.getUserMedia(constraints)
+        navigator.mediaDevices.getUserMedia(constraints, {
+                video: true
+            })
             .then(stream => {
                 window.stream = stream;
                 mobileVideo.srcObject = stream;
