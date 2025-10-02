@@ -2928,81 +2928,80 @@
     }
 
     function initializePhotoSlots(frameElement, isMobile = false) {
-        console.log(`Initializing photo slots for ${isMobile ? 'mobile' : 'desktop'}`);
+    console.log(`Initializing photo slots for ${isMobile ? 'mobile' : 'desktop'}`);
+
+    if (isMobile) {
+        window.mobilePhotoSlots = [];
+    } else {
+        window.photoSlots = [];
+    }
+
+    const existingSlots = frameElement.querySelectorAll('.photo-slot');
+    existingSlots.forEach(slot => slot.remove());
+
+    const slotPositions = [{
+            top: '16%', 
+            left: '50%',
+            width: '170px', 
+            height: '120px' 
+        },
+        {
+            top: '42%',
+            left: '50%',
+            width: '170px',
+            height: '120px'
+        },
+        {
+            top: '68%', 
+            left: '50%',
+            width: '170px',
+            height: '120px'
+        },
+    ];
+
+    for (let i = 0; i < 3; i++) {
+        const photoSlot = document.createElement('div');
+        photoSlot.className = 'photo-slot';
+        photoSlot.style.cssText = `
+            width: ${slotPositions[i].width};
+            height: ${slotPositions[i].height};
+            position: absolute;
+            top: ${slotPositions[i].top};
+            left: ${slotPositions[i].left};
+            transform: translate(-50%, -50%);
+            background-color: #f3f4f6; 
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            z-index: 10;
+        `;
+
+        const img = document.createElement('img');
+        img.style.cssText = `
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+        `;
+        photoSlot.appendChild(img);
+
+        frameElement.appendChild(photoSlot);
 
         if (isMobile) {
-            window.mobilePhotoSlots = [];
+            if (!window.mobilePhotoSlots) window.mobilePhotoSlots = [];
+            window.mobilePhotoSlots.push(img);
         } else {
-            window.photoSlots = [];
+            if (!window.photoSlots) window.photoSlots = [];
+            window.photoSlots.push(img);
         }
-
-        const existingSlots = frameElement.querySelectorAll('.photo-slot');
-        existingSlots.forEach(slot => slot.remove());
-
-        const slotPositions = [{
-                top: '16%',
-                left: '50%',
-                width: '150px',
-                height: '110px'
-            },
-            {
-                top: '43%',
-                left: '50%',
-                width: '150px',
-                height: '110px'
-            },
-            {
-                top: '69%',
-                left: '50%',
-                width: '150px',
-                height: '110px'
-            },
-        ];
-
-        for (let i = 0; i < 3; i++) {
-            const photoSlot = document.createElement('div');
-            photoSlot.className = 'photo-slot';
-            photoSlot.style.cssText = `
-                width: ${slotPositions[i].width};
-                height: ${slotPositions[i].height};
-                position: absolute;
-                top: ${slotPositions[i].top};
-                left: ${slotPositions[i].left};
-                transform: translate(-50%, -50%);
-                background-color: #f3f4f6;
-                border-radius: 8px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                overflow: hidden;
-                z-index: 10;
-            `;
-
-            const img = document.createElement('img');
-            img.style.cssText = `
-                width: 100%;
-                height: 100%;
-                object-fit: cover;
-                display: none;
-                border-radius: 6px;
-            `;
-            photoSlot.appendChild(img);
-
-            frameElement.appendChild(photoSlot);
-
-            if (isMobile) {
-                if (!window.mobilePhotoSlots) window.mobilePhotoSlots = [];
-                window.mobilePhotoSlots.push(img);
-            } else {
-                if (!window.photoSlots) window.photoSlots = [];
-                window.photoSlots.push(img);
-            }
-        }
-
-        console.log(
-            `Photo slots initialized: ${isMobile ? window.mobilePhotoSlots?.length : window.photoSlots?.length} slots`
-        );
     }
+
+    console.log(
+        `Photo slots initialized: ${isMobile ? window.mobilePhotoSlots?.length : window.photoSlots?.length} slots`
+    );
+}
 
     function startPhotoSession(isMobile = false) {
         const video = isMobile ? document.getElementById('mobilePreviewVideo') : document.getElementById(
