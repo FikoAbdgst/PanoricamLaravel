@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Admin\FrameController;
 use App\Http\Controllers\Admin\TestimoniController;
+use App\Http\Controllers\DriveController;
 use App\Http\Controllers\FrameTempController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PaymentController;
@@ -91,6 +92,7 @@ Route::post('/booth/reset-used', [PhotoboothController::class, 'resetUsedStatus'
 
 // Payment routes
 Route::post('/payment/create', [PaymentController::class, 'createPayment'])->name('payment.create');
+Route::post('/upload-to-drive', [DriveController::class, 'uploadToDrive']);
 
 
 Route::post('/submitTestimoni', [PhotoBoothController::class, 'submitTestimoni'])->name('testimoni.submit');

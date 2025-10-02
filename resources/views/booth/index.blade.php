@@ -38,6 +38,29 @@
                 class="text-pink-300">!</span>
         </h1>
 
+        @if (!$frame->isFree())
+            <div class="flex flex-col md:flex-row gap-8 md:gap-20 items-start justify-center pb-5">
+                <div
+                    class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded-lg shadow-md w-full max-w3xl">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd"
+                                    d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                                    clip-rule="evenodd"></path>
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm font-medium">
+                                Frame Premium - Tolong gunakan frame hingga selesai di download, agar session foto tidak
+                                hilang
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
+
         <div class="flex flex-col md:flex-row gap-8 md:gap-20 items-start justify-center">
             <div class="w-full md:w-auto">
                 <div class="relative mx-auto" style="width: min(90vw, 660px); max-width: 660px; aspect-ratio: 4/3;">
@@ -207,6 +230,11 @@
                 <button id="modalDownloadButton"
                     class="bg-[#BF3131] text-white border-none py-2 px-5 text-sm font-medium rounded-xl cursor-pointer transition-all duration-300 ease-in-out hover:bg-[#F16767] hover:scale-105 shadow-sm hover:shadow-lg">⬇
                     Download PNG</button>
+                <!-- Ganti teks tombol dari "Kirim ke Drive" menjadi lebih jelas -->
+                <button id="modalDriveButton"
+                    class="bg-[#4285F4] text-white border-none py-2 px-5 text-sm font-medium rounded-xl cursor-pointer transition-all duration-300 ease-in-out hover:bg-[#3367D6] hover:scale-105 shadow-sm hover:shadow-lg">
+                    📧 Kirim Foto & GIF
+                </button>
                 <!-- Hanya tampilkan tombol GIF untuk frame gratis -->
                 @if ($frame->isFree())
                     <button id="modalGifButton"
@@ -234,6 +262,62 @@
                     style="width: 0%"></div>
             </div>
             <p id="gifProgressText" class="text-sm text-gray-500">Initializing...</p>
+        </div>
+    </div>
+    <!-- Modal untuk input email -->
+    <div id="emailModal"
+        class="hidden fixed z-50 left-0 top-0 w-full h-full bg-black bg-opacity-70 overflow-auto justify-center items-center">
+        <div
+            class="bg-[#FEF3E2] mx-auto w-4/5 max-w-[500px] rounded-3xl shadow-lg p-8 relative flex flex-col items-center">
+            <button
+                class="email-modal-close absolute top-4 right-4 text-3xl font-bold text-gray-400 bg-transparent border-none cursor-pointer hover:text-black">×</button>
+
+            <h2 class="text-xl mb-4 text-gray-800 font-bold">Kirim Foto & GIF ke Email</h2>
+
+            <div class="w-full mb-6">
+                <label for="emailInput" class="block text-gray-700 mb-2 font-medium">Email tujuan:</label>
+                <input type="email" id="emailInput"
+                    class="w-full p-3 border-2 border-gray-300 rounded-xl focus:border-[#4285F4] focus:outline-none transition-colors duration-200"
+                    placeholder="masukkan email anda" required>
+                <p class="text-xs text-gray-500 mt-2">Foto HD dan GIF animasi akan dikirim ke email ini</p>
+
+                <!-- Di modal email, update info -->
+                <div class="mt-4 p-3 bg-blue-50 rounded-lg">
+                    <p class="text-sm font-medium text-blue-800">File yang akan dikirim:</p>
+                    <ul class="text-sm text-blue-700 mt-1">
+                        <li>• 📷 Foto Strip HD (PNG)</li>
+                        <li>• 🎬 GIF Animasi</li>
+                    </ul>
+                    <p class="text-xs text-blue-600 mt-2">GIF akan dibuat otomatis jika belum tersedia</p>
+                </div>
+            </div>
+
+            <div class="flex gap-3 justify-center w-full">
+                <button id="cancelEmailButton"
+                    class="bg-gray-500 text-white border-none py-2.5 px-5 text-sm font-medium rounded-xl cursor-pointer transition-all duration-300 ease-in-out hover:bg-gray-600 hover:scale-105 shadow-sm hover:shadow-lg">
+                    Batal
+                </button>
+                <button id="sendToDriveButton"
+                    class="bg-[#4285F4] text-white border-none py-2.5 px-5 text-sm font-medium rounded-xl cursor-pointer transition-all duration-300 ease-in-out hover:bg-[#3367D6] hover:scale-105 shadow-sm hover:shadow-lg">
+                    📧 Kirim Keduanya
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal loading untuk proses upload -->
+    <div id="driveLoadingModal"
+        class="hidden fixed z-50 left-0 top-0 w-full h-full bg-black bg-opacity-70 overflow-auto justify-center items-center">
+        <div
+            class="bg-[#FEF3E2] mx-auto w-4/5 max-w-[400px] rounded-3xl shadow-lg p-8 relative flex flex-col items-center">
+            <div class="w-16 h-16 border-4 border-[#4285F4] border-t-transparent rounded-full animate-spin mb-4"></div>
+            <h3 class="text-xl mb-2 text-gray-800 font-bold">Mengupload ke Drive...</h3>
+            <p class="text-gray-600 text-center mb-4">Sedang mengirim foto HD ke Google Drive</p>
+            <div class="w-full bg-gray-200 rounded-full h-2.5 mb-4">
+                <div id="driveProgressBar" class="bg-[#4285F4] h-2.5 rounded-full transition-all duration-300"
+                    style="width: 0%"></div>
+            </div>
+            <p id="driveProgressText" class="text-sm text-gray-500">Mempersiapkan upload...</p>
         </div>
     </div>
     <div id="testimoniModal"
@@ -578,6 +662,7 @@
             animation: slideInDown 0.4s ease-out;
             backdrop-filter: blur(10px);
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
         }
 
         @keyframes slideInDown {
@@ -1450,6 +1535,8 @@
             cursor: pointer;
             transition: all 0.3s ease;
             backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         }
 
@@ -1644,6 +1731,7 @@
         }
     </style>
 
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script>
         let cropper = null;
@@ -1715,6 +1803,15 @@
         let isInitialized = false;
         let selectedRating = 0;
         let selectedEmoji = '';
+
+        let emailModal = document.getElementById('emailModal');
+        let driveLoadingModal = document.getElementById('driveLoadingModal');
+        let driveProgressBar = document.getElementById('driveProgressBar');
+        let driveProgressText = document.getElementById('driveProgressText');
+        let emailInput = document.getElementById('emailInput');
+        let sendToDriveButton = document.getElementById('sendToDriveButton');
+        let cancelEmailButton = document.getElementById('cancelEmailButton');
+        let emailModalClose = document.querySelector('.email-modal-close');
 
         let isMirrored = false;
         let selectedCountdown = 3;
@@ -3052,7 +3149,7 @@
                         photoStripImage = canvas.toDataURL('image/png', 0.9);
                         const a = document.createElement('a');
                         a.href = photoStripImage;
-                        a.download = 'photo-strip-hd.png';
+                        a.download = 'Panoricam💫.png';
 
                         // Gunakan setTimeout untuk memberikan browser waktu bernapas
                         setTimeout(() => {
@@ -3617,6 +3714,7 @@
                 setupRecropEventListeners();
                 setupCropEventListeners();
                 setupAutoCaptureToggle();
+                setupDriveEventListeners()
 
                 if (captureButton) {
                     captureButton.innerHTML = `
@@ -4042,7 +4140,7 @@
                 gifLoadingModal.style.display = 'flex';
             }
 
-            updateGifProgress(0, 'Initializing GIF creation...');
+            updateGifProgress(0, 'Membuat GIF...');
 
             const gif = new GIF({
                 workers: 2,
@@ -4055,28 +4153,26 @@
             gif.on('progress', function(p) {
                 const percentage = Math.round(p * 100);
                 updateGifProgress(percentage,
-                    `Processing frame ${Math.ceil(p * photos.length)} of ${photos.length}...`);
+                    `Memproses frame ${Math.ceil(p * photos.length)} dari ${photos.length}...`);
             });
 
             gif.on('finished', function(blob) {
-                generatedGifBlob = blob;
+                generatedGifBlob = blob; // Simpan blob GIF untuk dikirim nanti
                 hideGifLoading();
 
+                // Tetap beri opsi download langsung
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = 'photo-strip-animation-hd.gif';
+                a.download = 'PanoricamGif✨.gif';
                 a.click();
 
                 setTimeout(() => {
                     URL.revokeObjectURL(url);
                 }, 1000);
 
-                if (!hasShownTestimoniModal) {
-                    setTimeout(() => {
-                        showTestimoniModal();
-                    }, 1000);
-                }
+                showCustomAlert('GIF berhasil dibuat! Sekarang Anda bisa mengirim foto dan GIF via email.',
+                    'success', 3000);
             });
 
             let processedCount = 0;
@@ -4101,10 +4197,10 @@
 
                     processedCount++;
                     updateGifProgress((processedCount / photos.length) * 50,
-                        `Loading photo ${processedCount} of ${photos.length}...`);
+                        `Memuat foto ${processedCount} dari ${photos.length}...`);
 
                     if (processedCount === photos.length) {
-                        updateGifProgress(50, 'Starting GIF compilation...');
+                        updateGifProgress(50, 'Menyusun GIF...');
                         gif.render();
                     }
                 };
@@ -5572,6 +5668,296 @@
                 autoToggle.classList.remove('active');
                 autoToggle.title = 'Auto Capture: Off';
             }
+        }
+
+        function showEmailModal() {
+            checkPhotoStrip(); // Check first
+
+            if (!photoStripImage) return; // Additional safety check
+
+            if (emailModal) {
+                emailModal.style.display = 'flex';
+                emailInput.value = ''; // Reset input email
+
+                // Update info - TANPA PERINGATAN
+                const infoDiv = emailModal.querySelector('.bg-blue-50');
+                if (infoDiv) {
+                    const gifStatus = generatedGifBlob ?
+                        '• 🎬 GIF animasi' :
+                        '• 🎬 GIF animasi (akan dibuat otomatis)';
+
+                    infoDiv.innerHTML = `
+                <p class="text-sm font-medium text-blue-800">File yang akan dikirim:</p>
+                <ul class="text-sm text-blue-700 mt-1">
+                    <li>• 📷 Foto Strip HD (PNG)</li>
+                    <li>${gifStatus}</li>
+                </ul>
+            `;
+                }
+            }
+        }
+
+        function checkPhotoStrip() {
+            if (!photoStripImage) {
+                showCustomAlert('Tidak ada foto yang siap dikirim', 'error');
+                return;
+            }
+        }
+
+
+        // Fungsi untuk menutup modal email
+        function closeEmailModal() {
+            if (emailModal) {
+                emailModal.style.display = 'none';
+            }
+        }
+
+        // Fungsi untuk menampilkan modal loading drive
+        function showDriveLoadingModal() {
+            if (driveLoadingModal) {
+                driveLoadingModal.style.display = 'flex';
+                updateDriveProgress(0, 'Mempersiapkan upload...');
+            }
+        }
+
+        // Fungsi untuk menutup modal loading drive
+        function closeDriveLoadingModal() {
+            if (driveLoadingModal) {
+                driveLoadingModal.style.display = 'none';
+            }
+        }
+
+        // Fungsi untuk update progress upload
+        function updateDriveProgress(percentage, text) {
+            if (driveProgressBar) {
+                driveProgressBar.style.width = percentage + '%';
+            }
+            if (driveProgressText) {
+                driveProgressText.textContent = text;
+            }
+        }
+
+        async function sendPhotoToDrive() {
+            const email = emailInput.value.trim();
+
+            // Validasi email saja
+            if (!email) {
+                showCustomAlert('Mohon masukkan alamat email', 'error');
+                emailInput.focus();
+                return;
+            }
+
+            if (!isValidEmail(email)) {
+                showCustomAlert('Format email tidak valid', 'error');
+                emailInput.focus();
+                return;
+            }
+
+            if (!photoStripImage) {
+                showCustomAlert('Tidak ada foto yang siap dikirim', 'error');
+                return;
+            }
+
+            // LANGSUNG PROSES - tidak ada validasi GIF
+            closeEmailModal();
+            showDriveLoadingModal();
+
+            try {
+                updateDriveProgress(10, 'Mempersiapkan file...');
+
+                // Konversi foto PNG ke Blob
+                const photoBlob = await dataURLToBlob(photoStripImage);
+                updateDriveProgress(30, 'Menyiapkan foto PNG...');
+
+                let gifBlob = generatedGifBlob;
+
+                // Jika GIF belum ada, buat otomatis
+                if (!gifBlob) {
+                    updateDriveProgress(40, 'Membuat GIF animasi...');
+                    gifBlob = await createGifBlob();
+                } else {
+                    updateDriveProgress(40, 'Menyiapkan GIF animasi...');
+                }
+
+                updateDriveProgress(60, 'Mengupload file...');
+
+                // Siapkan FormData dengan kedua file
+                const formData = new FormData();
+                formData.append('photo', photoBlob, 'Panoricam💫.png');
+                formData.append('gif', gifBlob, 'PanoricamGif✨.gif');
+                formData.append('email', email);
+                formData.append('frame_id', frameId);
+
+                // Dapatkan CSRF token
+                const token = document.querySelector('meta[name="csrf-token"]')?.content;
+
+                updateDriveProgress(80, 'Mengirim email...');
+
+                // Kirim ke endpoint server
+                const response = await fetch('/upload-to-drive', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': token
+                    },
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    updateDriveProgress(100, 'Berhasil!');
+
+                    setTimeout(() => {
+                        closeDriveLoadingModal();
+                        showCustomAlert('Foto dan GIF berhasil dikirim ke email ' + email, 'success', 5000);
+
+                        // Simpan GIF blob untuk penggunaan berikutnya
+                        generatedGifBlob = gifBlob;
+
+                        // Tampilkan testimoni modal setelah berhasil
+                        if (!hasShownTestimoniModal) {
+                            setTimeout(() => {
+                                showTestimoniModal();
+                            }, 2000);
+                        }
+                    }, 1000);
+
+                } else {
+                    throw new Error(result.message || 'Gagal mengirim file');
+                }
+
+            } catch (error) {
+                console.error('Error uploading files:', error);
+                closeDriveLoadingModal();
+                showCustomAlert('Gagal mengirim file: ' + error.message, 'error');
+            }
+        }
+
+        function dataURLToBlob(dataURL) {
+            return new Promise((resolve, reject) => {
+                try {
+                    const byteString = atob(dataURL.split(',')[1]);
+                    const mimeString = dataURL.split(',')[0].split(':')[1].split(';')[0];
+                    const ab = new ArrayBuffer(byteString.length);
+                    const ia = new Uint8Array(ab);
+
+                    for (let i = 0; i < byteString.length; i++) {
+                        ia[i] = byteString.charCodeAt(i);
+                    }
+
+                    resolve(new Blob([ab], {
+                        type: mimeString
+                    }));
+                } catch (error) {
+                    reject(error);
+                }
+            });
+        }
+
+        // Fungsi validasi email
+        function isValidEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+
+        function setupDriveEventListeners() {
+            // Tombol di modal preview
+            const modalDriveButton = document.getElementById('modalDriveButton');
+            if (modalDriveButton) {
+                modalDriveButton.addEventListener('click', showEmailModal);
+            }
+
+            // Tombol di modal email
+            if (sendToDriveButton) {
+                sendToDriveButton.addEventListener('click', sendPhotoToDrive);
+            }
+
+            if (cancelEmailButton) {
+                cancelEmailButton.addEventListener('click', closeEmailModal);
+            }
+
+            if (emailModalClose) {
+                emailModalClose.addEventListener('click', closeEmailModal);
+            }
+
+            // Tutup modal ketika klik di luar
+            if (emailModal) {
+                emailModal.addEventListener('click', (e) => {
+                    if (e.target === emailModal) {
+                        closeEmailModal();
+                    }
+                });
+            }
+
+            // Submit dengan Enter di input email
+            if (emailInput) {
+                emailInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        sendPhotoToDrive();
+                    }
+                });
+            }
+        }
+
+        function createGifBlob() {
+            return new Promise((resolve, reject) => {
+                const photos = getAllPhotoData();
+
+                if (photos.length < 3) {
+                    reject(new Error('Need at least 3 photos to create GIF'));
+                    return;
+                }
+
+                const gif = new GIF({
+                    workers: 2,
+                    quality: 5,
+                    width: 800, // Ukuran lebih kecil untuk email
+                    height: 600,
+                    workerScript: '/js/gif.worker.js'
+                });
+
+                gif.on('finished', function(blob) {
+                    resolve(blob);
+                });
+
+                gif.on('error', function(error) {
+                    reject(error);
+                });
+
+                let processedCount = 0;
+                photos.forEach((photoData, index) => {
+                    const img = new Image();
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        canvas.width = 800;
+                        canvas.height = 600;
+                        const scale = Math.min(canvas.width / img.width, canvas.height / img.height);
+                        const x = (canvas.width - img.width * scale) / 2;
+                        const y = (canvas.height - img.height * scale) / 2;
+
+                        ctx.fillStyle = '#FEF3E2';
+                        ctx.fillRect(0, 0, canvas.width, canvas.height);
+                        ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
+
+                        gif.addFrame(canvas, {
+                            delay: 800 // Lebih cepat untuk email
+                        });
+
+                        processedCount++;
+                        if (processedCount === photos.length) {
+                            gif.render();
+                        }
+                    };
+                    img.onerror = () => {
+                        processedCount++;
+                        if (processedCount === photos.length) {
+                            gif.render();
+                        }
+                    };
+                    img.src = photoData;
+                });
+            });
         }
     </script>
 </body>
