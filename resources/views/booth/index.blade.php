@@ -1815,7 +1815,7 @@
 
         let isMirrored = false;
         let selectedCountdown = 3;
-        const countdownOptions = [3, 5, 0]; // Available countdown options
+        const countdownOptions = [3, 5, 10, 0]; // Available countdown options
         let currentCountdownIndex = 0; // Track current countdown option
         let currentCaptureSlot = 0;
         const totalSlots = 3;

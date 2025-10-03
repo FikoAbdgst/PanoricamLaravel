@@ -25,7 +25,7 @@ class DriveController extends Controller
             // Kirim email dengan kedua attachment
             Mail::send([], [], function ($message) use ($email, $photoFile, $gifFile) {
                 $message->to($email)
-                    ->subject('✨ Foto Strip & GIF Anda Sudah Siap! - PanoriCam')
+                    ->subject('🎉 Kenangan Indah Anda Siap Disimpan! - PanoriCam')
                     ->text($this->getEmailTemplateText())
                     ->attach($photoFile->getRealPath(), [
                         'as' => 'Panoricam💫.png',
@@ -62,51 +62,66 @@ class DriveController extends Controller
     private function getEmailTemplateText()
     {
         return "
-========================================
-FOTO & GIF ANDA SUDAH SIAP!
-========================================
+╔══════════════════════════════════════════╗
+║   🎊 KENANGAN INDAH ANDA TELAH SIAP! 🎊   ║
+╚══════════════════════════════════════════╝
 
-Halo!
+Hai!
 
-Terima kasih telah menggunakan PanoriCam! Foto strip HD dan GIF animasi Anda telah berhasil dibuat dan dilampirkan dalam email ini.
-
-
-FILE TERLAMPIR:
-----------------------------------------
-1. Panoricam💫.png
-   Foto strip berkualitas tinggi dalam format PNG
-   Cocok untuk dicetak atau dibagikan di media sosial
-
-2. PanoricamGif✨.gif
-   GIF animasi dari rangkaian foto Anda
-   Siap untuk dibagikan langsung di platform digital
+Yeay! Momen spesial Anda telah berhasil kami proses dengan sempurna!
+Foto berkualitas tinggi dan GIF animasi Anda sudah siap untuk disimpan
+dan dibagikan kepada orang-orang terkasih. ✨
 
 
-CARA MENGGUNAKAN FILE:
-----------------------------------------
-• Unduh kedua file dari lampiran email ini
-• Simpan sebagai kenang-kenangan digital Anda
-• Bagikan momen spesial Anda di Instagram, Facebook, atau WhatsApp
-• Cetak foto PNG untuk hasil terbaik secara fisik
+📦 YANG ANDA DAPATKAN:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📸 Panoricam💫.png
+   → Foto strip berkualitas HD siap cetak
+   → Format PNG dengan resolusi terbaik
+   → Sempurna untuk kenang-kenangan fisik maupun digital
+
+🎬 PanoricamGif✨.gif
+   → Animasi bergerak dari rangkaian momen Anda
+   → Langsung bisa dibagikan di media sosial
+   → Bikin feed Instagram & WhatsApp Story makin menarik!
 
 
-TIPS:
-----------------------------------------
-• File PNG memiliki kualitas terbaik untuk pencetakan
-• GIF dapat langsung diupload ke story atau feed media sosial
-• Simpan file di cloud storage agar tidak hilang
+💡 CARA PAKAI HASIL FOTO ANDA:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✓ Download kedua file dari lampiran email ini
+✓ Simpan di galeri atau cloud storage favorit Anda
+✓ Share langsung ke Instagram, TikTok, Facebook, atau WhatsApp
+✓ Cetak foto PNG untuk dipajang atau dijadikan hadiah
+✓ Jadikan wallpaper HP untuk mengingat momen indah ini
 
 
-Kami harap Anda menikmati hasil foto Anda!
+🌟 REKOMENDASI DARI KAMI:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Salam hangat,
-Tim PanoriCam
+• Cetak foto untuk hasil maksimal dengan kualitas premium
+• Upload GIF ke Instagram Story dengan musik favorit
+• Kirim ke keluarga & teman sebagai kejutan manis
+• Backup file ke Google Drive atau iCloud
+• Tag kami saat share di social media! 📱
 
 
-========================================
-Email otomatis - Mohon tidak membalas
-Butuh bantuan? Kunjungi: [website/support]
-========================================
+Terima kasih sudah mempercayai PanoriCam untuk mengabadikan
+momen berharga Anda. Kami senang bisa menjadi bagian dari
+kenangan indah Anda! 💖
+
+Sampai jumpa di momen spesial berikutnya!
+
+
+Dengan cinta,
+Tim PanoriCam 📷✨
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Email ini dikirim otomatis. Mohon tidak membalas.
+Butuh bantuan? Hubungi kami di [website/support]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         ";
     }
 }
